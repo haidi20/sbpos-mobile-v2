@@ -1,7 +1,7 @@
 // login_screen.dart
+import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,23 +17,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _lockLandscape();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _lockLandscape();
-    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _lockLandscape(); // Pastikan tetap landscape saat muncul
-  }
-
-  void _lockLandscape() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
   }
 
   @override
@@ -70,9 +58,11 @@ class _LoginScreenState extends State<LoginScreen> {
       const SnackBar(content: Text('Login berhasil')),
     );
 
-    await Future.delayed(const Duration(seconds: 1));
+    // await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
-      context.go('/landing-page-menu');
+      final router = Router.of(context);
+      final delegate = router.routerDelegate as AppRouterDelegate;
+      delegate.setNewRoutePath(AppRoutes.landingPageMenu);
     }
   }
 
@@ -96,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 24),
-                  Text(
+                  const Text(
                     'Selamat Datang',
                     style: TextStyle(
                       fontSize: 28,
@@ -135,6 +125,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Text(
                         'Login',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        final router = Router.of(context);
+                        final delegate =
+                            router.routerDelegate as AppRouterDelegate;
+                        delegate.setNewRoutePath(AppRoutes.mode);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
+                        'Masuk sebagai Pembeli',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),

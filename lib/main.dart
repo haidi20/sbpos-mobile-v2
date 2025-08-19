@@ -1,33 +1,46 @@
 // main.dart
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final mediaQueryData =
-      MediaQueryData.fromWindow(WidgetsBinding.instance.window);
-  final isMobile = mediaQueryData.size.shortestSide < 600;
+  // Opsional: lock orientation
+  // await SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.landscapeLeft,
+  //   DeviceOrientation.landscapeRight,
+  // ]);
 
-  if (isMobile) {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-  }
-
-  runApp(ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
-  MyApp({super.key});
+class MyApp extends ConsumerStatefulWidget {
+  const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final goRouter = ref.watch(goRouterProvider);
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends ConsumerState<MyApp> {
+  late final AppRouterDelegate _routerDelegate;
+  late final AppRouteInformationParser _routeInformationParser;
+
+  @override
+  void initState() {
+    super.initState();
+    _routerDelegate = AppRouterDelegate();
+    _routeInformationParser = AppRouteInformationParser();
+  }
+
+  @override
+  void dispose() {
+    // Jika ada listener atau stream, dispose di sini
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'SB POS V2',
       theme: ThemeData(
@@ -35,11 +48,16 @@ class MyApp extends ConsumerWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),
-      routerConfig: goRouter,
+      routeInformationParser: _routeInformationParser,
+      routerDelegate: _routerDelegate,
+      routeInformationProvider: PlatformRouteInformationProvider(
+        initialRouteInformation:
+            const RouteInformation(location: AppRoutes.landingPageMenu),
+      ),
       builder: (context, child) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            const double maxWidth = 1000;
+            const double maxWidth = 500;
 
             // 💻 Desktop: tampilkan layout boxed (sisi abu-abu)
             if (constraints.maxWidth > 1200) {
@@ -55,7 +73,7 @@ class MyApp extends ConsumerWidget {
               );
             }
 
-            // 📱 & 🧑‍💻 Mobile & Tablet: full-width
+            // 📱 Mobile & Tablet: full-width dalam batas maxWidth
             return ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: maxWidth),
               child: Container(
