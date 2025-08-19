@@ -1,7 +1,7 @@
 name: core
 description: "A new Flutter package project."
 version: 0.0.1
-homepage:
+publish_to: none
 
 environment:
   sdk: '>=3.4.1 <4.0.0'
@@ -10,6 +10,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dashboard:
+    path: ../features/dashboard
+  landing_page_menu:
+    path: ../features/landing_page_menu
+
+  go_router: ^15.1.2
+  drift: ^2.16.0
+  sqlite3_flutter_libs: ^0.5.39
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  dartz: ^0.10.1 # opsional, untuk clean code (Either/Option)
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
@@ -20,7 +32,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
-flutter:
+# flutter:
 
   # To add assets to your package, add an assets section, like this:
   # assets:
