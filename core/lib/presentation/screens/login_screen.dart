@@ -1,7 +1,6 @@
 // login_screen.dart
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,9 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
-      final router = Router.of(context);
-      final delegate = router.routerDelegate as AppRouterDelegate;
-      delegate.setNewRoutePath(AppRoutes.landingPageMenu);
+      context.go(AppRoutes.landingPageMenu);
     }
   }
 
@@ -134,10 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () {
-                        final router = Router.of(context);
-                        final delegate =
-                            router.routerDelegate as AppRouterDelegate;
-                        delegate.setNewRoutePath(AppRoutes.mode);
+                        context.go('/app/1/mode');
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),

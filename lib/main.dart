@@ -1,16 +1,10 @@
 // main.dart
-import 'package:core/core.dart';
+import 'package:core/utils/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Opsional: lock orientation
-  // await SystemChrome.setPreferredOrientations([
-  //   DeviceOrientation.landscapeLeft,
-  //   DeviceOrientation.landscapeRight,
-  // ]);
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -23,20 +17,12 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  late final AppRouterDelegate _routerDelegate;
-  late final AppRouteInformationParser _routeInformationParser;
+  late final AppRouter _appRouter;
 
   @override
   void initState() {
     super.initState();
-    _routerDelegate = AppRouterDelegate();
-    _routeInformationParser = AppRouteInformationParser();
-  }
-
-  @override
-  void dispose() {
-    // Jika ada listener atau stream, dispose di sini
-    super.dispose();
+    _appRouter = AppRouter(); // Inisialisasi router
   }
 
   @override
@@ -48,18 +34,13 @@ class _MyAppState extends ConsumerState<MyApp> {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),
-      routeInformationParser: _routeInformationParser,
-      routerDelegate: _routerDelegate,
-      routeInformationProvider: PlatformRouteInformationProvider(
-        initialRouteInformation:
-            const RouteInformation(location: AppRoutes.landingPageMenu),
-      ),
+      routerConfig: _appRouter.router, // Gunakan go_router
       builder: (context, child) {
         return LayoutBuilder(
           builder: (context, constraints) {
             const double maxWidth = 500;
 
-            // 💻 Desktop: tampilkan layout boxed (sisi abu-abu)
+            // 💻 Desktop: Tampilan boxed dengan background abu-abu
             if (constraints.maxWidth > 1200) {
               return Row(
                 children: [
@@ -73,7 +54,7 @@ class _MyAppState extends ConsumerState<MyApp> {
               );
             }
 
-            // 📱 Mobile & Tablet: full-width dalam batas maxWidth
+            // 📱 Mobile & Tablet: Full-width, tapi dibatasi maxWidth
             return ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: maxWidth),
               child: Container(
