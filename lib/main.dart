@@ -1,14 +1,24 @@
 // main.dart
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(
-    ProviderScope(
-      child: MyApp(),
-    ),
-  );
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final mediaQueryData =
+      MediaQueryData.fromWindow(WidgetsBinding.instance.window);
+  final isMobile = mediaQueryData.size.shortestSide < 600;
+
+  if (isMobile) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
+
+  runApp(ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -29,43 +39,30 @@ class MyApp extends ConsumerWidget {
       builder: (context, child) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            const double maxWidth = 1000; // 🔁 Ubah di sini: 800, 1000, dll
+            const double maxWidth = 1000;
 
-            if (constraints.maxWidth > maxWidth) {
+            // 💻 Desktop: tampilkan layout boxed (sisi abu-abu)
+            if (constraints.maxWidth > 1200) {
               return Row(
                 children: [
-                  // Kiri: light gray
-                  Expanded(
-                    child: Container(
-                      color: Colors.grey[200], // Light gray
-                    ),
-                  ),
-                  // Tengah: konten utama
+                  Expanded(child: Container(color: Colors.grey[200])),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: maxWidth),
-                    child: Container(
-                      color: Colors.white,
-                      child: child,
-                    ),
+                    child: Container(color: Colors.white, child: child),
                   ),
-                  // Kanan: light gray
-                  Expanded(
-                    child: Container(
-                      color: Colors.grey[200],
-                    ),
-                  ),
+                  Expanded(child: Container(color: Colors.grey[200])),
                 ],
               );
-            } else {
-              // Di layar kecil: tanpa padding, full width
-              return ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: maxWidth),
-                child: Container(
-                  color: Colors.white,
-                  child: child,
-                ),
-              );
             }
+
+            // 📱 & 🧑‍💻 Mobile & Tablet: full-width
+            return ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: maxWidth),
+              child: Container(
+                color: Colors.white,
+                child: child,
+              ),
+            );
           },
         );
       },
