@@ -16,6 +16,8 @@ dependencies:
     path: ../features/landing_page_menu
   mode:
     path: ../features/mode
+  outlet:
+    path: ../features/outlet
 
   go_router: ^15.1.2
   drift: ^2.16.0

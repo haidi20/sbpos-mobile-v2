@@ -5,6 +5,7 @@ import 'package:mode/presentation/screens/mode_screen.dart';
 import 'package:core/presentation/screens/login_screen.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:landing_page_menu/presentation/screens/landing_page_menu_screen.dart';
+import 'package:outlet/presentation/screens/outlet_screen.dart';
 
 class AppRouter {
   final GoRouter _router = GoRouter(
@@ -36,6 +37,12 @@ class AppRouter {
           final String? appIdParam = state.pathParameters['appId'];
           final int? appId = int.tryParse(appIdParam ?? '');
           return ModeScreen(appId: appId);
+        },
+      ),
+      GoRoute(
+        path: '/app',
+        builder: (context, state) {
+          return OutletScreen();
         },
       ),
     ],
