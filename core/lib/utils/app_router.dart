@@ -19,8 +19,16 @@ class AppRouter {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoutes.landingPageMenu,
-        builder: (context, state) => const LandingPageMenuScreen(),
+        path: '/app/:appId/order',
+        builder: (context, state) {
+          final String? appIdParam = state.pathParameters['appId'];
+          final int? appId = int.tryParse(appIdParam ?? '');
+          final String? modeName = state.uri.queryParameters['mode'];
+          return LandingPageMenuScreen(
+            appId: appId,
+            modeName: modeName,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.dashboard,
