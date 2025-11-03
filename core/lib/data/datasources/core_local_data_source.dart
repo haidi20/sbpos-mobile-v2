@@ -1,6 +1,6 @@
 import 'package:core/data/models/user_model.dart';
 import 'package:core/utils/helpers/base_error_helper.dart';
-import 'package:core/data/datasources/core_database_helper.dart';
+import 'package:core/data/datasources/core_database.dart';
 
 class CoreLocalDataSource with BaseErrorHelper {
   final CoreDatabaseHelper databaseHelper = CoreDatabaseHelper();

@@ -16,6 +16,7 @@ dependencies:
   dartz: ^0.10.1
   flutter_riverpod: ^2.6.1
   flutter_dotenv: ^6.0.0
+  connectivity_plus: ^5.0.2
   intl: ^0.20.2
   http: ^1.2.1
   dashboard:
