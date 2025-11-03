@@ -8,7 +8,7 @@ Future<void> main() async {
         fileName: ".env.local"); // Load the local environment file
     await initializeDateFormatting('id_ID', null);
     print("✅ .env.local loaded successfully");
-    runApp(const MyApp());
+    runApp(const ProviderScope(child: MyApp())); // Wrap with ProviderScope
   } catch (e) {
     print("❌ Error: $e");
   }

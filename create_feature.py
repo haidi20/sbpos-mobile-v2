@@ -46,8 +46,10 @@ def main():
         "lib/domain/repositories",
         "lib/domain/usecases",
         "lib/presentation/screens",
-        "lib/presentation/controllers",
+        # "lib/presentation/controllers",
+        "lib/presentation/viewmodels",
         "lib/presentation/widgets",
+        "lib/presentation/providers",
     ]
 
     for folder in folders:
@@ -63,8 +65,9 @@ def main():
         f"lib/domain/repositories/{project_name}_repository.dart": f"// Abstract repository for {project_name}",
         f"lib/domain/usecases/get_{project_name}s.dart": f"// Use case to get {project_name}s",
         f"lib/presentation/screens/{project_name}_screen.dart": f"// UI screen for {project_name}",
-        f"lib/presentation/controllers/{project_name}_controller.dart": f"// Riverpod controller for {project_name}",
+        f"lib/presentation/viewmodels/{project_name}_viewmodel.dart": f"// ViewModel for {project_name}",
         "lib/presentation/widgets/warehouse_card.dart": "// Reusable widget (optional)",
+        f"lib/presentation/providers/{project_name}_provider.dart": f"// Riverpod providers for {project_name}",
         "test/widget_test.dart": "// Widget tests",
         f"test/{project_name}_repository_test.dart": f"// Unit test for {project_name} repository",
         "analysis_options.yaml": "# Add linter rules as needed\n",
