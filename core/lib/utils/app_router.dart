@@ -3,8 +3,8 @@ import 'package:core/core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:mode/presentation/screens/mode_screen.dart';
 import 'package:core/presentation/screens/login_screen.dart';
-import 'package:outlet/presentation/screens/outlet_screen.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:warehouse/presentation/screens/warehouse_screen.dart';
 import 'package:landing_page_menu/presentation/screens/landing_page_menu_screen.dart';
 
 class AppRouter {
@@ -50,7 +50,7 @@ class AppRouter {
       GoRoute(
         path: '/app',
         builder: (context, state) {
-          return OutletScreen();
+          return WarehouseScreen();
         },
       ),
     ],

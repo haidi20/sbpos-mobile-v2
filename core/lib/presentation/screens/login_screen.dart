@@ -13,6 +13,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final double _heightBetween = 30.0;
+
   @override
   void initState() {
     super.initState();
@@ -77,10 +79,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.lock,
+                  const Icon(
+                    Icons.person,
                     size: 80,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppSetting.primaryColor,
                   ),
                   const SizedBox(height: 24),
                   const Text(
@@ -88,15 +90,28 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: AppSetting.primaryColor,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: _heightBetween),
                   TextField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
                       labelText: 'Username',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
+                        Icons.person,
+                        color: AppSetting.primaryColor,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppSetting.primaryColor),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppSetting.primaryColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: AppSetting.primaryColor, width: 2),
+                      ),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
@@ -105,14 +120,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     decoration: const InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
+                        Icons.lock,
+                        color: AppSetting.primaryColor,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppSetting.primaryColor),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppSetting.primaryColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: AppSetting.primaryColor, width: 2),
+                      ),
                     ),
                     obscureText: true,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (value) => _login(),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: _heightBetween),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
