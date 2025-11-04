@@ -25,7 +25,7 @@ class CoreLocalDataSource with BaseErrorHelper {
     }
   }
 
-  Future<String> storeUser(UserModel user) async {
+  Future<String> storeUser({required UserModel user}) async {
     try {
       // print(user.toString());
       await databaseHelper.storeUser(user);

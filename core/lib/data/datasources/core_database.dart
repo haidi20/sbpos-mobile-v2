@@ -79,8 +79,6 @@ class CoreDatabaseHelper {
     // Menghapus semua data lama dari tabel
     await db!.delete(_tblUsers);
 
-    print("core db nama petugas : ${user.namaPetugas}");
-
     return await db.insert(_tblUsers, user.toLocalDbJson());
   }
 
@@ -99,7 +97,7 @@ class CoreDatabaseHelper {
 
     await db!.update(
       _tblUsers, // Nama tabel
-      {'api_token': null}, // Set api_token menjadi NULL
+      {'token': null}, // Set api_token menjadi NULL
       where: 'id = ?',
       whereArgs: [getuser.id], // Filter berdasarkan ID pengguna
     );

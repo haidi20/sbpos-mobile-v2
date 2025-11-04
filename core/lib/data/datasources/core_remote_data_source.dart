@@ -6,12 +6,12 @@ class CoreRemoteDataSource with BaseErrorHelper {
   final String api = API;
   final _apiHelper = ApiHelper();
 
-  Future<AuthResponse?> login({String? username, String? password}) async {
+  Future<AuthResponse> login({String? username, String? password}) async {
     try {
       final response = await _apiHelper.post(
         url: '$host/$api/login',
         body: {
-          'username': username,
+          'email': username,
           'password': password,
         },
       );
@@ -25,9 +25,9 @@ class CoreRemoteDataSource with BaseErrorHelper {
         return AuthResponse.fromJson(decoded);
       } else if (response.statusCode == 401) {
         return AuthResponse(
-          message: decoded['message'],
-          success: false,
-          data: null,
+          user: null,
+          token: null,
+          refreshToken: null,
         );
       } else {
         final errorMessage = decoded['message'] ?? 'Terjadi kesalahan server';
@@ -57,9 +57,9 @@ class CoreRemoteDataSource with BaseErrorHelper {
         return AuthResponse.fromJson(decoded);
       } else if (response.statusCode == 401) {
         return AuthResponse(
-          message: decoded['message'],
-          success: false,
-          data: null,
+          user: null,
+          token: null,
+          refreshToken: null,
         );
       } else {
         final errorMessage = decoded['message'] ?? 'Terjadi kesalahan server';

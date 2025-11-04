@@ -1,20 +1,34 @@
-import 'package:core/utils/helpers/api_exeption.dart';
-import 'package:core/presentation/widgets/message_snackbar.dart';
+// lib/core/utils/helpers/base_error_helper.dart
+
+import 'package:core/core.dart';
 
 mixin BaseErrorHelper {
-  dynamic handleError(error) {
+  /// Mengembalikan pesan error dalam bentuk String
+  String mapErrorToMessage(dynamic error) {
     if (error is BadRequestException) {
-      var message = error.message;
-      errorSnackBar(message.toString());
+      return error.message.toString();
     } else if (error is FetchDataException) {
-      var message = error.message;
-      errorSnackBar(message.toString());
+      return error.message.toString();
     } else if (error is ApiNotRespondingException) {
-      errorSnackBar('Oops! It took longer to respond.');
+      return 'Server tidak merespon. Silakan coba lagi nanti.';
     } else if (error is SomethingDataException) {
-      var message = error.message;
-      // ignore: avoid_print
-      print(message);
+      // Anda bisa log ini, tapi jangan print di production
+      // print(error.message);
+      return error.message.toString();
+    } else {
+      return 'Terjadi kesalahan tidak dikenal.';
+    }
+  }
+
+  /// Opsi: jika tetap ingin punya helper untuk tampilkan error,
+  /// tapi harus lewat callback
+  void handleErrorWithCallback(
+    dynamic error,
+    void Function(String message) onErrorMessage,
+  ) {
+    final message = mapErrorToMessage(error);
+    if (message.isNotEmpty) {
+      onErrorMessage(message);
     }
   }
 }
