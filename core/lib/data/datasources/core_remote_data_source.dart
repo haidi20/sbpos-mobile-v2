@@ -6,12 +6,12 @@ class CoreRemoteDataSource with BaseErrorHelper {
   final String api = API;
   final _apiHelper = ApiHelper();
 
-  Future<AuthResponse> login({String? username, String? password}) async {
+  Future<AuthResponse> login({String? email, String? password}) async {
     try {
       final response = await _apiHelper.post(
         url: '$host/$api/login',
         body: {
-          'email': username,
+          'email': email,
           'password': password,
         },
       );

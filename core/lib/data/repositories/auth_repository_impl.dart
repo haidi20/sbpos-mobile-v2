@@ -16,26 +16,28 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.local,
   });
 
-  Future<Either<Failure, UserEntity>> _fallbackUserLocal() async {
+  Future<Either<Failure, UserEntity>> _fallbackUserLocal({
+    required String email,
+    required String password,
+  }) async {
     try {
-      final UserModel? localUser = await local.getUser();
-      if (localUser != null) {
-        if (localUser.token == null) {
-          _logger.warning(
-            'Token lokal null saat fallback ke lokal, kemungkinan user belum login sebelumnya',
-          );
-          return const Left(LocalValidation("Token lokal tidak tersedia"));
+      final bool response = await local.authenticationUser(
+        email: email,
+        password: password,
+      );
+
+      if (response) {
+        final UserModel? storedUser = await local.getUser();
+
+        if (storedUser != null) {
+          return Right(storedUser.toEntity());
+        } else {
+          _logger.warning('User lokal tidak ditemukan setelah autentikasi');
+          return const Left(ServerFailure());
         }
-
-        return Right(localUser.toEntity());
       } else {
-        _logger.warning(
-            'Fallback ke lokal gagal: tidak ada user di penyimpanan lokal');
-        // atau NetworkFailure jika lebih sesuai konteks
-
-        return const Left(
-          CacheFailure(),
-        );
+        _logger.info('Autentikasi user lokal gagal');
+        return const Left(ServerValidation('Email atau password salah'));
       }
     } catch (e, stackTrace) {
       _logger.severe('Error saat fallback ke lokal', e, stackTrace);
@@ -45,7 +47,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, UserEntity>> storeLogin({
-    required String username,
+    required String email,
     required String password,
   }) async {
     final networkInfo = NetworkInfoImpl(Connectivity());
@@ -54,19 +56,27 @@ class AuthRepositoryImpl implements AuthRepository {
     if (isConnected) {
       try {
         final AuthResponse response = await remote.login(
-          username: username,
+          email: email,
           password: password,
         );
 
         if (response.user != null) {
-          await local.storeUser(user: response.user!);
+          UserModel insertUserLocal = UserModel().copyWith(
+            username: response.user!.username,
+            email: response.user!.email,
+            token: response.user!.token,
+            password: password,
+          );
+
+          await local.storeUser(user: insertUserLocal);
 
           if (response.user?.token == null) {
             _logger.warning(
               'Token dari server null, tidak dapat menyimpan token lokal',
             );
 
-            return const Left(ServerValidation('Token tidak tersedia'));
+            return const Left(
+                ServerValidation('Maaf, ada kesalahan pada autentikasi'));
           }
 
           return Right(response.user!.toEntity());
@@ -84,7 +94,10 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } else {
       // Selalu fallback ke lokal saat offline
-      return await _fallbackUserLocal();
+      return await _fallbackUserLocal(
+        email: email,
+        password: password,
+      );
     }
   }
 

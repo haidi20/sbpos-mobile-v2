@@ -18,8 +18,12 @@ dependencies:
   flutter_dotenv: ^6.0.0
   logging: ^1.3.0
   connectivity_plus: ^5.0.2
+  flutter_bcrypt: ^1.0.8
   intl: ^0.20.2
   http: ^1.2.1
+  flutter_hooks:  ^0.20.5
+  hooks_riverpod: ^2.6.1
+  # features
   dashboard:
     path: ../features/dashboard
   landing_page_menu:
@@ -28,6 +32,7 @@ dependencies:
     path: ../features/mode
   warehouse:
     path: ../features/warehouse
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

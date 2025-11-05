@@ -8,11 +8,11 @@ class StoreLogin {
   StoreLogin(this.repository);
 
   Future<Either<Failure, UserEntity>> call({
-    required String username,
+    required String email,
     required String password,
   }) async {
     return await repository.storeLogin(
-      username: username,
+      email: email,
       password: password,
     );
   }

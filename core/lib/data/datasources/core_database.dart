@@ -1,8 +1,6 @@
-import 'dart:async';
-
-import 'package:sqflite/sqflite.dart';
+import 'package:core/core.dart';
 import 'package:core/data/models/user_model.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_bcrypt/flutter_bcrypt.dart';
 
 class CoreDatabaseHelper {
   static CoreDatabaseHelper? _databaseHelper;
@@ -16,6 +14,8 @@ class CoreDatabaseHelper {
   static Database? _database;
 
   static const String _tblUsers = 'user_auths';
+
+  static final Logger _logger = Logger('CoreDatabaseHelper');
 
   Future<Database?> get database async {
     if (_database != null) return _database;
@@ -45,6 +45,7 @@ class CoreDatabaseHelper {
       CREATE TABLE $_tblUsers (
         id INTEGER PRIMARY KEY,
         username TEXT,
+        password TEXT,
         token TEXT,
         email TEXT unique
       );
@@ -62,12 +63,49 @@ class CoreDatabaseHelper {
 
       return results.isNotEmpty ? results.first : null;
     } catch (e) {
-      print("Error fetching user: $e");
+      _logger.severe("Error fetching user: $e");
       return null;
     }
   }
 
-  Future<int> countTableUser() async {
+  Future<bool> authUser({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final db = await database;
+
+      // 1. Cari user berdasarkan email saja
+      final List<Map<String, dynamic>> results = await db!.query(
+        _tblUsers,
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+
+      _logger.info("Query results: $results");
+
+      if (results.isEmpty) return false;
+
+      final storedHash = results.first['password'] as String?;
+
+      _logger.info("Stored hash: $storedHash");
+      _logger.info("Input password: $password");
+
+      if (storedHash == null) return false;
+
+      // 2. Verifikasi password dengan bcrypt
+      final isValid = await FlutterBcrypt.verify(
+        password: password,
+        hash: storedHash,
+      );
+      return isValid;
+    } catch (e) {
+      _logger.severe("Error authenticating user: $e");
+      return false;
+    }
+  }
+
+  Future<int> countUser() async {
     final db = await database;
     final result =
         await db!.rawQuery('SELECT COUNT(*) as total FROM $_tblUsers');
@@ -76,10 +114,11 @@ class CoreDatabaseHelper {
 
   Future<int> storeUser(UserModel user) async {
     final db = await database;
-    // Menghapus semua data lama dari tabel
     await db!.delete(_tblUsers);
 
-    return await db.insert(_tblUsers, user.toLocalDbJson());
+    // 👇 Tunggu hasil toLocalDbJson() sebelum insert
+    final userMap = await user.toLocalDbJson(); // <-- await di sini
+    return await db.insert(_tblUsers, userMap);
   }
 
   Future<int> deleteUser() async {

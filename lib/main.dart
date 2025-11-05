@@ -3,28 +3,18 @@ import 'package:core/core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await dotenv.load(fileName: ".env"); // Jika pakai dotenv
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerStatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  ConsumerState<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends ConsumerState<MyApp> {
-  late final AppRouter _appRouter;
-
-  @override
-  void initState() {
-    super.initState();
-    _appRouter = AppRouter(); // Inisialisasi router
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Gunakan instance singleton dari AppRouter
+    final router = AppRouter.instance.router;
+
     return MaterialApp.router(
       title: 'SB POS V2',
       debugShowCheckedModeBanner: false,
@@ -35,17 +25,20 @@ class _MyAppState extends ConsumerState<MyApp> {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),
-      routerConfig: _appRouter.router, // Gunakan go_router
+      routerConfig: router,
       builder: (context, child) {
         return LayoutBuilder(
           builder: (context, constraints) {
             const double maxWidth = 500;
 
-            // 💻 Desktop: Tampilan boxed dengan background abu-abu
             if (constraints.maxWidth > 1200) {
               return Row(
                 children: [
-                  Expanded(child: Container(color: Colors.grey[200])),
+                  Expanded(
+                    child: Container(
+                      color: Colors.grey[200],
+                    ),
+                  ),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: maxWidth),
                     child: Container(color: Colors.white, child: child),
@@ -55,7 +48,6 @@ class _MyAppState extends ConsumerState<MyApp> {
               );
             }
 
-            // 📱 Mobile & Tablet: Full-width, tapi dibatasi maxWidth
             return ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: maxWidth),
               child: Container(

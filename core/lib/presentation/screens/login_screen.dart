@@ -1,60 +1,35 @@
-// lib/presentation/screens/login_screen.dart
+// login_screen.dart
 import 'package:core/core.dart';
 import 'package:core/presentation/providers/auth_provider.dart';
-import 'package:core/presentation/widgets/message_snackbar.dart';
-import 'package:core/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:core/presentation/controllers/login_controller.dart';
 
-class LoginScreen extends ConsumerWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
-  void _onStoreLogin(
-    AuthViewModel viewModel,
-    String username,
-    String password,
-  ) {
-    if (username.isEmpty || password.isEmpty) {
-      // Anda bisa tampilkan snackbar langsung di sini
-      // Tapi sebaiknya lewat ViewModel — atau tampilkan langsung karena ini validasi UI
-      // Di sini kita tampilkan langsung
-      // (karena bukan error dari repository)
-    } else {
-      viewModel.storeLogin(
-        username: username,
-        password: password,
-      );
-    }
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  late LoginController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = LoginController(ref, context);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(authViewModelProvider);
-    final viewModel = ref.read(authViewModelProvider.notifier);
 
-    final usernameController = TextEditingController(text: 'kasir@hadi.com');
-    final passwordController = TextEditingController(text: 'hadi55');
-
-    // Tampilkan Snackbar jika ada error
-    if (state.error != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          showErrorSnackBar(context, state.error!);
-        }
-      });
-    }
-
-    // Tampilkan Snackbar sukses & navigasi
-    if (state.user != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          showSuccessSnackBar(context, 'Berhasil login');
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (context.mounted) {
-              context.push(AppRoutes.landingPageMenu);
-            }
-          });
-        }
-      });
-    }
+    _controller.observeAuthState();
 
     return Scaffold(
       body: Padding(
@@ -83,77 +58,66 @@ class LoginScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 30),
                   TextField(
-                    controller: usernameController,
+                    controller: _controller.emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Username',
+                      labelText: 'Email',
                       prefixIcon: Icon(
-                        Icons.person,
+                        Icons.email,
                         color: AppSetting.primaryColor,
                       ),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: AppSetting.primaryColor),
+                        borderSide: BorderSide(
+                          color: AppSetting.primaryColor,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppSetting.primaryColor,
-                          width: 2,
-                        ),
+                            color: AppSetting.primaryColor, width: 2),
                       ),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 16),
                   TextField(
-                    controller: passwordController,
+                    controller: _controller.passwordController,
                     decoration: const InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: Icon(
-                        Icons.lock,
-                        color: AppSetting.primaryColor,
-                      ),
+                      prefixIcon:
+                          Icon(Icons.lock, color: AppSetting.primaryColor),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: AppSetting.primaryColor),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppSetting.primaryColor,
-                          width: 2,
-                        ),
+                            color: AppSetting.primaryColor, width: 2),
                       ),
                     ),
                     obscureText: true,
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _onStoreLogin(
-                      viewModel,
-                      usernameController.text,
-                      passwordController.text,
-                    ),
+                    onSubmitted: (_) => _controller.handleLogin(),
                   ),
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: state.isLoading
-                          ? null // ← disabled saat loading
-                          : () => _onStoreLogin(
-                                viewModel,
-                                usernameController.text,
-                                passwordController.text,
-                              ),
+                      onPressed:
+                          state.isLoading ? null : _controller.handleLogin,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: state.isLoading
                             ? Colors.grey
                             : AppSetting.primaryColor,
-                        foregroundColor: state.isLoading
-                            ? Colors.white // teks tetap putih
-                            : null,
+                        foregroundColor: Colors.white,
                       ),
                       child: state.isLoading
-                          ? const Text('Memuat...',
-                              style: TextStyle(fontSize: 18))
+                          ? const Text(
+                              'Memuat...',
+                              style: TextStyle(
+                                fontSize: 18,
+                              ),
+                            )
                           : const Text(
                               'Login',
                               style: TextStyle(
@@ -167,15 +131,15 @@ class LoginScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {
-                        context.push('/app/1/mode');
-                      },
+                      onPressed: () => context.push('/app/1/mode'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text(
                         'Masuk sebagai Pembeli',
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),

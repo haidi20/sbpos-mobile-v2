@@ -3,7 +3,7 @@ import 'package:core/domain/entities/user_entity.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> storeLogin({
-    required String username,
+    required String email,
     required String password,
   });
 

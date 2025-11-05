@@ -42,13 +42,13 @@ class AuthViewModel extends StateNotifier<AuthState> {
   }
 
   Future<void> storeLogin({
-    required String username,
+    required String email,
     required String password,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
     final Either<Failure, UserEntity> result = await _storeLogin.call(
-      username: username,
+      email: email,
       password: password,
     );
 
@@ -61,8 +61,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
       },
       (user) {
         state = state.copyWith(
-          isLoading: false,
           user: user,
+          isLoading: false,
+          clearError: true,
         );
       },
     );

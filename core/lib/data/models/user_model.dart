@@ -1,4 +1,5 @@
 import 'package:core/domain/entities/user_entity.dart';
+import 'package:flutter_bcrypt/flutter_bcrypt.dart';
 
 class UserModel {
   final int? id;
@@ -56,13 +57,28 @@ class UserModel {
   factory UserModel.fromMap(Map<String, dynamic> map) =>
       UserModel.fromJson(map);
 
-  /// Untuk menyimpan ke database lokal (tanpa password)
-  Map<String, dynamic> toLocalDbJson() {
+  Future<Map<String, dynamic>> toLocalDbJson() async {
+    String? hashedPassword;
+
+    if (password != null && password!.isNotEmpty) {
+      final p = password!;
+      final alreadyHashed = p.startsWith(r'$2a$') ||
+          p.startsWith(r'$2b$') ||
+          p.startsWith(r'$2y$');
+      if (alreadyHashed) {
+        hashedPassword = p;
+      } else {
+        final salt = await FlutterBcrypt.saltWithRounds(rounds: 12);
+        hashedPassword = await FlutterBcrypt.hashPw(password: p, salt: salt);
+      }
+    }
+
     return {
       'id': id,
       'username': username,
       'email': email,
-      'token': token, // password sengaja dikecualikan
+      'password': hashedPassword, // hashed, never plain text
+      'token': token,
     };
   }
 
@@ -92,6 +108,21 @@ class UserModel {
     if (value is int) return value;
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  Future<String?> getHashedPassword() async {
+    if (password != null && password!.isNotEmpty) {
+      final alreadyHashed = password!.startsWith(r'$2a$') ||
+          password!.startsWith(r'$2b$') ||
+          password!.startsWith(r'$2y$');
+      if (alreadyHashed) {
+        return password;
+      } else {
+        final salt = await FlutterBcrypt.saltWithRounds(rounds: 12);
+        return await FlutterBcrypt.hashPw(password: password!, salt: salt);
+      }
+    }
     return null;
   }
 }

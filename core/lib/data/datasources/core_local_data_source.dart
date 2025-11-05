@@ -1,6 +1,6 @@
 import 'package:core/data/models/user_model.dart';
-import 'package:core/utils/helpers/base_error_helper.dart';
 import 'package:core/data/datasources/core_database.dart';
+import 'package:core/utils/helpers/base_error_helper.dart';
 
 class CoreLocalDataSource with BaseErrorHelper {
   final CoreDatabaseHelper databaseHelper = CoreDatabaseHelper();
@@ -15,10 +15,23 @@ class CoreLocalDataSource with BaseErrorHelper {
     }
   }
 
-  Future<int> countTableUser() async {
+  Future<bool> authenticationUser(
+      {required String email, required String password}) async {
+    try {
+      return await databaseHelper.authUser(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      throw Exception(
+          'Gagal mendapatkan token user di lokal db: ${e.toString()}');
+    }
+  }
+
+  Future<int> countUser() async {
     try {
       // print(user.toString());
-      return await databaseHelper.countTableUser();
+      return await databaseHelper.countUser();
     } catch (e) {
       throw Exception(
           'Gagal mendapatkan data user di lokal db: ${e.toString()}');
