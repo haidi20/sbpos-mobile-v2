@@ -105,7 +105,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, bool>> logout() async {
     try {
       // 2. Hapus data lokal (user, token, dll)
-      await local.deleteToken();
+      // await local.deleteToken();
 
       return const Right(true);
     } on Exception catch (e) {

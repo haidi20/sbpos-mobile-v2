@@ -1,36 +1,42 @@
-// login_controller.dart
+// auth_controller.dart
 
 import 'package:core/core.dart';
 import 'package:core/presentation/providers/auth_provider.dart';
 import 'package:core/presentation/viewmodels/auth_viewmodel.dart';
 
-class LoginController {
-  LoginController(this.ref, this.context);
+class AuthController {
+  AuthController(this.ref, this.context);
 
-  static final Logger _logger = Logger('LoginController');
+  static final Logger _logger = Logger('AuthController');
 
   final WidgetRef ref;
   final BuildContext context;
+
+  late final AuthViewModel _authViewModel =
+      ref.read(authViewModelProvider.notifier);
 
   final TextEditingController emailController =
       TextEditingController(text: 'kasir@hadi.com');
   final TextEditingController passwordController =
       TextEditingController(text: 'hadi55');
 
-  void handleLogin() {
+  void onLogin() {
     final email = emailController.text;
     final password = passwordController.text;
-    AuthViewModel authViewModel = ref.read(authViewModelProvider.notifier);
 
     if (email.isEmpty || password.isEmpty) {
       showErrorSnackBar(context, 'Email dan password harus diisi');
       return;
     }
 
-    authViewModel.storeLogin(
-      email: email,
-      password: password,
-    );
+    _authViewModel.storeLogin(email: email, password: password);
+  }
+
+  void onLogout() {
+    _authViewModel.logout();
+    if (context.mounted) {
+      context.go(AppRoutes.login);
+    }
   }
 
   void observeAuthState() {

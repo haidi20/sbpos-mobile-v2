@@ -1,7 +1,7 @@
 // login_screen.dart
 import 'package:core/core.dart';
 import 'package:core/presentation/providers/auth_provider.dart';
-import 'package:core/presentation/controllers/login_controller.dart';
+import 'package:core/presentation/controllers/auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -11,12 +11,12 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  late LoginController _controller;
+  late AuthController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = LoginController(ref, context);
+    _controller = AuthController(ref, context);
   }
 
   @override
@@ -96,14 +96,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     obscureText: true,
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _controller.handleLogin(),
+                    onSubmitted: (_) => _controller.onLogin(),
                   ),
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed:
-                          state.isLoading ? null : _controller.handleLogin,
+                      onPressed: state.isLoading ? null : _controller.onLogin,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: state.isLoading

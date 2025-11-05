@@ -56,7 +56,7 @@ class AppRouter {
               pageBuilder: (context, state) {
                 final appId = int.tryParse(state.pathParameters['appId'] ?? '');
                 final modeName = state.uri.queryParameters['mode'];
-                print('>>> Navigasi ke order: appId=$appId, mode=$modeName');
+                // print('>>> Navigasi ke order: appId=$appId, mode=$modeName');
                 return MaterialPage(
                   child: LandingPageMenuScreen(
                     appId: appId,
