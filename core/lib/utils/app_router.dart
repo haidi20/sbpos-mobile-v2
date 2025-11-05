@@ -8,16 +8,11 @@ import 'package:warehouse/presentation/screens/warehouse_screen.dart';
 import 'package:landing_page_menu/presentation/screens/landing_page_menu_screen.dart';
 
 class AppRouter {
-  // Singleton instance
   static final AppRouter _instance = AppRouter._();
-
-  // Getter untuk instance tunggal
   static AppRouter get instance => _instance;
 
-  // Router yang dibuat sekali saja
   late final GoRouter router;
 
-  // Konstruktor privat
   AppRouter._() {
     router = GoRouter(
       initialLocation: '/',
@@ -36,58 +31,54 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.login,
           name: AppRoutes.login,
-          builder: (context, state) => const LoginScreen(),
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: LoginScreen()),
         ),
-        GoRoute(
-          path: AppRoutes.mode,
-          name: AppRoutes.mode,
-          builder: (context, state) => ModeScreen(appId: null),
-        ),
-        GoRoute(
-          path: AppRoutes.dashboard,
-          name: AppRoutes.dashboard,
-          builder: (context, state) => const DashboardScreen(),
-        ),
+
+        // ✅ Perbaiki route /app/:appId dengan pageBuilder
         GoRoute(
           path: '/app/:appId',
-          builder: (context, state) {
+          name: 'app', // ✅ Beri nama unik
+          pageBuilder: (context, state) {
             final appId = int.tryParse(state.pathParameters['appId'] ?? '');
-            return ModeScreen(appId: appId);
+            return MaterialPage(child: ModeScreen(appId: appId));
           },
           routes: [
             GoRoute(
-              path: 'mode',
-              name: 'app_mode',
-              builder: (context, state) {
+              path: '/mode',
+              pageBuilder: (context, state) {
                 final appId = int.tryParse(state.pathParameters['appId'] ?? '');
-                return ModeScreen(appId: appId);
+                return MaterialPage(child: ModeScreen(appId: appId));
               },
             ),
             GoRoute(
-              path: 'order',
-              name: 'app_order',
-              builder: (context, state) {
+              path: '/order',
+              pageBuilder: (context, state) {
                 final appId = int.tryParse(state.pathParameters['appId'] ?? '');
                 final modeName = state.uri.queryParameters['mode'];
-                return LandingPageMenuScreen(
-                  appId: appId,
-                  modeName: modeName,
+                print('>>> Navigasi ke order: appId=$appId, mode=$modeName');
+                return MaterialPage(
+                  child: LandingPageMenuScreen(
+                    appId: appId,
+                    modeName: modeName,
+                  ),
                 );
               },
             ),
             GoRoute(
-              path: 'dashboard',
-              name: 'app_dashboard', // ✅ nama unik
-              builder: (context, state) {
-                return const DashboardScreen();
+              path: '/dashboard',
+              pageBuilder: (context, state) {
+                return const MaterialPage(child: DashboardScreen());
               },
             ),
           ],
         ),
+
         GoRoute(
           path: AppRoutes.warehouse,
           name: AppRoutes.warehouse,
-          builder: (context, state) => const WarehouseScreen(),
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: WarehouseScreen()),
         ),
       ],
       errorBuilder: (context, state) => ModeScreen(appId: null),
