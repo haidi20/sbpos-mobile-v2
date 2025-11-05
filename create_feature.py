@@ -19,7 +19,7 @@ def create_file_if_not_exists(path, content=""):
     print(f"✅ Created: {path}")
 
 def main():
-    project_name = "warehouse"
+    project_name = "landing_page_menu"  # Ganti dengan nama modul yang diinginkan
     base_dir = "features"
     project_path = os.path.join(base_dir, project_name)
     full_project_path = os.path.abspath(project_path)
@@ -37,19 +37,20 @@ def main():
 
     os.chdir(full_project_path)
 
-    # Step 2: Daftar folder MVVM yang diinginkan
+    # Step 2: Daftar semua folder sesuai struktur referensi
     folders = [
         "lib/data/datasources",
         "lib/data/models",
         "lib/data/repositories",
+        "lib/data/responses",           # ✅ Ditambahkan (sesuai struktur core)
         "lib/domain/entities",
         "lib/domain/repositories",
         "lib/domain/usecases",
+        "lib/presentation/controllers", # ✅ Diaktifkan kembali (karena Anda pakai Controller)
+        "lib/presentation/providers",
         "lib/presentation/screens",
-        # "lib/presentation/controllers",
         "lib/presentation/viewmodels",
         "lib/presentation/widgets",
-        "lib/presentation/providers",
     ]
 
     for folder in folders:
@@ -57,37 +58,54 @@ def main():
 
     # Step 3: File yang harus ada (hanya buat jika belum ada)
     files = {
+        # Data Layer
         f"lib/data/models/{project_name}_model.dart": f"// Model for {project_name} from API",
-        f"lib/data/models/{project_name}_response.dart": f"// Response wrapper for {project_name}",
+        f"lib/data/responses/{project_name}_response.dart": f"// Response wrapper for {project_name}",
         f"lib/data/datasources/{project_name}_remote_data_source.dart": f"// Remote data source for {project_name}",
+        f"lib/data/datasources/{project_name}_local_data_source.dart": f"// Local data source (optional) for {project_name}",
         f"lib/data/repositories/{project_name}_repository_impl.dart": f"// Implementation of {project_name} repository",
-        f"lib/domain/entities/{project_name}.dart": f"// Domain entity for {project_name}",
+        f"lib/data/datasources/{project_name}_database.dart": f"// Local database for {project_name}",
+
+        # Domain Layer
+        f"lib/domain/entities/{project_name}_entity.dart": f"// Domain entity for {project_name}",
         f"lib/domain/repositories/{project_name}_repository.dart": f"// Abstract repository for {project_name}",
         f"lib/domain/usecases/get_{project_name}s.dart": f"// Use case to get {project_name}s",
+        f"lib/domain/usecases/save_{project_name}.dart": f"// Use case to save {project_name}",
+
+        # Presentation Layer
         f"lib/presentation/screens/{project_name}_screen.dart": f"// UI screen for {project_name}",
         f"lib/presentation/viewmodels/{project_name}_viewmodel.dart": f"// ViewModel for {project_name}",
-        "lib/presentation/widgets/warehouse_card.dart": "// Reusable widget (optional)",
-        f"lib/presentation/providers/{project_name}_provider.dart": f"// Riverpod providers for {project_name}",
-        "test/widget_test.dart": "// Widget tests",
+        f"lib/presentation/controllers/{project_name}_controller.dart": f"// Controller for {project_name} (manages TextEditingController, UI logic)",
+        f"lib/presentation/widgets/{project_name}_card.dart": f"// Reusable widget for {project_name}",
+        f"lib/presentation/providers/{project_name}_provider.dart": f"// Riverpod provider for {project_name}ViewModel",
+        f"lib/presentation/providers/{project_name}_repository_provider.dart": f"// Repository provider for {project_name}",
+
+        # Core export file (penting untuk modul)
+        "lib/{project_name}.dart": f"// Export all public APIs of {project_name} module\n"
+                         f"export 'domain/entities/{project_name}_entity.dart';\n"
+                         f"export 'domain/repositories/{project_name}_repository.dart';\n"
+                         f"export 'domain/usecases/get_{project_name}s.dart';\n"
+                         f"export 'presentation/providers/{project_name}_provider.dart';\n"
+                         f"export 'presentation/screens/{project_name}_screen.dart';",
+
+        # Test
+        "test/widget_test.dart": "// Basic widget tests",
         f"test/{project_name}_repository_test.dart": f"// Unit test for {project_name} repository",
-        "analysis_options.yaml": "# Add linter rules as needed\n",
-        "README.md": f"# {project_name.capitalize()}\n\nMVVM + Riverpod module.\n",
+        f"test/{project_name}_usecase_test.dart": f"// Unit test for {project_name} use cases",
+
+        # Lainnya
+        "analysis_options.yaml": "# Add linter rules as needed\ninclude: package:flutter_lints/flutter.yaml\n",
+        "README.md": f"# {project_name.capitalize()}\n\nMVVM + Riverpod module using ViewModel → Controller → Screen.\n",
     }
 
     for path, content in files.items():
         create_file_if_not_exists(path, content)
 
-    # Step 4: Update pubspec.yaml hanya jika perlu (opsional)
-    pubspec_path = "pubspec.yaml"
-    if os.path.exists(pubspec_path):
-        with open(pubspec_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        # Catatan: Tidak otomatis tambah dependensi karena `core` dan `riverpod` biasanya di-handle di root app
-        # Modul biasanya tidak punya dependensi berat — cukup export API
-
     print(f"\n✅ Module '{project_name}' is ready at: {full_project_path}")
     if is_new_module:
-        print("💡 Don't forget to add it to root pubspec.yaml as a path dependency.")
+        print("💡 Don't forget to add it to root pubspec.yaml as a path dependency, e.g.:\n"
+              f"  {project_name}:\n"
+              f"    path: features/{project_name}")
 
 if __name__ == "__main__":
     main()

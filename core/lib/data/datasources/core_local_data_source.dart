@@ -3,7 +3,7 @@ import 'package:core/data/datasources/core_database.dart';
 import 'package:core/utils/helpers/base_error_helper.dart';
 
 class CoreLocalDataSource with BaseErrorHelper {
-  final CoreDatabaseHelper databaseHelper = CoreDatabaseHelper();
+  final CoreDatabase databaseHelper = CoreDatabase();
 
   Future<UserModel?> getUser() async {
     final result = await databaseHelper.getUser();

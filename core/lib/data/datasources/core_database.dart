@@ -2,20 +2,19 @@ import 'package:core/core.dart';
 import 'package:core/data/models/user_model.dart';
 import 'package:flutter_bcrypt/flutter_bcrypt.dart';
 
-class CoreDatabaseHelper {
-  static CoreDatabaseHelper? _databaseHelper;
-  CoreDatabaseHelper._instance() {
+class CoreDatabase {
+  static CoreDatabase? _databaseHelper;
+  CoreDatabase._instance() {
     _databaseHelper = this;
   }
 
-  factory CoreDatabaseHelper() =>
-      _databaseHelper ?? CoreDatabaseHelper._instance();
+  factory CoreDatabase() => _databaseHelper ?? CoreDatabase._instance();
 
   static Database? _database;
 
   static const String _tblUsers = 'user_auths';
 
-  static final Logger _logger = Logger('CoreDatabaseHelper');
+  static final Logger _logger = Logger('CoreDatabase');
 
   Future<Database?> get database async {
     if (_database != null) return _database;

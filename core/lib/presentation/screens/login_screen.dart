@@ -29,8 +29,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(authViewModelProvider);
 
-    _controller.observeAuthState();
-
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(24.0),

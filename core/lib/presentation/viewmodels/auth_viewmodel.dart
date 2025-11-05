@@ -5,26 +5,26 @@ import 'package:core/domain/usecases/store_login.dart';
 
 class AuthState {
   final bool isLoading;
-  final UserEntity? user;
+  final UserEntity? authUser;
   final String? error;
 
   const AuthState({
     this.isLoading = false,
-    this.user,
+    this.authUser,
     this.error,
   });
 
-  bool get isAuthenticated => user != null;
+  bool get isAuthenticated => authUser != null;
 
   AuthState copyWith({
     bool? isLoading,
-    UserEntity? user,
+    UserEntity? authUser,
     String? error,
     bool clearError = false,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
-      user: user ?? this.user,
+      authUser: authUser ?? this.authUser,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -59,11 +59,19 @@ class AuthViewModel extends StateNotifier<AuthState> {
           error: failure.message,
         );
       },
-      (user) {
+      (authUser) {
         state = state.copyWith(
-          user: user,
-          isLoading: false,
-          clearError: true,
+          authUser: authUser,
+        );
+
+        Future.delayed(
+          const Duration(seconds: 1),
+          () {
+            state = state.copyWith(
+              isLoading: false,
+              clearError: true,
+            );
+          },
         );
       },
     );

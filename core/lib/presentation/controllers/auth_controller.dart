@@ -29,34 +29,29 @@ class AuthController {
       return;
     }
 
-    _authViewModel.storeLogin(email: email, password: password);
+    _authViewModel
+        .storeLogin(
+      email: email,
+      password: password,
+    )
+        .then((_) {
+      final state = ref.read(authViewModelProvider);
+      if (state.isAuthenticated) {
+        if (context.mounted) {
+          context.go(AppRoutes.landingPageMenu);
+        }
+      } else if (state.error != null) {
+        if (context.mounted) {
+          showErrorSnackBar(context, state.error!);
+        }
+      }
+    });
   }
 
   void onLogout() {
     _authViewModel.logout();
     if (context.mounted) {
       context.go(AppRoutes.login);
-    }
-  }
-
-  void observeAuthState() {
-    final state = ref.watch(authViewModelProvider);
-
-    if (state.error != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          showErrorSnackBar(context, state.error!);
-        }
-      });
-    }
-
-    if (state.user != null) {
-      _logger.info('redirect ke landing page');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          context.go(AppRoutes.landingPageMenu);
-        }
-      });
     }
   }
 
