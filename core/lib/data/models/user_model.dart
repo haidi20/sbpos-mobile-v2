@@ -93,6 +93,16 @@ class UserModel {
     };
   }
 
+  factory UserModel.fromEntity(UserEntity entity) {
+    return UserModel(
+      id: entity.id,
+      username: entity.username,
+      password: entity.password,
+      email: entity.email,
+      token: entity.token,
+    );
+  }
+
   UserEntity toEntity() {
     return UserEntity(
       id: id,
