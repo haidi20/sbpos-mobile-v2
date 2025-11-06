@@ -40,13 +40,14 @@ def main():
     # Step 2: Daftar semua folder sesuai struktur referensi
     folders = [
         "lib/data/datasources",
+        "lib/data/datasources/tables",
         "lib/data/models",
         "lib/data/repositories",
-        "lib/data/responses",           # ✅ Ditambahkan (sesuai struktur core)
+        "lib/data/responses",
         "lib/domain/entities",
         "lib/domain/repositories",
         "lib/domain/usecases",
-        "lib/presentation/controllers", # ✅ Diaktifkan kembali (karena Anda pakai Controller)
+        "lib/presentation/controllers",
         "lib/presentation/providers",
         "lib/presentation/screens",
         "lib/presentation/viewmodels",
@@ -65,6 +66,7 @@ def main():
         f"lib/data/datasources/{project_name}_local_data_source.dart": f"// Local data source (optional) for {project_name}",
         f"lib/data/repositories/{project_name}_repository_impl.dart": f"// Implementation of {project_name} repository",
         f"lib/data/datasources/{project_name}_database.dart": f"// Local database for {project_name}",
+        f"lib/data/datasources/tables/{project_name}_table.dart": f"// Database table for {project_name}",
 
         # Domain Layer
         f"lib/domain/entities/{project_name}_entity.dart": f"// Domain entity for {project_name}",
@@ -80,7 +82,7 @@ def main():
         f"lib/presentation/providers/{project_name}_provider.dart": f"// Riverpod provider for {project_name}ViewModel",
         f"lib/presentation/providers/{project_name}_repository_provider.dart": f"// Repository provider for {project_name}",
 
-        # Core export file (penting untuk modul)
+        # $project_name export file (penting untuk modul)
         "lib/{project_name}.dart": f"// Export all public APIs of {project_name} module\n"
                          f"export 'domain/entities/{project_name}_entity.dart';\n"
                          f"export 'domain/repositories/{project_name}_repository.dart';\n"

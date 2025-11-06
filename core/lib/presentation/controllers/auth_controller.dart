@@ -7,7 +7,7 @@ import 'package:core/presentation/viewmodels/auth_viewmodel.dart';
 class AuthController {
   AuthController(this.ref, this.context);
 
-  static final Logger _logger = Logger('AuthController');
+  // static final Logger _logger = Logger('AuthController');
 
   final WidgetRef ref;
   final BuildContext context;

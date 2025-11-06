@@ -27,11 +27,14 @@ class CoreDatabase {
     // await dotenv.load(); // Ensure dotenv is loaded
     final path = await getDatabasesPath();
     // print('version core: ${dotenv.env['VERSION']}');
-    final databasePath = '$path/${dotenv.env['VERSION'] ?? ''}_db_auth.db';
+    final databasePath = '$path/${dotenv.env['VERSION'] ?? ''}_auth.db';
+    final int versionDb = dotenv.env['VERSION_DB'] != null
+        ? int.parse(dotenv.env['VERSION_DB']!)
+        : 1;
 
     var db = await openDatabase(
       databasePath,
-      version: 1,
+      version: versionDb,
       onCreate: _onCreate,
     );
 
