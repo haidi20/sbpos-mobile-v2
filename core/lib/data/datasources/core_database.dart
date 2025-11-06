@@ -84,14 +84,14 @@ class CoreDatabase {
         whereArgs: [email],
       );
 
-      _logger.info("Query results: $results");
+      // _logger.info("Query results: $results");
 
       if (results.isEmpty) return false;
 
       final storedHash = results.first['password'] as String?;
 
-      _logger.info("Stored hash: $storedHash");
-      _logger.info("Input password: $password");
+      // _logger.info("Stored hash: $storedHash");
+      // _logger.info("Input password: $password");
 
       if (storedHash == null) return false;
 

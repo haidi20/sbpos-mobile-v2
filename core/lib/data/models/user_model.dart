@@ -1,5 +1,5 @@
-import 'package:core/domain/entities/user_entity.dart';
 import 'package:flutter_bcrypt/flutter_bcrypt.dart';
+import 'package:core/domain/entities/user_entity.dart';
 
 class UserModel {
   final int? id;
