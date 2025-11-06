@@ -31,5 +31,6 @@ export 'package:flutter_hooks/flutter_hooks.dart';
 export 'package:intl/intl.dart' hide TextDirection;
 export 'package:flutter_dotenv/flutter_dotenv.dart';
 export 'package:connectivity_plus/connectivity_plus.dart';
+export 'package:cached_network_image/cached_network_image.dart';
 export 'package:hooks_riverpod/hooks_riverpod.dart' hide AsyncError;
 export 'package:flutter_riverpod/flutter_riverpod.dart' hide AsyncError;

@@ -15,8 +15,10 @@ class CoreLocalDataSource with BaseErrorHelper {
     }
   }
 
-  Future<bool> authenticationUser(
-      {required String email, required String password}) async {
+  Future<bool> authenticationUser({
+    required String email,
+    required String password,
+  }) async {
     try {
       return await databaseHelper.authUser(
         email: email,
@@ -38,7 +40,9 @@ class CoreLocalDataSource with BaseErrorHelper {
     }
   }
 
-  Future<String> storeUser({required UserModel user}) async {
+  Future<String> storeUser({
+    required UserModel user,
+  }) async {
     try {
       // print(user.toString());
       await databaseHelper.storeUser(user);
