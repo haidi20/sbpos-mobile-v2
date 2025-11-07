@@ -3,6 +3,7 @@ export 'dart:async';
 export 'dart:convert';
 
 export 'presentation/widgets/message_snackbar.dart';
+export 'presentation/widgets/review_image_modal.dart';
 
 export 'utils/theme.dart';
 export 'utils/app_router.dart';
