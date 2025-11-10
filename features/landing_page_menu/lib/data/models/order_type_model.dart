@@ -4,6 +4,8 @@ class OrderTypeModel {
   final int? id;
   final int? idServer; // <-- ditambahkan
   final String name;
+  final String? icon; // <-- ditambahkan
+
   final DateTime? deletedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -13,6 +15,7 @@ class OrderTypeModel {
     this.id,
     this.idServer,
     required this.name,
+    this.icon,
     this.deletedAt,
     this.createdAt,
     this.updatedAt,
@@ -23,6 +26,7 @@ class OrderTypeModel {
     int? id,
     int? idServer,
     String? name,
+    String? icon,
     DateTime? deletedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -32,6 +36,7 @@ class OrderTypeModel {
       id: id ?? this.id,
       idServer: idServer ?? this.idServer,
       name: name ?? this.name,
+      icon: icon ?? this.icon,
       deletedAt: deletedAt ?? this.deletedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -51,6 +56,12 @@ class OrderTypeModel {
       if (value is int) return value;
       if (value is String) return int.tryParse(value);
       return null;
+    }
+
+    String? parseString(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value;
+      return value.toString();
     }
 
     return OrderTypeModel(
@@ -119,10 +130,17 @@ class OrderTypeModel {
       return null;
     }
 
+    String? toStringVal(dynamic v) {
+      if (v == null) return null;
+      if (v is String) return v;
+      return v.toString();
+    }
+
     return OrderTypeModel(
       id: toInt(map['id']),
       idServer: toInt(map['id_server']),
       name: map['name'] as String? ?? '',
+      icon: toStringVal(map['icon']) ?? toStringVal(map['icon_url']),
       deletedAt: toDate(map['deleted_at']),
       createdAt: toDate(map['created_at']),
       updatedAt: toDate(map['updated_at']),
@@ -135,6 +153,7 @@ class OrderTypeModel {
       'id': id,
       'id_server': idServer,
       'name': name,
+      'icon': icon,
       'deleted_at': deletedAt?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),

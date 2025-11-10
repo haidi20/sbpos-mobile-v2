@@ -9,6 +9,7 @@ export 'utils/theme.dart';
 export 'utils/app_router.dart';
 export 'utils/app_routes.dart';
 export 'utils/helpers/failure.dart';
+export 'utils/helpers/helpers.dart';
 export 'utils/constans/constan.dart';
 export 'utils/helpers/api_helper.dart';
 export 'data/responses/auth_response.dart';

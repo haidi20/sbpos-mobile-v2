@@ -1,6 +1,7 @@
 // mode/presentation/screens/mode_screen.dart
 import 'package:core/core.dart';
 import 'package:core/presentation/controllers/auth_controller.dart';
+import 'package:mode/data/data/order_type_data.dart';
 
 class ModeScreen extends ConsumerStatefulWidget {
   final int? appId; // 🔼 Tambahkan parameter appId (opsional)
@@ -103,16 +104,7 @@ class _ModeScreenState extends ConsumerState<ModeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Options
-            _buildOptionButton(
-                'Makan di Tempat', "dinein", Icons.restaurant, context),
-            const SizedBox(height: 12),
-            _buildOptionButton(
-                'Ambil Sendiri', "takeaway", Icons.delivery_dining, context),
-            const SizedBox(height: 12),
-            _buildOptionButton(
-                'Diantar', "delivery", Icons.local_shipping, context),
-            const SizedBox(height: 40),
+            _buildOption(),
 
             // Tampilkan App ID (opsional, untuk debugging atau info)
             if (widget.appId != null)
@@ -262,27 +254,42 @@ class _ModeScreenState extends ConsumerState<ModeScreen> {
     );
   }
 
-  Widget _buildOptionButton(
-    String text,
-    String modeName,
-    IconData icon,
-    BuildContext context,
-  ) {
+  Widget _buildOption() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics:
+          const NeverScrollableScrollPhysics(), // jika di dalam scrollable lain
+      itemCount: orderTypeData.length,
+      itemBuilder: (context, index) {
+        final orderType = orderTypeData[index];
+        return _buildOptionButton(
+          text: orderType.name,
+          modeId: orderType.id ?? 1,
+          icon: orderType.icon ?? "restaurant",
+          context: context,
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionButton({
+    required String text,
+    required int modeId,
+    required String icon, // tetap String — sesuai kebutuhan Anda
+    required BuildContext context,
+  }) {
     return OutlinedButton(
       onPressed: () {
         final int getAppId = widget.appId ?? 1;
-
-        // print("getAppId: $getAppId, mode: $modeName");
-
         GoRouter.of(context).go('/app/$getAppId/order', extra: {
-          'mode': modeName,
+          'mode_id': modeId,
         });
       },
       style: OutlinedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         side: BorderSide(
-          color: Colors.grey[300]!, // Garis tipis abu-abu
+          color: Colors.grey[300]!,
           width: 1.0,
         ),
         shape: RoundedRectangleBorder(
@@ -292,18 +299,21 @@ class _ModeScreenState extends ConsumerState<ModeScreen> {
           horizontal: 20,
           vertical: 25,
         ),
-        elevation: 0, // Tidak ada bayangan default
+        elevation: 0,
         textStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
         ),
-        // Efek saat ditekan
         animationDuration: const Duration(milliseconds: 150),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 20, color: Colors.grey),
+          Icon(
+            getIconData(icon), // ✅ helper untuk konversi string → IconData
+            size: 20,
+            color: Colors.black,
+          ),
           const SizedBox(width: 10),
           Text(text),
         ],

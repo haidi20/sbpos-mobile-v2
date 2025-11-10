@@ -23,12 +23,10 @@ dependencies:
   http: ^1.2.1
   flutter_hooks:  ^0.20.5
   hooks_riverpod: ^2.6.1
-  # ✅ Add sqlite3 native + web support:
-  sqlite3: ^2.4.1              # Pure Dart/FFI wrapper for SQLite
-  sqlite3_flutter_libs: ^0.5.23 # Bundles native libs + WASM for web
-  drift_dev: ^2.16.0           # Optional: for build_runner codegen (if using drift_generator)
+  drift_dev: ^2.16.0
   cached_network_image: ^3.3.1
   flutter_cache_manager: 3.4.1
+  cupertino_icons: ^1.0.8
   # features
   dashboard:
     path: ../features/dashboard
