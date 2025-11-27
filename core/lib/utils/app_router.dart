@@ -1,6 +1,5 @@
 // router/app_router.dart
 import 'package:core/core.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:mode/presentation/screens/mode_screen.dart';
 import 'package:core/presentation/screens/login_screen.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
@@ -18,15 +17,14 @@ class AppRouter {
       initialLocation: '/',
       redirect: (context, state) {
         if (state.matchedLocation == '/') {
-          return kIsWeb ? AppRoutes.mode : AppRoutes.login;
+          return AppRoutes.login;
         }
         return null;
       },
       routes: [
         GoRoute(
           path: '/',
-          redirect: (context, state) =>
-              kIsWeb ? AppRoutes.mode : AppRoutes.login,
+          redirect: (context, state) => AppRoutes.login,
         ),
         GoRoute(
           path: AppRoutes.login,

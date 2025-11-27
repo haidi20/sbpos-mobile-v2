@@ -124,22 +124,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => context.push('/app/1/mode'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text(
-                        'Masuk sebagai Pembeli',
-                        style: TextStyle(
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(height: 16),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: OutlinedButton(
+                  //     onPressed: () => context.push('/app/1/mode'),
+                  //     style: OutlinedButton.styleFrom(
+                  //       padding: const EdgeInsets.symmetric(vertical: 16),
+                  //     ),
+                  //     child: const Text(
+                  //       'Masuk sebagai Pembeli',
+                  //       style: TextStyle(
+                  //         fontSize: 18,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

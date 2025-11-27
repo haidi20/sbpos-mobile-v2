@@ -38,7 +38,7 @@ class AuthController {
       final state = ref.read(authViewModelProvider);
       if (state.isAuthenticated) {
         if (context.mounted) {
-          context.go(AppRoutes.landingPageMenu);
+          context.go(AppRoutes.dashboard);
         }
       } else if (state.error != null) {
         if (context.mounted) {

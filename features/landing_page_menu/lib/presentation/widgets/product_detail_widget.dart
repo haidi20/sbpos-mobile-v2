@@ -67,6 +67,8 @@ class _ProductDetailWidgetState extends ConsumerState<ProductDetailWidget> {
 
   Widget _buildProductImage(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    const String defaultImageUrl =
+        "https://esb-order.oss-ap-southeast-5.aliyuncs.com/images/app/menu/MNU_861_20251027104452_optim.webp";
 
     return SizedBox(
       width: screenWidth, // Full width
@@ -78,8 +80,7 @@ class _ProductDetailWidgetState extends ConsumerState<ProductDetailWidget> {
             // ✅ Gambar full width & crop atas–bawah → seperti foto contoh
             Positioned.fill(
               child: Image.network(
-                widget.product.imageUrl ??
-                    'https://esb-order.oss-ap-southeast-5.aliyuncs.com/images/app/menu/MNU_861_20251027104452_optim.webp',
+                widget.product.imageUrl ?? defaultImageUrl,
                 fit: BoxFit.cover, // ✅ Crop atas–bawah
                 errorBuilder: (context, error, stackTrace) {
                   return Container(

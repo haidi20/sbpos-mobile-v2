@@ -81,7 +81,7 @@ class LandingPageMenuViewModel extends StateNotifier<LandingPageMenuState> {
         'Navigasi ke halaman checkout dengan total harga: ${state.totalPrice}');
   }
 
-  void addProductCart({required ProductEntity product}) {
+  void onAddProductCart({required ProductEntity product}) {
     // Implementasi logika untuk menambahkan produk ke keranjang
     _logger.info('produk: ${product.name}');
 

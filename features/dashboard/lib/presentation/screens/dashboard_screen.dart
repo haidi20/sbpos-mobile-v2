@@ -1,7 +1,10 @@
+// dashboard_screen.dart
+// Main screen for dashboard feature
+
 import 'package:core/core.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -21,23 +24,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Perbaiki: tambahkan 'children:'
-            const Text(
+            Text(
               'Dashboard',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Navigasi menggunakan go_router
-                context.go('/landingPageMenu');
-              },
-              child: const Text('Go to Landing Page Menu'),
             ),
           ],
         ),

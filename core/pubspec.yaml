@@ -23,7 +23,6 @@ dependencies:
   http: ^1.2.1
   flutter_hooks:  ^0.20.5
   hooks_riverpod: ^2.6.1
-  drift_dev: ^2.16.0
   cached_network_image: ^3.3.1
   flutter_cache_manager: 3.4.1
   cupertino_icons: ^1.0.8
@@ -41,6 +40,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  drift_dev: ^2.16.0
   build_runner: ^2.4.11
 flutter:
   uses-material-design: true
