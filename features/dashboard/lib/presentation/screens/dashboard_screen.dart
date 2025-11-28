@@ -198,8 +198,8 @@ class DashboardScreen extends StatelessWidget {
                 bgColor: const Color(0xFFFFF7ED),
               ),
               _QuickActionButton(
-                icon: Icons.people_outline,
-                label: 'Karyawan',
+                icon: Icons.fastfood_outlined,
+                label: 'Menu',
                 iconColor: const Color(0xFF16A34A),
                 bgColor: const Color(0xFFF0FDF4),
               ),

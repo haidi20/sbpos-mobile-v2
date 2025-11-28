@@ -21,7 +21,9 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: 24, vertical: 16), // px-6 py-4
+            horizontal: 15,
+            vertical: 10,
+          ), // px-6 py-4
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.8), // bg-white/80
             border: Border(
@@ -44,15 +46,6 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Selamat Pagi,',
-                      style: TextStyle(
-                        fontSize: 12, // text-xs
-                        fontWeight: FontWeight.w500, // font-medium
-                        color: Colors.grey, // text-gray-500
-                      ),
-                    ),
-                    const SizedBox(height: 2),
                     // RichText untuk "SB" (Biru) dan "POS" (Oranye)
                     RichText(
                       text: const TextSpan(

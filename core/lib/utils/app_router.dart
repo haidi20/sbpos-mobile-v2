@@ -2,6 +2,8 @@
 import 'package:core/core.dart';
 import 'package:mode/presentation/screens/mode_screen.dart';
 import 'package:core/presentation/screens/login_screen.dart';
+import 'package:product/presentation/screens/product_screen.dart';
+import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 
 class AppRouter {
@@ -35,6 +37,20 @@ class AppRouter {
           name: AppRoutes.dashboard,
           pageBuilder: (context, state) {
             return const MaterialPage(child: MainDashboardScreen());
+          },
+        ),
+        GoRoute(
+          path: '/transaction',
+          name: AppRoutes.transaction,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: TransactionScreen());
+          },
+        ),
+        GoRoute(
+          path: '/product',
+          name: AppRoutes.product,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: ProductScreen());
           },
         ),
       ],

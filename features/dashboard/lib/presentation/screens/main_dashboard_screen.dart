@@ -2,6 +2,8 @@ import 'package:core/core.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:dashboard/presentation/widgets/bottom_navigation_bar_custom.dart';
 import 'package:dashboard/presentation/widgets/floating_action_button_custom.dart';
+import 'package:dashboard/presentation/widgets/main_header.dart';
+import 'package:transaction/presentation/screens/transaction_screen.dart';
 
 // 2. Widget Utama Halaman (Contoh Implementasi)
 class MainDashboardScreen extends StatefulWidget {
@@ -22,7 +24,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   }
 
   void _onAddClick() {
-    _logger.info("Floating Action Button Clicked");
+    // _logger.info("Floating Action Button Clicked");
+    context.pushNamed(AppRoutes.product);
   }
 
   @override
@@ -30,16 +33,15 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
     return Scaffold(
       backgroundColor:
           const Color(0xFFF8FAFC), // Sesuai warna border di React (#f8fafc)
-
+// --- 2. SETTING HEADER (APPBAR) ---
+      // Penting: extendBodyBehindAppBar true agar konten bisa discroll
+      // melewati belakang header, sehingga efek BLUR terlihat.
+      // extendBodyBehindAppBar: true,
+      appBar: const CustomHeader(),
       // Body
       body: _activeTab == AppTab.dashboard
           ? const DashboardScreen()
-          : const Center(
-              child: Text(
-                "Orders View",
-                style: TextStyle(fontSize: 20, color: Colors.grey),
-              ),
-            ),
+          : const TransactionScreen(),
 
       // --- BAGIAN INI YANG PENTING (MENGGANTIKAN BottomNav React) ---
 

@@ -39,6 +39,9 @@ dependencies:
     path: ../features/warehouse
   transaction:
     path: ../features/transaction
+  product:
+    path: ../features/product
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,4 @@
-// ✅ Helper: String → IconData (aman & bisa dikembangkan)
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
 IconData getIconData(String? iconName) {
@@ -37,4 +37,10 @@ IconData getIconData(String? iconName) {
     default:
       return Icons.help_outline; // fallback aman
   }
+}
+
+String formatRupiah(double amount) {
+  final formatter =
+      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  return formatter.format(amount);
 }
