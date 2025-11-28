@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:dashboard/presentation/widgets/quirk_button.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -14,7 +15,9 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _buildHeroCard(),
             const SizedBox(height: 24),
-            _buildQuickActions(),
+            _buildQuickActions(
+              context: context,
+            ),
             const SizedBox(height: 24),
             _buildAnalyticsChart(),
             const SizedBox(height: 80),
@@ -162,7 +165,9 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions({
+    required BuildContext context,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -186,29 +191,39 @@ class DashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _QuickActionButton(
+              QuickActionButton(
                 icon: Icons.description_outlined,
                 label: 'Laporan',
                 iconColor: const Color(0xFF00529C),
                 bgColor: const Color(0xFFEFF6FF),
+                onTap: () {
+                  context.pushNamed(AppRoutes.report);
+                },
               ),
-              _QuickActionButton(
+              QuickActionButton(
                 icon: Icons.inventory_2_outlined,
                 label: 'Stok',
                 iconColor: const Color(0xFFF97316),
                 bgColor: const Color(0xFFFFF7ED),
+                onTap: () {
+                  context.pushNamed(AppRoutes.inventory);
+                },
               ),
-              _QuickActionButton(
+              QuickActionButton(
                 icon: Icons.fastfood_outlined,
                 label: 'Menu',
                 iconColor: const Color(0xFF16A34A),
                 bgColor: const Color(0xFFF0FDF4),
+                onTap: () {
+                  context.pushNamed(AppRoutes.productManagement);
+                },
               ),
-              _QuickActionButton(
+              QuickActionButton(
                 icon: Icons.settings_outlined,
                 label: 'Pengaturan',
                 iconColor: const Color(0xFF4B5563),
                 bgColor: const Color(0xFFF3F4F6),
+                onTap: () {},
               ),
             ],
           ),
@@ -347,58 +362,6 @@ class DashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color iconColor;
-  final Color bgColor;
-
-  const _QuickActionButton({
-    required this.icon,
-    required this.label,
-    required this.iconColor,
-    required this.bgColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                )
-              ],
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }
