@@ -8,7 +8,7 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(5.0),
         child: Column(
           children: [
             const SizedBox(height: 24),
@@ -27,7 +27,8 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildHeroCard() {
     return Container(
       width: double.infinity,
-      height: 220,
+      // height: 220,
+      height: 130,
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
@@ -83,9 +84,9 @@ class DashboardScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Total Saldo Hari Ini',
                           style: TextStyle(
@@ -116,43 +117,43 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.qr_code_scanner, size: 18),
-                        label: const Text('Scan QRIS'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF97316),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.north_east, size: 18),
-                        label: const Text('Tarik Dana'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.1),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+                // Row(
+                //   children: [
+                //     Expanded(
+                //       child: ElevatedButton.icon(
+                //         onPressed: () {},
+                //         icon: const Icon(Icons.qr_code_scanner, size: 18),
+                //         label: const Text('Scan QRIS'),
+                //         style: ElevatedButton.styleFrom(
+                //           backgroundColor: const Color(0xFFF97316),
+                //           foregroundColor: Colors.white,
+                //           elevation: 0,
+                //           padding: const EdgeInsets.symmetric(vertical: 12),
+                //           shape: RoundedRectangleBorder(
+                //             borderRadius: BorderRadius.circular(12),
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //     const SizedBox(width: 12),
+                //     Expanded(
+                //       child: ElevatedButton.icon(
+                //         onPressed: () {},
+                //         icon: const Icon(Icons.north_east, size: 18),
+                //         label: const Text('Tarik Dana'),
+                //         style: ElevatedButton.styleFrom(
+                //           backgroundColor: Colors.white.withOpacity(0.1),
+                //           foregroundColor: Colors.white,
+                //           elevation: 0,
+                //           padding: const EdgeInsets.symmetric(vertical: 12),
+                //           shape: RoundedRectangleBorder(
+                //             borderRadius: BorderRadius.circular(12),
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // )
               ],
             ),
           ),
