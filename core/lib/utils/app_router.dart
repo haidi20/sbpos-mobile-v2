@@ -3,6 +3,7 @@ import 'package:core/core.dart';
 import 'package:dashboard/presentation/screens/inventory_screen.dart';
 import 'package:dashboard/presentation/screens/product_management_screen.dart';
 import 'package:dashboard/presentation/screens/report_screen.dart';
+import 'package:dashboard/presentation/screens/setting_screen.dart';
 import 'package:mode/presentation/screens/mode_screen.dart';
 import 'package:core/presentation/screens/login_screen.dart';
 import 'package:product/presentation/screens/product_screen.dart';
@@ -75,6 +76,13 @@ class AppRouter {
           name: AppRoutes.productManagement,
           pageBuilder: (context, state) {
             return const MaterialPage(child: ProductManagementScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.settings,
+          name: AppRoutes.settings,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: SettingsScreen());
           },
         ),
       ],

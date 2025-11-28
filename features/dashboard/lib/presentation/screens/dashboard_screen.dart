@@ -223,7 +223,9 @@ class DashboardScreen extends StatelessWidget {
                 label: 'Pengaturan',
                 iconColor: const Color(0xFF4B5563),
                 bgColor: const Color(0xFFF3F4F6),
-                onTap: () {},
+                onTap: () {
+                  context.pushNamed(AppRoutes.settings);
+                },
               ),
             ],
           ),

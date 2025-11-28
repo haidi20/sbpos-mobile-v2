@@ -5,6 +5,12 @@ class AppSetting {
       Color.fromRGBO(4, 122, 74, 1); // Ganti dengan warna utama aplikasi Anda
 }
 
+class AppColors {
+  static const Color sbBlue = Color(0xFF1E40AF);
+  static const Color sbOrange = Color(0xFFF97316);
+  static const Color sbBg = Color(0xFFF8FAFC);
+}
+
 final ThemeData theme = ThemeData(
   useMaterial3: true, // Aktifkan Material Design 3 (default di Flutter ≥3.0)
   fontFamily: 'Poppins',
