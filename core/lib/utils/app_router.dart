@@ -1,14 +1,13 @@
 // router/app_router.dart
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/screens/inventory_screen.dart';
-import 'package:dashboard/presentation/screens/product_management_screen.dart';
+import 'package:core/presentation/screens/login_screen.dart';
 import 'package:dashboard/presentation/screens/report_screen.dart';
 import 'package:dashboard/presentation/screens/setting_screen.dart';
-import 'package:mode/presentation/screens/mode_screen.dart';
-import 'package:core/presentation/screens/login_screen.dart';
-import 'package:product/presentation/screens/product_screen.dart';
+import 'package:dashboard/presentation/screens/inventory_screen.dart';
+import 'package:product/presentation/screens/product_pos_screen.dart';
 import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
+import 'package:dashboard/presentation/screens/product_management_screen.dart';
 
 class AppRouter {
   static final AppRouter _instance = AppRouter._();
@@ -21,7 +20,7 @@ class AppRouter {
       initialLocation: '/',
       redirect: (context, state) {
         if (state.matchedLocation == '/') {
-          return AppRoutes.dashboard;
+          return AppRoutes.login;
         }
         return null;
       },
@@ -51,10 +50,10 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: AppRoutes.product,
-          name: AppRoutes.product,
+          path: AppRoutes.productPos,
+          name: AppRoutes.productPos,
           pageBuilder: (context, state) {
-            return const MaterialPage(child: ProductScreen());
+            return const MaterialPage(child: ProductPosScreen());
           },
         ),
         GoRoute(

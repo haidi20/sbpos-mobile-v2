@@ -1,9 +1,9 @@
 import 'package:core/core.dart';
+import 'package:dashboard/presentation/widgets/main_header.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/widgets/bottom_navigation_bar_custom.dart';
 import 'package:dashboard/presentation/widgets/floating_action_button_custom.dart';
-import 'package:dashboard/presentation/widgets/main_header.dart';
-import 'package:transaction/presentation/screens/transaction_screen.dart';
 
 // 2. Widget Utama Halaman (Contoh Implementasi)
 class MainDashboardScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class MainDashboardScreen extends StatefulWidget {
 
 class _MainDashboardScreenState extends State<MainDashboardScreen> {
   AppTab _activeTab = AppTab.dashboard;
-  final _logger = Logger('MainDashboardScreen');
+  // final _logger = Logger('MainDashboardScreen');
 
   void _onTabChange(AppTab tab) {
     setState(() {
@@ -25,7 +25,7 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
 
   void _onAddClick() {
     // _logger.info("Floating Action Button Clicked");
-    context.pushNamed(AppRoutes.product);
+    context.pushNamed(AppRoutes.productPos);
   }
 
   @override

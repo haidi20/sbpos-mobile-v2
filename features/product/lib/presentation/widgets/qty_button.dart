@@ -1,29 +1,35 @@
-import 'package:core/core.dart';
+import 'package:flutter/material.dart';
 
-class QtyBtn extends StatelessWidget {
+class QtyButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool isBlue;
   final Color? color;
 
-  const QtyBtn(
-      {required this.icon,
+  const QtyButton(
+      {super.key,
+      required this.icon,
       required this.onTap,
       this.isBlue = false,
       this.color});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.all(6),
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
           color: isBlue ? color : Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: isBlue
-              ? [BoxShadow(color: color!.withOpacity(0.3), blurRadius: 4)]
-              : [BoxShadow(color: Colors.grey.shade200, blurRadius: 2)],
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 2,
+                offset: const Offset(0, 1))
+          ],
         ),
         child: Icon(icon,
             size: 16, color: isBlue ? Colors.white : Colors.grey.shade600),

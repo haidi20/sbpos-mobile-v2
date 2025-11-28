@@ -72,9 +72,13 @@ class SettingsScreen extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          Text('Kasir - Shift Pagi',
-                              style: TextStyle(
-                                  color: Colors.grey.shade500, fontSize: 14)),
+                          Text(
+                            'Kasir - Shift Pagi',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 14,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -110,9 +114,11 @@ class SettingsScreen extends StatelessWidget {
                   subLabel: 'SB Coffee - Jakarta Selatan',
                   iconColor: AppColors.sbBlue,
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const StoreSettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const StoreSettingsPage(),
+                    ),
+                  ),
                 ),
                 const Divider(height: 1),
                 SettingItem(
@@ -121,9 +127,11 @@ class SettingsScreen extends StatelessWidget {
                   subLabel: 'Epson TM-T82 (Connected)',
                   iconColor: AppColors.sbOrange,
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const PrinterSettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PrinterSettingsPage(),
+                    ),
+                  ),
                 ),
                 const Divider(height: 1),
                 SettingItem(
@@ -132,9 +140,11 @@ class SettingsScreen extends StatelessWidget {
                   subLabel: 'QRIS, Tunai, Kartu Debit',
                   iconColor: Colors.purple,
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const PaymentSettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PaymentSettingsPage(),
+                    ),
+                  ),
                 ),
               ]),
 
@@ -147,9 +157,11 @@ class SettingsScreen extends StatelessWidget {
                   icon: Icons.person_outline,
                   label: 'Edit Profil',
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const ProfileSettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileSettingsPage(),
+                    ),
+                  ),
                 ),
                 const Divider(height: 1),
                 SettingItem(
@@ -157,18 +169,22 @@ class SettingsScreen extends StatelessWidget {
                   label: 'Notifikasi',
                   subLabel: 'Bunyi & Getar Aktif',
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const NotificationSettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationSettingsPage(),
+                    ),
+                  ),
                 ),
                 const Divider(height: 1),
                 SettingItem(
                   icon: Icons.lock_outline,
                   label: 'Ubah PIN / Password',
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const SecuritySettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SecuritySettingsPage(),
+                    ),
+                  ),
                 ),
               ]),
 
@@ -181,9 +197,11 @@ class SettingsScreen extends StatelessWidget {
                   icon: Icons.help_outline,
                   label: 'Bantuan & Support',
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const HelpSettingsPage())),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSettingsPage(),
+                    ),
+                  ),
                 ),
                 const Divider(height: 1),
                 InkWell(
@@ -220,9 +238,14 @@ class SettingsScreen extends StatelessWidget {
               ]),
 
               const SizedBox(height: 32),
-              Text('SB POS App v1.2.0 • Build 20231024',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
+              Text(
+                'SB POS App v1.2.0 • Build 20231024',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.shade400,
+                ),
+              ),
             ],
           ),
         ),

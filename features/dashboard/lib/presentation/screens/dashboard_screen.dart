@@ -261,9 +261,13 @@ class DashboardScreen extends StatelessWidget {
                   color: const Color(0xFFF0FDF4),
                   borderRadius: BorderRadius.circular(100),
                 ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.trending_up, size: 14, color: Color(0xFF22C55E)),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.trending_up,
+                      size: 14,
+                      color: Color(0xFF22C55E),
+                    ),
                     SizedBox(width: 4),
                     Text(
                       '+12.5%',
@@ -283,14 +287,17 @@ class DashboardScreen extends StatelessWidget {
             height: 200,
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: false),
+                gridData: const FlGridData(show: false),
                 titlesData: FlTitlesData(
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  leftTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -345,7 +352,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     barWidth: 3,
                     isStrokeCapRound: true,
-                    dotData: FlDotData(show: false),
+                    dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
