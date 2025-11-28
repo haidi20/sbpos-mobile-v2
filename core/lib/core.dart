@@ -24,6 +24,7 @@ export 'package:logging/logging.dart';
 export 'package:sqflite/sqflite.dart';
 export 'package:flutter/widgets.dart';
 export 'package:flutter/material.dart';
+export 'package:fl_chart/fl_chart.dart';
 export 'package:go_router/go_router.dart';
 export 'package:dartz/dartz.dart' hide State;
 export 'package:intl/date_time_patterns.dart';

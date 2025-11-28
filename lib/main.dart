@@ -3,11 +3,15 @@ import 'package:core/core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Try to load default .env, fallback to .env.local if missing
+  // Try to load local env first to avoid 404s in web dev; fallback to .env
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: '.env.local');
   } catch (_) {
-    await dotenv.load(fileName: ".env.local");
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (_) {
+      // both env files missing — continue without dotenv
+    }
   }
   runApp(const ProviderScope(child: MyApp()));
 }

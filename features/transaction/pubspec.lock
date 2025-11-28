@@ -100,7 +100,7 @@ packages:
   core:
     dependency: "direct main"
     description:
-      path: core
+      path: "../../core"
       relative: true
     source: path
     version: "0.0.1"
@@ -113,7 +113,7 @@ packages:
     source: hosted
     version: "3.0.7"
   cupertino_icons:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: cupertino_icons
       sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
@@ -131,7 +131,7 @@ packages:
   dashboard:
     dependency: "direct main"
     description:
-      path: "features/dashboard"
+      path: "../dashboard"
       relative: true
     source: path
     version: "0.0.1"
@@ -147,18 +147,10 @@ packages:
     dependency: transitive
     description:
       name: drift
-      sha256: df027d168a2985a2e9da900adeba2ab0136f0d84436592cf3cd5135f82c8579c
+      sha256: af3941e4d544727b2eb80590eb64e9cb8d77cd68c7690265502ea6a2427aa621
       url: "https://pub.dev"
     source: hosted
-    version: "2.21.0"
-  equatable:
-    dependency: transitive
-    description:
-      name: equatable
-      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.7"
+    version: "2.23.1"
   fake_async:
     dependency: transitive
     description:
@@ -191,14 +183,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  fl_chart:
-    dependency: transitive
-    description:
-      name: fl_chart
-      sha256: "94307bef3a324a0d329d3ab77b2f0c6e5ed739185ffc029ed28c0f9b019ea7ef"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.69.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -282,10 +266,10 @@ packages:
     dependency: transitive
     description:
       name: http
-      sha256: bb2ce4590bc2667c96f318d68cac1b5a7987ec819351d32b1c987239a815e007
+      sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.0"
+    version: "1.6.0"
   http_parser:
     dependency: transitive
     description:
@@ -313,7 +297,7 @@ packages:
   landing_page_menu:
     dependency: "direct main"
     description:
-      path: "features/landing_page_menu"
+      path: "../landing_page_menu"
       relative: true
     source: path
     version: "0.0.1"
@@ -384,7 +368,7 @@ packages:
   mode:
     dependency: "direct main"
     description:
-      path: "features/mode"
+      path: "../mode"
       relative: true
     source: path
     version: "1.0.0+1"
@@ -593,13 +577,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.0"
-  transaction:
-    dependency: transitive
-    description:
-      path: "features/transaction"
-      relative: true
-    source: path
-    version: "0.0.1"
   typed_data:
     dependency: transitive
     description:
@@ -635,7 +612,7 @@ packages:
   warehouse:
     dependency: "direct main"
     description:
-      path: "features/warehouse"
+      path: "../warehouse"
       relative: true
     source: path
     version: "1.0.0+1"

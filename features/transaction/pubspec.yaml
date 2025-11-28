@@ -1,4 +1,4 @@
-name: dashboard
+name: transaction
 description: A new Flutter package project.
 version: 0.0.1
 publish_to: none
@@ -16,8 +16,8 @@ dependencies:
     path: ../mode
   warehouse:
     path: ../warehouse
-  transaction:
-    path: ../transaction
+  dashboard:
+    path: ../dashboard
 dev_dependencies:
   flutter_test:
     sdk: flutter

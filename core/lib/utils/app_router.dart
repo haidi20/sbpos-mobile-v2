@@ -2,9 +2,7 @@
 import 'package:core/core.dart';
 import 'package:mode/presentation/screens/mode_screen.dart';
 import 'package:core/presentation/screens/login_screen.dart';
-import 'package:dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:warehouse/presentation/screens/warehouse_screen.dart';
-import 'package:landing_page_menu/presentation/screens/landing_page_menu_screen.dart';
+import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 
 class AppRouter {
   static final AppRouter _instance = AppRouter._();
@@ -17,7 +15,7 @@ class AppRouter {
       initialLocation: '/',
       redirect: (context, state) {
         if (state.matchedLocation == '/') {
-          return AppRoutes.login;
+          return AppRoutes.dashboard;
         }
         return null;
       },
@@ -32,51 +30,12 @@ class AppRouter {
           pageBuilder: (context, state) =>
               const MaterialPage(child: LoginScreen()),
         ),
-
-        // ✅ Perbaiki route /app/:appId dengan pageBuilder
         GoRoute(
-          path: '/app/:appId',
-          name: 'app', // ✅ Beri nama unik
+          path: '/dashboard',
+          name: AppRoutes.dashboard,
           pageBuilder: (context, state) {
-            final appId = int.tryParse(state.pathParameters['appId'] ?? '');
-            return MaterialPage(child: ModeScreen(appId: appId));
+            return const MaterialPage(child: MainDashboardScreen());
           },
-          routes: [
-            GoRoute(
-              path: '/mode',
-              pageBuilder: (context, state) {
-                final appId = int.tryParse(state.pathParameters['appId'] ?? '');
-                return MaterialPage(child: ModeScreen(appId: appId));
-              },
-            ),
-            GoRoute(
-              path: '/order',
-              pageBuilder: (context, state) {
-                final appId = int.tryParse(state.pathParameters['appId'] ?? '');
-                final modeName = state.uri.queryParameters['mode'];
-                // print('>>> Navigasi ke order: appId=$appId, mode=$modeName');
-                return MaterialPage(
-                  child: LandingPageMenuScreen(
-                    appId: appId,
-                    modeName: modeName,
-                  ),
-                );
-              },
-            ),
-            GoRoute(
-              path: '/dashboard',
-              pageBuilder: (context, state) {
-                return const MaterialPage(child: DashboardScreen());
-              },
-            ),
-          ],
-        ),
-
-        GoRoute(
-          path: AppRoutes.warehouse,
-          name: AppRoutes.warehouse,
-          pageBuilder: (context, state) =>
-              const MaterialPage(child: WarehouseScreen()),
         ),
       ],
       errorBuilder: (context, state) => ModeScreen(appId: null),

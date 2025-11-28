@@ -29,23 +29,25 @@ class AuthController {
       return;
     }
 
-    _authViewModel
-        .storeLogin(
-      email: email,
-      password: password,
-    )
-        .then((_) {
-      final state = ref.read(authViewModelProvider);
-      if (state.isAuthenticated) {
-        if (context.mounted) {
-          context.go(AppRoutes.dashboard);
-        }
-      } else if (state.error != null) {
-        if (context.mounted) {
-          showErrorSnackBar(context, state.error!);
-        }
-      }
-    });
+    context.go(AppRoutes.dashboard);
+
+    // _authViewModel
+    //     .storeLogin(
+    //   email: email,
+    //   password: password,
+    // )
+    //     .then((_) {
+    //   final state = ref.read(authViewModelProvider);
+    //   if (state.isAuthenticated) {
+    //     if (context.mounted) {
+    //       context.go(AppRoutes.dashboard);
+    //     }
+    //   } else if (state.error != null) {
+    //     if (context.mounted) {
+    //       showErrorSnackBar(context, state.error!);
+    //     }
+    //   }
+    // });
   }
 
   void onLogout() {
