@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:core/core.dart';
 
 class NotificationItem extends StatelessWidget {
   // Asumsi tipe data model Anda. Sesuaikan jika perlu.
@@ -17,11 +17,11 @@ class NotificationItem extends StatelessWidget {
       case 'alert':
         return Colors.red;
       case 'transaction':
-        return Colors.green;
+        return AppColors.sbGreen;
       case 'promo':
-        return const Color(0xFFF97316); // Orange equivalent
+        return AppColors.sbOrange;
       default:
-        return Colors.blue; // SB Blue equivalent
+        return AppColors.sbBlue;
     }
   }
 
@@ -41,7 +41,23 @@ class NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isRead = notification.read;
+    final bool isRead = notification is Map
+        ? (notification['read'] as bool? ?? false)
+        : (notification.read ?? false);
+
+    // Normalize fields for Map or model object
+    final String type = notification is Map
+        ? (notification['type'] as String? ?? '')
+        : (notification.type as String? ?? '');
+    final String title = notification is Map
+        ? (notification['title'] as String? ?? '')
+        : (notification.title as String? ?? '');
+    final String time = notification is Map
+        ? (notification['time'] as String? ?? '')
+        : (notification.time as String? ?? '');
+    final String message = notification is Map
+        ? (notification['message'] as String? ?? '')
+        : (notification.message as String? ?? '');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -76,19 +92,18 @@ class NotificationItem extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: _getBgColor(notification.type),
+                        color: _getBgColor(type),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                _getBgColor(notification.type).withOpacity(0.3),
+                            color: _getBgColor(type).withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           )
                         ],
                       ),
                       child: Icon(
-                        _getIcon(notification.type),
+                        _getIcon(type),
                         color: Colors.white,
                         size: 20,
                       ),
@@ -103,7 +118,7 @@ class NotificationItem extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                notification.title,
+                                title,
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -118,7 +133,7 @@ class NotificationItem extends StatelessWidget {
                                       size: 10, color: Colors.grey[400]),
                                   const SizedBox(width: 4),
                                   Text(
-                                    notification.time,
+                                    time,
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: Colors.grey[400],
@@ -130,7 +145,7 @@ class NotificationItem extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            notification.message,
+                            message,
                             style: TextStyle(
                               fontSize: 12,
                               height: 1.5,

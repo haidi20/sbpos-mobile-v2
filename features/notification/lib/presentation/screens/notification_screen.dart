@@ -5,7 +5,7 @@ import '../components/notification_tab.dart';
 
 // MOCK DATA GENERATOR (Hapus ini jika Anda fetch dari API/Database)
 // Pastikan struktur ini sesuai dengan Model Anda yang sudah ada
-List<Map<String, dynamic>> MOCK_NOTIFICATIONS = [
+List<Map<String, dynamic>> notificationList = [
   {
     'id': 1,
     'type': 'alert',
@@ -68,8 +68,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.initState();
     // Inisialisasi data (disini pakai mock, nanti ganti dengan fetch data)
     // Jika model Anda adalah class, lakukan mapping di sini:
-    // notifications = MOCK_NOTIFICATIONS.map((e) => NotificationModel.fromJson(e)).toList();
-    notifications = List.from(MOCK_NOTIFICATIONS);
+    // notifications = notificationList.map((e) => NotificationModel.fromJson(e)).toList();
+    notifications = List.from(notificationList);
   }
 
   void handleMarkAllRead() {
@@ -122,6 +122,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                       const Text(
                         "Notifikasi",
                         style: TextStyle(

@@ -135,6 +135,32 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                     padding: const EdgeInsets.only(top: 16, bottom: 8),
                     child: Column(
                       children: [
+                        // Back Button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.black,
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).maybePop();
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "POS Produk",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         // Search Bar
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -307,71 +333,78 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // --- BAGIAN KIRI (TIDAK DIUBAH/DIKURANGI SESUAI REQUEST) ---
-                Row(
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(
-                          Icons.shopping_cart_outlined, // Icon Relevan
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                        // Badge Total Item di Atas Kanan Icon
-                        Positioned(
-                          right: -5,
-                          top: -8,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: AppColors.sbOrange, // Warna Badge
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.sbBlue,
-                                width: 1,
+                // --- BAGIAN KIRI (RESPONSIVE) ---
+                Expanded(
+                  child: Row(
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.shopping_cart_outlined, // Icon Relevan
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          // Badge Total Item di Atas Kanan Icon
+                          Positioned(
+                            right: -5,
+                            top: -8,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: AppColors.sbOrange, // Warna Badge
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.sbBlue,
+                                  width: 1,
+                                ),
                               ),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Center(
-                              child: Text(
-                                "$_cartCount",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "$_cartCount",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Total",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                "Rp ${_cartTotal.toStringAsFixed(0)}",
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Total",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          "Rp ${_cartTotal.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
 
                 // --- BAGIAN KANAN (DITAMBAHKAN ICON & BADGE) ---
