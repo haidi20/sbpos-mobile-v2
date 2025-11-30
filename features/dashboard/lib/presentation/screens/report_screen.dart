@@ -33,10 +33,10 @@ final List<WeeklyData> weeklyData = [
 ];
 
 final List<CategoryData> categoryData = [
-  CategoryData('Coffee', 45, const Color(0xFF00529C)), // SB Blue
-  CategoryData('Food', 30, const Color(0xFFF37021)), // SB Orange
-  CategoryData('Drink', 15, const Color(0xFF00A3E0)), // Light Blue
-  CategoryData('Snack', 10, const Color(0xFFFFB81C)), // Gold
+  CategoryData('Coffee', 45, AppColors.sbBlue), // SB Blue
+  CategoryData('Food', 30, AppColors.sbOrange), // SB Orange
+  CategoryData('Drink', 15, AppColors.sbLightBlue), // Light Blue
+  CategoryData('Snack', 10, AppColors.sbGold), // Gold
 ];
 
 final List<ProductData> topProducts = [
@@ -61,9 +61,11 @@ String formatRupiah(double amount) {
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
 
-  final Color sbBg = const Color(0xFFF8FAFC);
-  final Color sbBlue = const Color(0xFF00529C);
-  final Color sbOrange = const Color(0xFFF37021);
+  final Color sbBg = AppColors.sbBg;
+  final Color sbBlue = AppColors.sbBlue;
+  final Color sbGold = AppColors.sbGold;
+  final Color sbOrange = AppColors.sbOrange;
+  final Color sbLightBlue = AppColors.sbLightBlue;
 
   @override
   Widget build(BuildContext context) {
@@ -128,10 +130,13 @@ class ReportsScreen extends StatelessWidget {
                                     Icon(Icons.calendar_today,
                                         size: 16, color: sbBlue),
                                     const SizedBox(width: 8),
-                                    const Text('Hari Ini',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14)),
+                                    const Text(
+                                      'Hari Ini',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const Icon(Icons.keyboard_arrow_down, size: 16),
@@ -160,9 +165,13 @@ class ReportsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                              color: sbBlue.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4)),
+                            color: sbBlue.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(
+                              0,
+                              4,
+                            ),
+                          ),
                         ],
                       ),
                       child: Column(
@@ -178,17 +187,23 @@ class ReportsScreen extends StatelessWidget {
                                 size: 18, color: Colors.white),
                           ),
                           const SizedBox(height: 12),
-                          const Text('Omset Kotor',
-                              style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500)),
+                          const Text(
+                            'Omset Kotor',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          const Text('Rp 4.2jt',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Rp 4.2jt',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
@@ -201,9 +216,13 @@ class ReportsScreen extends StatelessWidget {
                                     size: 10, color: Colors.greenAccent),
                               ),
                               const SizedBox(width: 4),
-                              const Text('+15% dari kmrn',
-                                  style: TextStyle(
-                                      color: Colors.greenAccent, fontSize: 10)),
+                              const Text(
+                                '+15% dari kmrn',
+                                style: TextStyle(
+                                  color: Colors.greenAccent,
+                                  fontSize: 10,
+                                ),
+                              ),
                             ],
                           )
                         ],
@@ -220,9 +239,13 @@ class ReportsScreen extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade100),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2)),
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 8,
+                            offset: const Offset(
+                              0,
+                              2,
+                            ),
+                          ),
                         ],
                       ),
                       child: Column(
@@ -238,21 +261,31 @@ class ReportsScreen extends StatelessWidget {
                                 size: 18, color: sbOrange),
                           ),
                           const SizedBox(height: 12),
-                          const Text('Total Transaksi',
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500)),
+                          const Text(
+                            'Total Transaksi',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          const Text('128',
-                              style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold)),
+                          const Text(
+                            '128',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          const Text('Rata-rata: Rp 32rb',
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 10)),
+                          const Text(
+                            'Rata-rata: Rp 32rb',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 10,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -279,9 +312,13 @@ class ReportsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Grafik Mingguan',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Grafik Mingguan',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     AspectRatio(
                       aspectRatio: 1.7,
@@ -330,11 +367,20 @@ class ReportsScreen extends StatelessWidget {
                               ),
                             ),
                             leftTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(
+                                showTitles: false,
+                              ),
+                            ),
                             topTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(
+                                showTitles: false,
+                              ),
+                            ),
                             rightTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(
+                                showTitles: false,
+                              ),
+                            ),
                           ),
                           gridData: FlGridData(
                             show: true,
@@ -353,7 +399,10 @@ class ReportsScreen extends StatelessWidget {
                                   color: sbBlue,
                                   width: 20,
                                   borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(4)),
+                                    top: Radius.circular(
+                                      4,
+                                    ),
+                                  ),
                                   backDrawRodData: BackgroundBarChartRodData(
                                     show: true,
                                     toY: 6000000,
@@ -389,9 +438,13 @@ class ReportsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Penjualan per Kategori',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Penjualan per Kategori',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -439,16 +492,22 @@ class ReportsScreen extends StatelessWidget {
                                               shape: BoxShape.circle),
                                         ),
                                         const SizedBox(width: 8),
-                                        Text(data.name,
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey.shade600)),
+                                        Text(
+                                          data.name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                    Text('${data.value.toInt()}%',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold)),
+                                    Text(
+                                      '${data.value.toInt()}%',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               );
@@ -483,16 +542,23 @@ class ReportsScreen extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Produk Terlaris',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Produk Terlaris',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           Row(
                             children: [
-                              Text('Lihat Semua',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: sbBlue)),
+                              Text(
+                                'Lihat Semua',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: sbBlue,
+                                ),
+                              ),
                               Icon(Icons.arrow_forward,
                                   size: 12, color: sbBlue),
                             ],
@@ -501,14 +567,24 @@ class ReportsScreen extends StatelessWidget {
                       ),
                     ),
                     const Divider(
-                        height: 1, thickness: 1, color: Color(0xFFF3F4F6)),
+                      height: 1,
+                      thickness: 1,
+                      color: Color(
+                        0xFFF3F4F6,
+                      ),
+                    ),
                     ListView.separated(
                       padding: const EdgeInsets.all(0),
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: topProducts.length,
                       separatorBuilder: (context, index) => const Divider(
-                          height: 1, thickness: 1, color: Color(0xFFF3F4F6)),
+                        height: 1,
+                        thickness: 1,
+                        color: Color(
+                          0xFFF3F4F6,
+                        ),
+                      ),
                       itemBuilder: (context, index) {
                         final product = topProducts[index];
                         return Padding(
@@ -539,23 +615,32 @@ class ReportsScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(product.name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 14)),
-                                      Text('${product.qty} Terjual',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey.shade500)),
+                                      Text(
+                                        product.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${product.qty} Terjual',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade500,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ],
                               ),
-                              Text(formatRupiah(product.revenue),
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: Colors.grey.shade800)),
+                              Text(
+                                formatRupiah(product.revenue),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
                             ],
                           ),
                         );

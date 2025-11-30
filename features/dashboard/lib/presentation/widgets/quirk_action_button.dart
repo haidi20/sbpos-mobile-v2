@@ -8,6 +8,7 @@ class QuickActionButton extends StatelessWidget {
   final Function()? onTap;
 
   const QuickActionButton({
+    super.key,
     required this.onTap,
     required this.icon,
     required this.label,

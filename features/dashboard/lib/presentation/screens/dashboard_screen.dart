@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/widgets/quirk_button.dart';
+import 'package:dashboard/presentation/component/hero_card.dart';
+import 'package:dashboard/presentation/component/quick_action.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -13,11 +14,9 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 24),
-            _buildHeroCard(),
+            const HeroCard(),
             const SizedBox(height: 24),
-            _buildQuickActions(
-              context: context,
-            ),
+            const QuickAction(),
             const SizedBox(height: 24),
             _buildAnalyticsChart(),
             const SizedBox(height: 80),
@@ -27,210 +26,43 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroCard() {
-    return Container(
-      width: double.infinity,
-      // height: 220,
-      height: 130,
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.sbBlue,
-            AppColors.sbBlueDark,
-          ],
+  Widget _buildButtonHeroCard() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.qr_code_scanner, size: 18),
+            label: const Text('Scan QRIS'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF97316),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.sbBlue.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -40,
-            right: -40,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.north_east, size: 18),
+            label: const Text('Tarik Dana'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.1),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
-          Positioned(
-            bottom: -30,
-            left: -30,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.orange.withOpacity(0.2),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Total Saldo Hari Ini',
-                          style: TextStyle(
-                            color: Color(0xFFDBEAFE),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Rp 12.500.000',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.account_balance_wallet,
-                          color: Colors.white),
-                    ),
-                  ],
-                ),
-                // Row(
-                //   children: [
-                //     Expanded(
-                //       child: ElevatedButton.icon(
-                //         onPressed: () {},
-                //         icon: const Icon(Icons.qr_code_scanner, size: 18),
-                //         label: const Text('Scan QRIS'),
-                //         style: ElevatedButton.styleFrom(
-                //           backgroundColor: const Color(0xFFF97316),
-                //           foregroundColor: Colors.white,
-                //           elevation: 0,
-                //           padding: const EdgeInsets.symmetric(vertical: 12),
-                //           shape: RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(12),
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //     const SizedBox(width: 12),
-                //     Expanded(
-                //       child: ElevatedButton.icon(
-                //         onPressed: () {},
-                //         icon: const Icon(Icons.north_east, size: 18),
-                //         label: const Text('Tarik Dana'),
-                //         style: ElevatedButton.styleFrom(
-                //           backgroundColor: Colors.white.withOpacity(0.1),
-                //           foregroundColor: Colors.white,
-                //           elevation: 0,
-                //           padding: const EdgeInsets.symmetric(vertical: 12),
-                //           shape: RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(12),
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // )
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions({
-    required BuildContext context,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Menu Cepat',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              QuickActionButton(
-                icon: Icons.description_outlined,
-                label: 'Laporan',
-                iconColor: AppColors.sbBlue,
-                bgColor: AppColors.sbBg,
-                onTap: () {
-                  context.pushNamed(AppRoutes.report);
-                },
-              ),
-              QuickActionButton(
-                icon: Icons.inventory_2_outlined,
-                label: 'Stok',
-                iconColor: AppColors.sbOrange,
-                bgColor: AppColors.sbBg,
-                onTap: () {
-                  context.pushNamed(AppRoutes.inventory);
-                },
-              ),
-              QuickActionButton(
-                icon: Icons.fastfood_outlined,
-                label: 'Menu',
-                iconColor: AppColors.sbGreen,
-                bgColor: AppColors.sbBg,
-                onTap: () {
-                  context.pushNamed(AppRoutes.productManagement);
-                },
-              ),
-              QuickActionButton(
-                icon: Icons.settings_outlined,
-                label: 'Pengaturan',
-                iconColor: const Color(0xFF4B5563),
-                bgColor: const Color(0xFFF3F4F6),
-                onTap: () {
-                  context.pushNamed(AppRoutes.settings);
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -252,7 +84,7 @@ class DashboardScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  color: AppColors.sbBlueGray,
                 ),
               ),
               Container(

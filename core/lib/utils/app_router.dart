@@ -1,14 +1,14 @@
 // router/app_router.dart
 import 'package:core/core.dart';
 import 'package:core/presentation/screens/login_screen.dart';
+import 'package:setting/presentation/screens/setting_screen.dart';
 import 'package:dashboard/presentation/screens/report_screen.dart';
-import 'package:dashboard/presentation/screens/setting_screen.dart';
-import 'package:dashboard/presentation/screens/inventory_screen.dart';
+import 'package:product/presentation/screens/inventory_screen.dart';
 import 'package:product/presentation/screens/product_pos_screen.dart';
 import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 import 'package:notification/presentation/screens/notification_screen.dart';
-import 'package:dashboard/presentation/screens/product_management_screen.dart';
+import 'package:product/presentation/screens/product_management_screen.dart';
 
 class AppRouter {
   static final AppRouter _instance = AppRouter._();

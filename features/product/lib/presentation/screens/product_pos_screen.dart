@@ -1,7 +1,7 @@
 import 'package:core/core.dart'; // Sesuaikan import
 import 'package:product/data/model/cart_model.dart';
 import 'package:product/data/model/product_model.dart';
-import 'package:product/presentation/card/product_card.dart';
+import 'package:product/presentation/component/product_card.dart';
 import 'package:product/presentation/widgets/cart_bottom_sheet.dart';
 
 class ProductPosScreen extends StatefulWidget {
@@ -22,15 +22,6 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  // Mock Categories
-  final List<String> categories = [
-    "All",
-    "Makanan",
-    "Minuman",
-    "Snack",
-    "Promo"
-  ];
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -38,7 +29,7 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
   }
 
   // Logic: Add to Cart
-  void _addToCart(Product product) {
+  void _addToCart(ProductModel product) {
     setState(() {
       final index = _cart.indexWhere((item) => item.product.id == product.id);
       if (index != -1) {
@@ -121,7 +112,8 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
       final matchesCategory =
           _activeCategory == "All" || p.category == _activeCategory;
       final matchesSearch = _searchQuery.isEmpty ||
-          p.name.toLowerCase().contains(_searchQuery.toLowerCase());
+          (p.name != null &&
+              p.name!.toLowerCase().contains(_searchQuery.toLowerCase()));
       return matchesCategory && matchesSearch;
     }).toList();
 

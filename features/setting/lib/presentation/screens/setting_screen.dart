@@ -1,12 +1,12 @@
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/screens/component/setting_item.dart';
-import 'package:dashboard/presentation/screens/sub_screens/help_setting_screen.dart';
-import 'package:dashboard/presentation/screens/sub_screens/store_setting_screen.dart';
-import 'package:dashboard/presentation/screens/sub_screens/payment_setting_screen.dart';
-import 'package:dashboard/presentation/screens/sub_screens/printer_setting_screen.dart';
-import 'package:dashboard/presentation/screens/sub_screens/profile_setting_screen.dart';
-import 'package:dashboard/presentation/screens/sub_screens/secutiry_setting_screen.dart';
-import 'package:dashboard/presentation/screens/sub_screens/notification_setting_screen.dart';
+import 'package:setting/presentation/component/setting_item.dart';
+import 'package:setting/presentation/screens/help_setting_screen.dart';
+import 'package:setting/presentation/screens/store_setting_screen.dart';
+import 'package:setting/presentation/screens/payment_setting_screen.dart';
+import 'package:setting/presentation/screens/printer_setting_screen.dart';
+import 'package:setting/presentation/screens/profile_setting_screen.dart';
+import 'package:setting/presentation/screens/secutiry_setting_screen.dart';
+import 'package:setting/presentation/screens/notification_setting_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

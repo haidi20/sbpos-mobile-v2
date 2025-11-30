@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:core/core.dart'; // pastikan ini ada
+import 'package:core/core.dart';
 import 'package:product/data/model/cart_model.dart';
 import 'package:product/presentation/widgets/qty_button.dart';
-import 'package:product/presentation/widgets/cart_item_note_input.dart';
 
 class CartBottomSheet extends StatefulWidget {
   final List<CartItem> cart;
@@ -55,8 +53,8 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
 
     // Inisialisasi controller untuk setiap item
     for (final item in widget.cart) {
-      final id = item.product.id;
-      _itemNoteControllers[id] = TextEditingController(text: item.note ?? '');
+      final id = item.product.id ?? 0;
+      _itemNoteControllers[id] = TextEditingController(text: item.note);
       _itemFocusNodes[id] = FocusNode();
     }
   }
@@ -84,16 +82,16 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
 
       // Buat ulang
       for (final item in widget.cart) {
-        final id = item.product.id;
-        _itemNoteControllers[id] = TextEditingController(text: item.note ?? '');
+        final id = item.product.id ?? 0;
+        _itemNoteControllers[id] = TextEditingController(text: item.note);
         _itemFocusNodes[id] = FocusNode();
       }
     } else {
       // Update text jika note berubah
       for (final item in widget.cart) {
         final id = item.product.id;
-        if (_itemNoteControllers[id]?.text != (item.note ?? '')) {
-          _itemNoteControllers[id]?.text = item.note ?? '';
+        if (_itemNoteControllers[id]?.text != (item.note)) {
+          _itemNoteControllers[id]?.text = item.note;
         }
       }
     }
@@ -185,7 +183,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                 itemBuilder: (context, index) {
                   if (index < widget.cart.length) {
                     final item = widget.cart[index];
-                    final id = item.product.id;
+                    final id = item.product.id ?? 0;
                     final controller = _itemNoteControllers[id]!;
                     final focusNode = _itemFocusNodes[id]!;
 
@@ -201,14 +199,14 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item.product.name,
+                                      item.product.name ?? '',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      formatRupiah(item.product.price),
+                                      formatRupiah(item.product.price ?? 0),
                                       style: TextStyle(
                                           color: widget.sbOrange,
                                           fontSize: 13,

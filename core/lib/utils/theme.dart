@@ -7,10 +7,14 @@ class AppSetting {
 
 class AppColors {
   static const Color sbBlue = Color(0xFF1E40AF);
+  static const Color sbLightBlue = Color(0xFF00A3E0);
   static const Color sbOrange = Color(0xFFF97316);
+  static const Color sbGold = Color(0xFFFFB81C);
   static const Color sbBg = Color(0xFFF8FAFC);
   static const Color sbBlueDark = Color(0xFF003B73);
   static const Color sbGreen = Color(0xFF16A34A);
+  static const Color sbGray = Color(0xFF4B5563);
+  static const Color sbBlueGray = Color(0xFF1F2937);
 }
 
 final ThemeData theme = ThemeData(

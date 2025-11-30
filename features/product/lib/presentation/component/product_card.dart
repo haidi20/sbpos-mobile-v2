@@ -2,7 +2,7 @@ import 'package:core/core.dart';
 import 'package:product/data/model/product_model.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product;
+  final ProductModel product;
   final Color sbBlue;
   final Color sbOrange;
   final VoidCallback onTap;
@@ -43,7 +43,7 @@ class ProductCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       image: DecorationImage(
-                          image: NetworkImage(product.image),
+                          image: NetworkImage(product.image ?? ''),
                           fit: BoxFit.cover),
                     ),
                   ),
@@ -62,7 +62,7 @@ class ProductCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(product.name,
+            Text(product.name ?? '',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -71,7 +71,7 @@ class ProductCard extends StatelessWidget {
                     color: Colors.black87,
                     height: 1.2)),
             const SizedBox(height: 4),
-            Text(formatRupiah(product.price),
+            Text(formatRupiah(product.price ?? 0),
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
