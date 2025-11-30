@@ -3,16 +3,22 @@ import 'package:core/core.dart';
 class SecurityScreen extends StatelessWidget {
   const SecurityScreen({super.key});
 
+  final String textWarning =
+      'Untuk keamanan, ganti PIN atau Password Anda secara berkala. Jangan berikan kode akses kepada siapapun.';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Keamanan',
-            style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 18)),
+        title: const Text(
+          'Keamanan',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 1,
         leading: context.canPop()
@@ -39,9 +45,12 @@ class SecurityScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Untuk keamanan, ganti PIN atau Password Anda secara berkala. Jangan berikan kode akses kepada siapapun.',
+                textWarning,
                 style: TextStyle(
-                    fontSize: 12, color: Colors.orange.shade900, height: 1.5),
+                  height: 1.5,
+                  fontSize: 12,
+                  color: Colors.orange.shade900,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -58,10 +67,15 @@ class SecurityScreen extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Update Keamanan',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Update Keamanan',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -76,11 +90,14 @@ class SecurityScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade500,
+            ),
+          ),
           const SizedBox(height: 4),
           TextFormField(
             obscureText: true,
@@ -92,9 +109,12 @@ class SecurityScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: AppColors.sbBlue.withOpacity(0.2), width: 2)),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.sbBlue.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),

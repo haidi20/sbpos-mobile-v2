@@ -8,11 +8,14 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Edit Profil',
-            style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 18)),
+        title: const Text(
+          'Edit Profil',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 1,
         leading: context.canPop()
@@ -58,9 +61,13 @@ class ProfileScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                          color: AppColors.sbBlue,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2)),
+                        color: AppColors.sbBlue,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                      ),
                       child: const Icon(Icons.camera_alt,
                           color: Colors.white, size: 16),
                     ),
@@ -80,17 +87,25 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  //
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.sbBlue,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Simpan Profil',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                icon: const Icon(Icons.save, size: 20),
+                label: const Text(
+                  'Simpan Profil',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -106,11 +121,14 @@ class ProfileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade500,
+            ),
+          ),
           const SizedBox(height: 4),
           TextFormField(
             initialValue: value,
@@ -125,9 +143,12 @@ class ProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: AppColors.sbBlue.withOpacity(0.2), width: 2)),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.sbBlue.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),

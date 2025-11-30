@@ -89,23 +89,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Text(
                         item['name'],
                         style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                active ? Colors.black87 : Colors.grey.shade400),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: active ? Colors.black87 : Colors.grey.shade400,
+                        ),
                       ),
                     ],
                   ),
                   if (active)
-                    const Icon(Icons.check_circle, color: AppColors.sbBlue)
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppColors.sbBlue,
+                    )
                   else
                     Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: Colors.grey.shade300, width: 2))),
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          width: 2,
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

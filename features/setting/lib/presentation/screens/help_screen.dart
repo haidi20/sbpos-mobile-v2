@@ -50,14 +50,22 @@ class HelpScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text('Butuh Bantuan?',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Butuh Bantuan?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  const Text('Tim support kami siap membantu 24/7',
-                      style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const Text(
+                    'Tim support kami siap membantu 24/7',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {},
@@ -76,11 +84,14 @@ class HelpScreen extends StatelessWidget {
             // FAQ
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('FAQ',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade500)),
+              child: Text(
+                'FAQ',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             Container(
@@ -108,12 +119,19 @@ class HelpScreen extends StatelessWidget {
 
   Widget _buildFaqItem(String text) {
     return ListTile(
-      title: Text(text,
-          style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87)),
-      trailing: const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+      title: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right,
+        size: 18,
+        color: Colors.grey,
+      ),
       onTap: () {},
     );
   }

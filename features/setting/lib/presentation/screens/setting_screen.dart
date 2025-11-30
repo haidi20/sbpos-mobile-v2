@@ -47,7 +47,7 @@ class SettingsScreen extends StatelessWidget {
                 SettingItem(
                   icon: Icons.store_outlined,
                   label: 'Informasi Toko',
-                  subLabel: 'SB Coffee - Jakarta Selatan',
+                  subLabel: 'SB Coffee - Samarinda Ulu',
                   iconColor: AppColors.sbBlue,
                   onTap: () => Navigator.push(
                     context,
@@ -89,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
               _buildGroupContainer([
                 SettingItem(
                   icon: Icons.person_outline,
-                  label: 'Edit Profil',
+                  label: 'Ubah Profil',
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -126,56 +126,58 @@ class SettingsScreen extends StatelessWidget {
 
               // --- Group: Lainnya ---
               _buildSectionHeader('Lainnya'),
-              _buildGroupContainer([
-                SettingItem(
-                  icon: Icons.help_outline,
-                  label: 'Bantuan & Support',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpScreen(),
+              _buildGroupContainer(
+                [
+                  SettingItem(
+                    icon: Icons.help_outline,
+                    label: 'Bantuan & Support',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HelpScreen(),
+                      ),
                     ),
                   ),
-                ),
-                const Divider(height: 1),
-                InkWell(
-                  onTap: () {
-                    // Logic Logout
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              shape: BoxShape.circle),
-                          child: Icon(Icons.logout,
-                              size: 20, color: Colors.red.shade400),
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Text(
-                            'Keluar Aplikasi',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.red,
+                  const Divider(height: 1),
+                  InkWell(
+                    onTap: () {
+                      // Logic Logout
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                shape: BoxShape.circle),
+                            child: Icon(Icons.logout,
+                                size: 20, color: Colors.red.shade400),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Text(
+                              'Keluar Aplikasi',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                              ),
                             ),
                           ),
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 18,
-                          color: Colors.grey.shade300,
-                        ),
-                      ],
+                          Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: Colors.grey.shade300,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ]),
+                ],
+              ),
 
               const SizedBox(height: 32),
               Text(
@@ -268,9 +270,10 @@ class SettingsScreen extends StatelessWidget {
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade500),
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey.shade500,
+        ),
       ),
     );
   }

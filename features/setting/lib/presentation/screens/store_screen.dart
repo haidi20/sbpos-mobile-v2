@@ -11,9 +11,9 @@ class StoreScreen extends StatelessWidget {
         title: const Text(
           'Informasi Toko',
           style: TextStyle(
+            fontSize: 18,
             color: Colors.black87,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
           ),
         ),
         backgroundColor: Colors.white,

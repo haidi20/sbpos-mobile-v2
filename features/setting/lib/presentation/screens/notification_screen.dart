@@ -17,11 +17,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Notifikasi',
-            style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 18)),
+        title: const Text(
+          'Notifikasi',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 1,
         leading: context.canPop()
@@ -47,14 +50,35 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
             child: Column(
               children: [
-                _buildTile(Icons.notifications, Colors.blue, 'Push Notifikasi',
-                    pushNotif, (v) => setState(() => pushNotif = v)),
+                _buildTile(
+                  Icons.notifications,
+                  Colors.blue,
+                  'Push Notifikasi',
+                  pushNotif,
+                  (v) => setState(
+                    () => pushNotif = v,
+                  ),
+                ),
                 const Divider(height: 1),
-                _buildTile(Icons.volume_up, Colors.orange, 'Suara Transaksi',
-                    sound, (v) => setState(() => sound = v)),
+                _buildTile(
+                  Icons.volume_up,
+                  Colors.orange,
+                  'Suara Transaksi',
+                  sound,
+                  (v) => setState(
+                    () => sound = v,
+                  ),
+                ),
                 const Divider(height: 1),
-                _buildTile(Icons.lock_clock, Colors.red, 'Alert Stok Menipis',
-                    stockAlert, (v) => setState(() => stockAlert = v)),
+                _buildTile(
+                  Icons.lock_clock,
+                  Colors.red,
+                  'Alert Stok Menipis',
+                  stockAlert,
+                  (v) => setState(
+                    () => stockAlert = v,
+                  ),
+                ),
               ],
             ),
           ),
@@ -73,14 +97,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, color: color, size: 18),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(
+                8,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: color,
+            ),
           ),
           const SizedBox(width: 12),
-          Text(title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
       activeColor: AppColors.sbBlue,
