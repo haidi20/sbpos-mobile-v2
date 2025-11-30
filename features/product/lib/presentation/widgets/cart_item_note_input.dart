@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/data/model/cart_model.dart';
+import 'package:product/data/models/cart_model.dart';
 
 class CartItemNoteInput extends StatefulWidget {
   final CartItem item;

@@ -1,0 +1,58 @@
+import 'package:product/data/models/inventory_model.dart';
+
+final List<InventoryItem> inventoryList = [
+  InventoryItem(
+      id: 1,
+      name: "Kopi Susu Gula Aren",
+      price: 18000,
+      category: "Coffee",
+      image: "https://picsum.photos/200/200?random=1",
+      stock: 12,
+      minStock: 20,
+      unit: 'Cup'),
+  InventoryItem(
+      id: 2,
+      name: "Cappuccino Panas",
+      price: 22000,
+      category: "Coffee",
+      image: "https://picsum.photos/200/200?random=2",
+      stock: 45,
+      minStock: 15,
+      unit: 'Cup'),
+  InventoryItem(
+      id: 3,
+      name: "Nasi Goreng Spesial",
+      price: 35000,
+      category: "Food",
+      image: "https://picsum.photos/200/200?random=3",
+      stock: 8,
+      minStock: 10,
+      unit: 'Porsi'),
+  InventoryItem(
+      id: 4,
+      name: "Mie Goreng Jawa",
+      price: 32000,
+      category: "Food",
+      image: "https://picsum.photos/200/200?random=4",
+      stock: 22,
+      minStock: 10,
+      unit: 'Porsi'),
+  InventoryItem(
+      id: 5,
+      name: "Es Teh Manis",
+      price: 8000,
+      category: "Drink",
+      image: "https://picsum.photos/200/200?random=5",
+      stock: 100,
+      minStock: 50,
+      unit: 'Gelas'),
+  InventoryItem(
+      id: 6,
+      name: "Biji Kopi Arabica",
+      price: 0,
+      category: "Ingredient",
+      image: "https://picsum.photos/200/200?random=9",
+      stock: 1,
+      minStock: 3,
+      unit: 'Kg'),
+];

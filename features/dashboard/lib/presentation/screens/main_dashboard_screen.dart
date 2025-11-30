@@ -3,7 +3,7 @@ import 'package:dashboard/presentation/widgets/main_header.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/widgets/bottom_navigation_bar_custom.dart';
-import 'package:dashboard/presentation/widgets/floating_action_button_custom.dart';
+import 'package:dashboard/presentation/component/floating_action_button_custom.dart';
 
 // 2. Widget Utama Halaman (Contoh Implementasi)
 class MainDashboardScreen extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/data/model/product_model.dart';
+import 'package:product/data/models/product_model.dart';
 
 class ProductManagementCard extends StatelessWidget {
   final bool isActive;
@@ -60,7 +60,6 @@ class ProductManagementCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-
                     // Info
                     Expanded(
                       child: Column(
@@ -108,7 +107,6 @@ class ProductManagementCard extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     // Actions
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,

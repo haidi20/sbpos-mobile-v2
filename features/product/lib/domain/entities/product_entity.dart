@@ -1,5 +1,5 @@
-import 'package:landing_page_menu/data/models/product_model.dart';
-import 'package:landing_page_menu/domain/entities/category_entity.dart';
+import 'category_entity.dart';
+import 'package:product/data/models/product_model.dart';
 
 class ProductEntity {
   final int? id;

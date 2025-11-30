@@ -1,8 +1,7 @@
 // lib/widgets/list_category_menu_widget.dart
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:landing_page_menu/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/category_entity.dart';
 
 class ListCategoryMenuWidget extends StatefulWidget {
   final List<CategoryEntity> categories;

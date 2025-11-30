@@ -1,6 +1,4 @@
-// Response wrapper for landing_page_menu
-// Response wrapper for warehouse
-import 'package:landing_page_menu/data/models/product_model.dart';
+import 'package:product/data/models/product_model.dart';
 
 class LandingPageMenuResponse {
   final bool success;

@@ -1,7 +1,7 @@
 // Implementation of landing_page_menu repository
 import 'package:core/core.dart';
-import 'package:landing_page_menu/data/models/product_model.dart';
-import 'package:landing_page_menu/domain/entities/product_entity.dart';
+import 'package:product/data/models/product_model.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:landing_page_menu/domain/repositories/landing_page_menu_repository.dart';
 import 'package:landing_page_menu/data/datasources/landing_page_menu_local_data_source.dart';
 import 'package:landing_page_menu/data/datasources/landing_page_menu_remote_data_source.dart';
@@ -64,8 +64,10 @@ class LandingPageMenuRepositoryImpl implements LandingPageMenuRepository {
 
         if (response.success == true && response.data != null) {
           await _saveToLocal(response.data!);
-          List<ProductEntity> entities =
-              response.data!.map((model) => model.toEntity()).toList();
+          List<ProductEntity> entities = response.data!
+              .map((model) => model.toEntity())
+              .whereType<ProductEntity>()
+              .toList();
           return Right(entities);
         } else {
           return _fallbackToLocal(fallbackFailure: const ServerFailure());

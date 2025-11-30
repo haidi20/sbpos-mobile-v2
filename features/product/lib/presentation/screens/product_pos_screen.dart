@@ -1,7 +1,10 @@
 import 'package:core/core.dart'; // Sesuaikan import
-import 'package:product/data/model/cart_model.dart';
-import 'package:product/data/model/product_model.dart';
-import 'package:product/presentation/component/product_card.dart';
+import 'package:product/data/data/product_data.dart';
+import 'package:product/data/models/cart_model.dart';
+import 'package:product/data/data/category_data.dart';
+import 'package:product/data/models/product_model.dart';
+import 'package:product/data/models/category_model.dart';
+import 'package:product/presentation/components/product_card.dart';
 import 'package:product/presentation/widgets/cart_bottom_sheet.dart';
 
 class ProductPosScreen extends StatefulWidget {
@@ -106,9 +109,9 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredProducts = mockProducts.where((p) {
-      final matchesCategory =
-          _activeCategory == "All" || p.category == _activeCategory;
+    final filteredProducts = initialProducts.where((p) {
+      final matchesCategory = _activeCategory == "All" ||
+          (p.category?.name ?? '') == _activeCategory;
       final matchesSearch = _searchQuery.isEmpty ||
           (p.name != null &&
               p.name!.toLowerCase().contains(_searchQuery.toLowerCase()));
@@ -130,175 +133,16 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
               Column(
                 children: [
                   // --- HEADER SECTION ---
-                  Container(
-                    color: AppColors.sbBg,
-                    padding: const EdgeInsets.only(top: 16, bottom: 8),
-                    child: Column(
-                      children: [
-                        // Back Button
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.arrow_back,
-                                  color: Colors.black,
-                                ),
-                                onPressed: () {
-                                  Navigator.of(context).maybePop();
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                "POS Produk",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Search Bar
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (val) =>
-                                setState(() => _searchQuery = val),
-                            textInputAction: TextInputAction.search,
-                            // ✅ Tetap pertahankan onTapOutside sebagai cadangan
-                            onTapOutside: (event) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Cari produk...',
-                              hintStyle: TextStyle(color: Colors.grey[400]),
-                              prefixIcon:
-                                  const Icon(Icons.search, color: Colors.grey),
-                              suffixIcon: _searchQuery.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear,
-                                          color: Colors.grey),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        setState(() => _searchQuery = "");
-                                        FocusManager.instance.primaryFocus
-                                            ?.unfocus();
-                                      },
-                                    )
-                                  : null,
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 12),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: AppColors.sbBlue.withOpacity(0.5),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // Category List — ✅ onTap di sini sekarang otomatis unfocus TextField
-                        SizedBox(
-                          height: 40,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: categories.length,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              final cat = categories[index];
-                              final isActive = _activeCategory == cat;
-                              return InkWell(
-                                onTap: () {
-                                  setState(() => _activeCategory = cat);
-                                  // ✅ Tidak perlu lagi panggil unfocus di sini — GestureDetector global sudah handle
-                                },
-                                borderRadius: BorderRadius.circular(20),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: isActive
-                                        ? AppColors.sbBlue
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: isActive
-                                        ? null
-                                        : Border.all(
-                                            color: Colors.grey.shade300),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      cat,
-                                      style: TextStyle(
-                                        color: isActive
-                                            ? Colors.white
-                                            : Colors.grey[700],
-                                        fontWeight: isActive
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
+                  _buildHeader(),
                   // --- PRODUCT GRID ---
-                  Expanded(
-                    child: filteredProducts.isEmpty
-                        ? const Center(child: Text("Produk tidak ditemukan"))
-                        : GridView.builder(
-                            keyboardDismissBehavior:
-                                ScrollViewKeyboardDismissBehavior.onDrag,
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.75,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                            ),
-                            itemCount: filteredProducts.length,
-                            itemBuilder: (context, index) {
-                              final product = filteredProducts[index];
-                              return ProductCard(
-                                product: product,
-                                sbBlue: AppColors.sbBlue,
-                                sbOrange: AppColors.sbOrange,
-                                onTap: () {
-                                  // ✅ Tidak perlu unfocus di sini — GestureDetector global sudah handle
-                                  _addToCart(product);
-                                },
-                              );
-                            },
-                          ),
+                  _buildProductList(
+                    filteredProducts: filteredProducts,
                   ),
                 ],
               ),
 
               // --- FLOATING CART BUTTON ---
-              _cartBottomButton(),
+              _buildCartBottomButton(),
             ],
           ),
         ),
@@ -306,7 +150,163 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
     );
   }
 
-  Widget _cartBottomButton() {
+  Widget _buildHeader() {
+    return Container(
+      color: AppColors.sbBg,
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Column(
+        children: [
+          // Back Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).maybePop();
+                  },
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  "POS Produk",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (val) => setState(() => _searchQuery = val),
+              textInputAction: TextInputAction.search,
+              // ✅ Tetap pertahankan onTapOutside sebagai cadangan
+              onTapOutside: (event) {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              decoration: InputDecoration(
+                hintText: 'Cari produk...',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = "");
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.sbBlue.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Category List — ✅ onTap di sini sekarang otomatis unfocus TextField
+          SizedBox(
+            height: 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final CategoryModel cat = categories[index];
+                final catName = cat.name ?? 'All';
+                final isActive = _activeCategory == catName;
+                return InkWell(
+                  onTap: () {
+                    setState(() => _activeCategory = catName);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isActive ? AppColors.sbBlue : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: isActive
+                          ? null
+                          : Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Center(
+                      child: Text(
+                        catName,
+                        style: TextStyle(
+                          color: isActive ? Colors.white : Colors.grey[700],
+                          fontWeight:
+                              isActive ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductList({
+    required List<ProductModel> filteredProducts,
+  }) {
+    return Expanded(
+      child: filteredProducts.isEmpty
+          ? const Center(child: Text("Produk tidak ditemukan"))
+          : GridView.builder(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: filteredProducts.length,
+              itemBuilder: (context, index) {
+                final product = filteredProducts[index];
+                return ProductCard(
+                  product: product,
+                  sbBlue: AppColors.sbBlue,
+                  sbOrange: AppColors.sbOrange,
+                  onTap: () {
+                    // ✅ Tidak perlu unfocus di sini — GestureDetector global sudah handle
+                    _addToCart(product);
+                  },
+                );
+              },
+            ),
+    );
+  }
+
+  Widget _buildCartBottomButton() {
     if (_cart.isNotEmpty) {
       return Positioned(
         bottom: 24,

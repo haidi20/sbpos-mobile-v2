@@ -7,8 +7,8 @@ class NotificationItem extends StatelessWidget {
 
   const NotificationItem({
     Key? key,
-    required this.notification,
     required this.onTap,
+    required this.notification,
   }) : super(key: key);
 
   // Helper untuk Warna Background Icon

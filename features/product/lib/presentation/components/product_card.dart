@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/data/model/product_model.dart';
+import 'package:product/data/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;

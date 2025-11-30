@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppSetting {
-  static const Color primaryColor =
-      Color.fromRGBO(4, 122, 74, 1); // Ganti dengan warna utama aplikasi Anda
+  static const Color primaryColor = Color.fromRGBO(4, 122, 74, 1);
 }
 
 class AppColors {
@@ -21,9 +20,9 @@ final ThemeData theme = ThemeData(
   useMaterial3: true, // Aktifkan Material Design 3 (default di Flutter ≥3.0)
   fontFamily: 'Poppins',
   colorScheme: ColorScheme.fromSeed(
-    seedColor: AppSetting.primaryColor, // Warna utama aplikasi
-    primary: AppSetting.primaryColor,
-    secondary: AppSetting.primaryColor, // Bisa disesuaikan
+    seedColor: AppColors.sbLightBlue, // Warna utama aplikasi
+    primary: AppColors.sbBlue,
+    secondary: AppColors.sbOrange, // Bisa disesuaikan
     surface: Colors.white, // Ganti background dengan surface
     onPrimary: Colors.white,
     onSecondary: Colors.white,

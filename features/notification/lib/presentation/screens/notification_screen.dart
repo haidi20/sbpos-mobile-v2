@@ -1,54 +1,8 @@
 import 'package:flutter/material.dart';
-import '../components/notification_item.dart';
 import '../components/notification_tab.dart';
-// import 'package:app_anda/models/notification_model.dart';
-
-// MOCK DATA GENERATOR (Hapus ini jika Anda fetch dari API/Database)
-// Pastikan struktur ini sesuai dengan Model Anda yang sudah ada
-List<Map<String, dynamic>> notificationList = [
-  {
-    'id': 1,
-    'type': 'alert',
-    'title': 'Stok Menipis',
-    'message':
-        'Stok Biji Kopi Arabica tersisa kurang dari 1kg. Segera lakukan restock.',
-    'time': '5 menit yang lalu',
-    'read': false,
-  },
-  {
-    'id': 2,
-    'type': 'transaction',
-    'title': 'Pembayaran Diterima',
-    'message': 'Transaksi #202310240005 sebesar Rp 150.000 via QRIS berhasil.',
-    'time': '15 menit yang lalu',
-    'read': false,
-  },
-  {
-    'id': 3,
-    'type': 'system',
-    'title': 'Update Aplikasi',
-    'message':
-        'Versi baru SB POS v1.3.0 tersedia. Perbaikan bug printer bluetooth.',
-    'time': '2 jam yang lalu',
-    'read': true,
-  },
-  {
-    'id': 4,
-    'type': 'promo',
-    'title': 'Promo Akhir Pekan',
-    'message': 'Diskon 20% untuk semua menu kopi berlaku mulai besok.',
-    'time': '1 hari yang lalu',
-    'read': true,
-  },
-  {
-    'id': 5,
-    'type': 'transaction',
-    'title': 'Transaksi Dibatalkan',
-    'message': 'Transaksi #202310240001 dibatalkan oleh Kasir (Budi).',
-    'time': '1 hari yang lalu',
-    'read': true,
-  },
-];
+import '../components/notification_item.dart';
+import 'package:notification/data/data/notification_data.dart';
+import 'package:notification/data/models/notification_model.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -60,45 +14,36 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   String activeTab = 'all';
 
-  // Ubah tipe List<dynamic> ini menjadi List<NotificationModel> sesuai model Anda
-  List<dynamic> notifications = [];
+  // Use the typed model list
+  List<NotificationModel> notifications = [];
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi data (disini pakai mock, nanti ganti dengan fetch data)
-    // Jika model Anda adalah class, lakukan mapping di sini:
-    // notifications = notificationList.map((e) => NotificationModel.fromJson(e)).toList();
+    // Inisialisasi data (pakai mock list yang sudah berisi NotificationModel)
     notifications = List.from(notificationList);
   }
 
   void handleMarkAllRead() {
     setState(() {
-      for (var n in notifications) {
-        // Asumsi model Anda mutable, jika immutable gunakan copyWith
-        // n.read = true;
-
-        // Pendekatan Map (karena pakai Mock Map):
-        n['read'] = true;
+      for (var i = 0; i < notifications.length; i++) {
+        notifications[i] = notifications[i].copyWith(read: true);
       }
     });
   }
 
   void markAsRead(int id) {
     setState(() {
-      final index = notifications
-          .indexWhere((n) => n['id'] == id); // ganti ['id'] dgn .id
+      final index = notifications.indexWhere((n) => n.id == id);
       if (index != -1) {
-        notifications[index]['read'] = true; // ganti ['read'] dgn .read = true
+        notifications[index] = notifications[index].copyWith(read: true);
       }
     });
   }
 
-  List<dynamic> get filteredNotifications {
+  List<NotificationModel> get filteredNotifications {
     if (activeTab == 'all') return notifications;
-    return notifications
-        .where((n) => n['read'] == false)
-        .toList(); // ganti ['read'] dgn .read
+    return notifications.where((n) => n.read == false).toList();
   }
 
   @override
@@ -106,7 +51,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     // Logic filter manual karena Dart List dynamic butuh cast
     final displayList = activeTab == 'all'
         ? notifications
-        : notifications.where((n) => n['read'] == false).toList();
+        : notifications.where((n) => n.read == false).toList();
 
     return Scaffold(
       backgroundColor: Colors.grey[50], // bg-sb-bg equivalent
@@ -188,8 +133,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         final notif = displayList[index];
                         return NotificationItem(
                           notification: notif,
-                          onTap: () =>
-                              markAsRead(notif['id']), // ganti ['id'] dgn .id
+                          onTap: () => markAsRead(notif.id ?? 0),
                         );
                       },
                     ),

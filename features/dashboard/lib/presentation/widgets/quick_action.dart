@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/widgets/quirk_action_button.dart';
+import 'package:dashboard/presentation/component/quirk_action_button.dart';
 
 class QuickAction extends StatelessWidget {
   const QuickAction({super.key});

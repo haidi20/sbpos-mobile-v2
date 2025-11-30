@@ -1,6 +1,6 @@
 // Use case to get landing_page_menus
-import 'package:core/core.dart'; // pastikan Failure ada di sini
-import 'package:landing_page_menu/domain/entities/product_entity.dart';
+import 'package:core/core.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:landing_page_menu/domain/repositories/landing_page_menu_repository.dart';
 
 class GetProducts {

@@ -1,6 +1,5 @@
-// Controller for landing_page_menu (manages TextEditingController, UI logic)
 import 'package:core/core.dart';
-import 'package:landing_page_menu/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:landing_page_menu/presentation/widgets/product_detail_widget.dart';
 
 class LandingPageMenuController {

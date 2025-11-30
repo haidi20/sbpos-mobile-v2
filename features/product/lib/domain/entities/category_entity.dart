@@ -1,4 +1,4 @@
-import 'package:landing_page_menu/data/models/category_model.dart';
+import 'package:product/data/models/category_model.dart';
 
 class CategoryEntity {
   final int? id;

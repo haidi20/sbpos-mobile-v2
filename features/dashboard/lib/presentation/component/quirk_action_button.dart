@@ -9,11 +9,11 @@ class QuickActionButton extends StatelessWidget {
 
   const QuickActionButton({
     super.key,
-    required this.onTap,
     required this.icon,
+    required this.onTap,
     required this.label,
-    required this.iconColor,
     required this.bgColor,
+    required this.iconColor,
   });
 
   @override
@@ -37,7 +37,11 @@ class QuickActionButton extends StatelessWidget {
                 )
               ],
             ),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 24,
+            ),
           ),
         ),
         const SizedBox(height: 8),

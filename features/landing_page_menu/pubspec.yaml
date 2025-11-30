@@ -16,6 +16,12 @@ dependencies:
     path: ../mode
   warehouse:
     path: ../warehouse
+  product:
+    path: ../product
+  setting:
+    path: ../setting
+  notification:
+    path: ../notification
 dev_dependencies:
   flutter_test:
     sdk: flutter

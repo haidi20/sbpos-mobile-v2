@@ -39,7 +39,11 @@ class FloatingActionButtonCustom extends StatelessWidget {
             ],
           ),
           child: const Center(
-            child: Icon(Icons.add, size: 32, color: Colors.white),
+            child: Icon(
+              Icons.add,
+              size: 32,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

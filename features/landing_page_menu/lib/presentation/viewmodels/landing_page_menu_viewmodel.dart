@@ -1,8 +1,8 @@
 // ViewModel for landing_page_menu
 import 'package:core/core.dart';
+import 'package:product/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:landing_page_menu/domain/usecases/get_products.dart';
-import 'package:landing_page_menu/domain/entities/product_entity.dart';
-import 'package:landing_page_menu/domain/entities/category_entity.dart';
 import 'package:landing_page_menu/data/datasources/data/category_product_data.dart';
 
 class LandingPageMenuState {

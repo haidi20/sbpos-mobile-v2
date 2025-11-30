@@ -1,4 +1,4 @@
-import 'package:landing_page_menu/data/models/product_model.dart';
+import 'package:product/data/models/product_model.dart';
 import 'package:landing_page_menu/domain/entities/transaction_detail_entity.dart';
 
 class TransactionDetailModel {

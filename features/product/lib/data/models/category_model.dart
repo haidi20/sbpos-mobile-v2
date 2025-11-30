@@ -1,10 +1,14 @@
 // Model for category from API
-import 'package:landing_page_menu/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/category_entity.dart';
 
 class CategoryModel {
   final int? id;
   final int? idServer; // Added
   final String? name;
+  // Optional field for UI/chart value (percentage or absolute) used by report/dashboard
+  final double? value;
+  // Optional color stored as ARGB integer (use Color(value) when rendering)
+  final int? color;
   final int? categoryParentsId;
   final int? businessId;
   final bool? isActive;
@@ -17,6 +21,8 @@ class CategoryModel {
     this.id,
     this.idServer, // Added
     this.name,
+    this.value,
+    this.color,
     this.categoryParentsId,
     this.businessId,
     this.isActive,
@@ -30,6 +36,8 @@ class CategoryModel {
     int? id,
     int? idServer, // Added
     String? name,
+    double? value,
+    int? color,
     int? categoryParentsId,
     int? businessId,
     bool? isActive,
@@ -42,6 +50,8 @@ class CategoryModel {
       id: id ?? this.id,
       idServer: idServer ?? this.idServer, // Added
       name: name ?? this.name,
+      value: value ?? this.value,
+      color: color ?? this.color,
       categoryParentsId: categoryParentsId ?? this.categoryParentsId,
       businessId: businessId ?? this.businessId,
       isActive: isActive ?? this.isActive,
@@ -56,6 +66,8 @@ class CategoryModel {
         id: json['id'],
         idServer: json['id_server'], // Added
         name: json['name'],
+        value: _toDouble(json['value']),
+        color: _toColorInt(json['color']),
         categoryParentsId: json['category_parents_id'],
         businessId: json['business_id'],
         isActive: _toBool(json['is_active']),
@@ -73,6 +85,29 @@ class CategoryModel {
             : null,
       );
 
+  static double? _toDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  static int? _toColorInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is String) {
+      // Accept hex string like '#FF00FF' or '0xFF00FF'
+      final s = v.replaceAll('#', '').replaceAll('0x', '');
+      final parsed = int.tryParse(s, radix: 16);
+      if (parsed != null) {
+        // If provided without alpha (6 digits), assume opaque
+        if (s.length == 6) return 0xFF000000 | parsed;
+        return parsed;
+      }
+    }
+    return null;
+  }
+
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
@@ -89,6 +124,8 @@ class CategoryModel {
         'id': id,
         'id_server': idServer, // Added
         'name': name,
+        'value': value,
+        'color': color,
         'category_parents_id': categoryParentsId,
         'business_id': businessId,
         'is_active': isActive,
@@ -103,6 +140,9 @@ class CategoryModel {
       id: entity.id,
       idServer: entity.idServer, // Added, make sure CategoryEntity has idServer
       name: entity.name,
+      // value/color are UI-only, not available on entity by default
+      value: null,
+      color: null,
       categoryParentsId: entity.categoryParentsId,
       businessId: entity.businessId,
       isActive: entity.isActive,
@@ -131,6 +171,8 @@ class CategoryModel {
         'id': null,
         'id_server': idServer, // Added
         'name': name,
+        'value': value,
+        'color': color,
         'category_parents_id': categoryParentsId,
         'business_id': businessId,
         'is_active': isActive,
@@ -155,10 +197,19 @@ class CategoryModel {
       return null;
     }
 
+    double? toDouble(dynamic v) {
+      if (v == null) return null;
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    }
+
     return CategoryModel(
       id: toInt(map['id']),
       idServer: toInt(map['id_server']), // Added
       name: map['name'] as String?,
+      value: toDouble(map['value']),
+      color: toInt(map['color']),
       categoryParentsId: toInt(map['category_parents_id']),
       businessId: toInt(map['business_id']),
       isActive: _toBool(map['is_active']),

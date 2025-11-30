@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/data/model/cart_model.dart';
+import 'package:product/data/data/category_data.dart';
 
 class ProductFormSheet extends StatelessWidget {
   const ProductFormSheet({super.key});
@@ -101,12 +101,12 @@ class ProductFormSheet extends StatelessWidget {
                           isExpanded: true,
                           value: 'Coffee',
                           items: categories
-                              .where((c) => c != 'All')
+                              .where((c) => c.name != 'All')
                               .map(
                                 (c) => DropdownMenuItem<String>(
-                                  value: c,
+                                  value: c.name,
                                   child: Text(
-                                    c,
+                                    c.name ?? '',
                                     style: const TextStyle(
                                       fontSize: 14,
                                     ),

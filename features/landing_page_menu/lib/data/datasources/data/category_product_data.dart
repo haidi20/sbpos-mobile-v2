@@ -1,4 +1,4 @@
-import 'package:landing_page_menu/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/category_entity.dart';
 
 class CategoryProductData {
   static const List<CategoryEntity> data = [

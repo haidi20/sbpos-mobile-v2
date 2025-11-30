@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:landing_page_menu/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:landing_page_menu/presentation/controllers/landing_page_menu_controller.dart';
 
 class ProductCardWidget extends ConsumerStatefulWidget {

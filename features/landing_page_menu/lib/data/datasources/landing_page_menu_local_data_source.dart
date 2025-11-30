@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:landing_page_menu/data/models/product_model.dart';
+import 'package:product/data/models/product_model.dart';
 import 'package:landing_page_menu/data/datasources/tables/product_table.dart';
 
 class LandingPageMenuLocalDataSource with BaseErrorHelper {
