@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 
-class HelpSettingsPage extends StatelessWidget {
-  const HelpSettingsPage({super.key});
+class HelpScreen extends StatelessWidget {
+  const HelpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

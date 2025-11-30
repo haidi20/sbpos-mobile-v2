@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 
-class StoreSettingsPage extends StatelessWidget {
-  const StoreSettingsPage({super.key});
+class StoreScreen extends StatelessWidget {
+  const StoreScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,46 +44,69 @@ class StoreSettingsPage extends StatelessWidget {
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color: Colors.grey.shade300,
-                        style: BorderStyle
-                            .solid), // Dashed border perlu package lain, pakai solid dulu
+                      style: BorderStyle.solid,
+                      color: Colors.grey.shade300,
+                    ),
                   ),
-                  child: Icon(Icons.store_outlined,
-                      size: 32, color: Colors.grey.shade400),
+                  child: Icon(
+                    size: 32,
+                    Icons.store_outlined,
+                    color: Colors.grey.shade400,
+                  ),
                 ),
                 TextButton(
-                  onPressed: () {},
-                  child: const Text('Ubah Logo',
-                      style: TextStyle(
-                          color: AppColors.sbBlue,
-                          fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    //
+                  },
+                  child: const Text(
+                    'Ubah Logo',
+                    style: TextStyle(
+                      color: AppColors.sbBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
             // Forms
-            _buildTextField('Nama Toko', 'SB Coffee'),
-            _buildTextField('Cabang', 'Jakarta Selatan'),
             _buildTextField(
-                'Alamat Lengkap', 'Jl. Sudirman No. 45, SCBD, Jakarta Selatan',
-                maxLines: 3),
-            _buildTextField('Nomor Telepon', '0812-3456-7890',
-                keyboardType: TextInputType.phone),
+              'Nama Toko',
+              'SB Coffee',
+            ),
+            _buildTextField(
+              'Cabang',
+              'Jakarta Selatan',
+            ),
+            _buildTextField(
+              'Alamat Lengkap',
+              'Jl. Sudirman No. 45, SCBD, Jakarta Selatan',
+              maxLines: 3,
+            ),
+            _buildTextField(
+              'Nomor Telepon',
+              '0812-3456-7890',
+              keyboardType: TextInputType.phone,
+            ),
 
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.save, size: 18),
+                icon: const Icon(
+                  size: 18,
+                  Icons.save,
+                ),
                 label: const Text('Simpan Perubahan'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.sbBlue,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -93,18 +116,25 @@ class StoreSettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, String initialValue,
-      {int maxLines = 1, TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    String label,
+    String initialValue, {
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade500,
+            ),
+          ),
           const SizedBox(height: 4),
           TextFormField(
             initialValue: initialValue,
@@ -114,12 +144,16 @@ class StoreSettingsPage extends StatelessWidget {
               filled: true,
               fillColor: Colors.grey.shade50,
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none),
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(12),
+              ),
               focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: AppColors.sbBlue.withOpacity(0.2), width: 2)),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.sbBlue.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),

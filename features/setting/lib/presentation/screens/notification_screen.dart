@@ -1,14 +1,13 @@
 import 'package:core/core.dart';
 
-class NotificationSettingsPage extends StatefulWidget {
-  const NotificationSettingsPage({super.key});
+class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
 
   @override
-  State<NotificationSettingsPage> createState() =>
-      _NotificationSettingsPageState();
+  State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
-class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
+class _NotificationScreenState extends State<NotificationScreen> {
   bool pushNotif = true;
   bool sound = true;
   bool stockAlert = true;

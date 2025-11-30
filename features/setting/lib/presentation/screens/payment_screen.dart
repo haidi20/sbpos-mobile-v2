@@ -1,13 +1,13 @@
 import 'package:core/core.dart';
 
-class PaymentSettingsPage extends StatefulWidget {
-  const PaymentSettingsPage({super.key});
+class PaymentScreen extends StatefulWidget {
+  const PaymentScreen({super.key});
 
   @override
-  State<PaymentSettingsPage> createState() => _PaymentSettingsPageState();
+  State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentSettingsPageState extends State<PaymentSettingsPage> {
+class _PaymentScreenState extends State<PaymentScreen> {
   final List<Map<String, dynamic>> methods = [
     {'id': 1, 'name': 'Tunai (Cash)', 'active': true},
     {'id': 2, 'name': 'QRIS', 'active': true},

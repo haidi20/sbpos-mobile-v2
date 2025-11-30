@@ -1,14 +1,14 @@
 import 'package:core/core.dart';
 
-class SecuritySettingsPage extends StatelessWidget {
-  const SecuritySettingsPage({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Keamanan',
+        title: const Text('Edit Profil',
             style: TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.bold,
@@ -27,27 +27,56 @@ class SecuritySettingsPage extends StatelessWidget {
         shadowColor: Colors.grey.shade50,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                border: Border.all(color: Colors.orange.shade100),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'Untuk keamanan, ganti PIN atau Password Anda secara berkala. Jangan berikan kode akses kepada siapapun.',
-                style: TextStyle(
-                    fontSize: 12, color: Colors.orange.shade900, height: 1.5),
+            // Avatar
+            Center(
+              child: Stack(
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10)
+                      ],
+                      image: const DecorationImage(
+                          image: NetworkImage(
+                              "https://picsum.photos/200/200?random=user"),
+                          fit: BoxFit.cover),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                          color: AppColors.sbBlue,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2)),
+                      child: const Icon(Icons.camera_alt,
+                          color: Colors.white, size: 16),
+                    ),
+                  )
+                ],
               ),
             ),
-            const SizedBox(height: 24),
-            _buildPasswordField('PIN Lama'),
-            _buildPasswordField('PIN Baru'),
-            _buildPasswordField('Konfirmasi PIN Baru'),
+            const SizedBox(height: 32),
+
+            _buildTextField('Nama Lengkap', 'Budi Santoso'),
+            _buildTextField('ID Karyawan', 'EMP-2023-001', enabled: false),
+            _buildTextField('Email', 'budi@sbpos.com',
+                keyboardType: TextInputType.emailAddress),
+            _buildTextField('No. Handphone', '0812-9999-8888',
+                keyboardType: TextInputType.phone),
+
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -60,7 +89,7 @@ class SecuritySettingsPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Update Keamanan',
+                child: const Text('Simpan Profil',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
@@ -70,7 +99,8 @@ class SecuritySettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordField(String label) {
+  Widget _buildTextField(String label, String value,
+      {bool enabled = true, TextInputType? keyboardType}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -83,11 +113,14 @@ class SecuritySettingsPage extends StatelessWidget {
                   color: Colors.grey.shade500)),
           const SizedBox(height: 4),
           TextFormField(
-            obscureText: true,
+            initialValue: value,
+            enabled: enabled,
+            keyboardType: keyboardType,
+            style: TextStyle(
+                color: enabled ? Colors.black87 : Colors.grey.shade500),
             decoration: InputDecoration(
-              hintText: '******',
               filled: true,
-              fillColor: Colors.grey.shade50,
+              fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none),

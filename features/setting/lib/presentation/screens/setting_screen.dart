@@ -1,12 +1,12 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/screens/help_screen.dart';
+import 'package:setting/presentation/screens/store_screen.dart';
 import 'package:setting/presentation/component/setting_item.dart';
-import 'package:setting/presentation/screens/help_setting_screen.dart';
-import 'package:setting/presentation/screens/store_setting_screen.dart';
-import 'package:setting/presentation/screens/payment_setting_screen.dart';
-import 'package:setting/presentation/screens/printer_setting_screen.dart';
-import 'package:setting/presentation/screens/profile_setting_screen.dart';
-import 'package:setting/presentation/screens/secutiry_setting_screen.dart';
-import 'package:setting/presentation/screens/notification_setting_screen.dart';
+import 'package:setting/presentation/screens/payment_screen.dart';
+import 'package:setting/presentation/screens/printer_screen.dart';
+import 'package:setting/presentation/screens/profile_screen.dart';
+import 'package:setting/presentation/screens/secutiry_screen.dart';
+import 'package:setting/presentation/screens/notification_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -39,72 +39,8 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               // --- Profile Card ---
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.grey.shade100),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                        image: const DecorationImage(
-                          image: NetworkImage(
-                              "https://picsum.photos/200/200?random=user"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Budi Santoso',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            'Kasir - Shift Pagi',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.green.shade100),
-                            ),
-                            child: Text(
-                              'Online',
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade700),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
+              _buildProfileCard(),
               const SizedBox(height: 24),
-
               // --- Group: Toko & Perangkat ---
               _buildSectionHeader('Toko & Perangkat'),
               _buildGroupContainer([
@@ -116,7 +52,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const StoreSettingsPage(),
+                      builder: (_) => const StoreScreen(),
                     ),
                   ),
                 ),
@@ -129,7 +65,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const PrinterSettingsPage(),
+                      builder: (_) => const PrinterScreen(),
                     ),
                   ),
                 ),
@@ -142,14 +78,12 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const PaymentSettingsPage(),
+                      builder: (_) => const PaymentScreen(),
                     ),
                   ),
                 ),
               ]),
-
               const SizedBox(height: 24),
-
               // --- Group: Akun ---
               _buildSectionHeader('Akun & Keamanan'),
               _buildGroupContainer([
@@ -159,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const ProfileSettingsPage(),
+                      builder: (_) => const ProfileScreen(),
                     ),
                   ),
                 ),
@@ -171,7 +105,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const NotificationSettingsPage(),
+                      builder: (_) => const NotificationScreen(),
                     ),
                   ),
                 ),
@@ -182,7 +116,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const SecuritySettingsPage(),
+                      builder: (_) => const SecurityScreen(),
                     ),
                   ),
                 ),
@@ -199,7 +133,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const HelpSettingsPage(),
+                      builder: (_) => const HelpScreen(),
                     ),
                   ),
                 ),
@@ -223,14 +157,20 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         const Expanded(
-                          child: Text('Keluar Aplikasi',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.red)),
+                          child: Text(
+                            'Keluar Aplikasi',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
+                            ),
+                          ),
                         ),
-                        Icon(Icons.chevron_right,
-                            size: 18, color: Colors.grey.shade300),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: Colors.grey.shade300,
+                        ),
                       ],
                     ),
                   ),
@@ -239,7 +179,7 @@ class SettingsScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
               Text(
-                'SB POS App v1.2.0 • Build 20231024',
+                'SB POS App v2',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
@@ -249,6 +189,75 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white,
+                width: 2,
+              ),
+              image: const DecorationImage(
+                image: NetworkImage(
+                  "https://picsum.photos/200/200?random=user",
+                ),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Budi Santoso',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Kasir - Shift Pagi',
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.green.shade100),
+                  ),
+                  child: Text(
+                    'Online',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
