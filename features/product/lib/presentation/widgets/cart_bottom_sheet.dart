@@ -7,8 +7,6 @@ class CartBottomSheet extends StatefulWidget {
   final double total;
   final Function(int, int) onUpdateQty;
   final VoidCallback onClear;
-  final Color sbBlue;
-  final Color sbOrange;
   final String orderNote;
   final Function(String) onOrderNoteChanged;
   final Function(int, String) onUpdateItemNote;
@@ -21,8 +19,6 @@ class CartBottomSheet extends StatefulWidget {
     required this.total,
     required this.onUpdateQty,
     required this.onClear,
-    required this.sbBlue,
-    required this.sbOrange,
     required this.orderNote,
     required this.onOrderNoteChanged,
     required this.onUpdateItemNote,
@@ -207,8 +203,8 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                     const SizedBox(height: 4),
                                     Text(
                                       formatRupiah(item.product.price ?? 0),
-                                      style: TextStyle(
-                                          color: widget.sbOrange,
+                                      style: const TextStyle(
+                                          color: AppColors.sbOrange,
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500),
                                     ),
@@ -241,7 +237,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                       icon: Icons.add,
                                       onTap: () => widget.onUpdateQty(id, 1),
                                       isBlue: true,
-                                      color: widget.sbBlue,
+                                      color: AppColors.sbBlue,
                                     ),
                                   ],
                                 ),
@@ -270,7 +266,9 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: widget.sbBlue),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.sbBlue,
+                                  ),
                                 ),
                               ),
                               onChanged: (value) {
@@ -398,7 +396,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                 widget.onClear();
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: widget.sbOrange,
+                                backgroundColor: AppColors.sbOrange,
                                 foregroundColor: Colors.white,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),

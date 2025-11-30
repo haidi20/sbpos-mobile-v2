@@ -95,8 +95,6 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
         total: _cartTotal,
         onUpdateQty: _updateQuantity,
         onClear: _clearCart,
-        sbBlue: AppColors.sbBlue,
-        sbOrange: AppColors.sbOrange,
         orderNote: _orderNote,
         onOrderNoteChanged: (v) => setState(() => _orderNote = v),
         onUpdateItemNote: _updateItemNote,
@@ -309,21 +307,48 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // --- BAGIAN KIRI (TIDAK DIUBAH/DIKURANGI SESUAI REQUEST) ---
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        "$_cartCount",
-                        style: const TextStyle(
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(
+                          Icons.shopping_cart_outlined, // Icon Relevan
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          size: 30,
                         ),
-                      ),
+                        // Badge Total Item di Atas Kanan Icon
+                        Positioned(
+                          right: -5,
+                          top: -8,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: AppColors.sbOrange, // Warna Badge
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.sbBlue,
+                                width: 1,
+                              ),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                "$_cartCount",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -348,8 +373,11 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                     ),
                   ],
                 ),
+
+                // --- BAGIAN KANAN (DITAMBAHKAN ICON & BADGE) ---
                 const Row(
                   children: [
+                    // Teks Asli
                     Text(
                       "Keranjang",
                       style: TextStyle(

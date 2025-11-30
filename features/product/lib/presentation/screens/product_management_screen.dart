@@ -2,6 +2,8 @@ import 'package:core/core.dart';
 import 'package:product/data/data/product_data.dart';
 import 'package:product/data/model/cart_model.dart';
 import 'package:product/data/model/product_model.dart';
+import 'package:product/presentation/component/product_management_card.dart';
+import 'package:product/presentation/screens/product_management_form_screen.dart';
 
 // --- 4. MAIN SCREEN ---
 
@@ -18,11 +20,6 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   String _activeCategory = "All";
   final List<ProductModel> _products = List.from(initialProducts);
 
-  // Colors
-  final Color sbBlue = const Color(0xFF1E40AF);
-  final Color sbOrange = const Color(0xFFF97316);
-  final Color sbBg = const Color(0xFFF8FAFC);
-
   // Filter Logic
   List<ProductModel> get _filteredProducts {
     return _products
@@ -36,20 +33,20 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       context: context,
       isScrollControlled: true, // Agar keyboard tidak menutupi form
       backgroundColor: Colors.transparent,
-      builder: (context) => _ProductFormSheet(sbBlue: sbBlue),
+      builder: (context) => const ProductFormSheet(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: sbBg,
+      backgroundColor: AppColors.sbBg,
       body: SafeArea(
         child: Column(
           children: [
             // --- HEADER (Sticky) ---
             Container(
-              color: sbBg,
+              color: AppColors.sbBg,
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Column(
                 children: [
@@ -73,7 +70,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                         icon: const Icon(Icons.add, size: 18),
                         label: const Text('Tambah'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: sbBlue,
+                          backgroundColor: AppColors.sbBlue,
                           foregroundColor: Colors.white,
                           elevation: 2,
                           shadowColor: Colors.blue.withOpacity(0.3),
@@ -123,14 +120,17 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isActive ? sbBlue : Colors.transparent,
+                                color: isActive
+                                    ? AppColors.sbBlue
+                                    : Colors.transparent,
                                 width:
                                     1.5, // Sedikit ditebalkan agar border lebih jelas
                               ),
                               boxShadow: isActive
                                   ? [
                                       BoxShadow(
-                                        color: sbBlue.withOpacity(0.1),
+                                        color:
+                                            AppColors.sbBlue.withOpacity(0.1),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       )
@@ -144,7 +144,9 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: isActive ? sbBlue : Colors.grey.shade500,
+                                color: isActive
+                                    ? AppColors.sbBlue
+                                    : Colors.grey.shade500,
                               ),
                             ),
                           ),
@@ -166,243 +168,15 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                 itemBuilder: (context, index) {
                   final product = _filteredProducts[index];
                   final isActive = product.status == 'active';
+
+                  return ProductManagementCard(
+                    product: product,
+                    isActive: isActive,
+                  );
                 },
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// --- 5. WIDGETS ---
-
-class _ProductFormSheet extends StatelessWidget {
-  final Color sbBlue;
-
-  const _ProductFormSheet({required this.sbBlue});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(
-            24,
-          ),
-        ),
-      ),
-      padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom:
-              MediaQuery.of(context).viewInsets.bottom + 24 // Handle Keyboard
-          ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Tambah Produk Baru',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Image Upload Placeholder
-          Container(
-            width: double.infinity,
-            height: 128,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                  color: Colors.grey.shade300,
-                  style: BorderStyle
-                      .solid), // Dashed border not native, solid used
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_outlined,
-                    size: 32, color: Colors.grey.shade400),
-                const SizedBox(height: 8),
-                Text(
-                  'Upload Foto',
-                  style: TextStyle(
-                    color: Colors.grey.shade400,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Inputs
-          const _FormLabel('Nama Produk'),
-          const _FormInput(hint: 'Contoh: Kopi Susu'),
-
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _FormLabel('Harga'),
-                    _FormInput(hint: '0', isNumber: true),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _FormLabel('Kategori'),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: 'Coffee',
-                          items: categories
-                              .where((c) => c != 'All')
-                              .map(
-                                (c) => DropdownMenuItem(
-                                  value: c,
-                                  child: Text(
-                                    c,
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {},
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Buttons
-          Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.grey.shade100,
-                    foregroundColor: Colors.grey,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ),
-                    ),
-                  ),
-                  child: const Text(
-                    'Batal',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: sbBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ),
-                    ),
-                    elevation: 4,
-                    shadowColor: Colors.blue.withOpacity(0.4),
-                  ),
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FormLabel extends StatelessWidget {
-  final String label;
-  const _FormLabel(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade500,
-        ),
-      ),
-    );
-  }
-}
-
-class _FormInput extends StatelessWidget {
-  final String hint;
-  final bool isNumber;
-
-  const _FormInput({required this.hint, this.isNumber = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.all(12),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Colors.blue,
-            width: 2,
-          ),
         ),
       ),
     );
