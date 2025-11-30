@@ -39,13 +39,13 @@ class DashboardScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF00529C),
-            Color(0xFF003B73),
+            AppColors.sbBlue,
+            AppColors.sbBlueDark,
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00529C).withOpacity(0.3),
+            color: AppColors.sbBlue.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -194,8 +194,8 @@ class DashboardScreen extends StatelessWidget {
               QuickActionButton(
                 icon: Icons.description_outlined,
                 label: 'Laporan',
-                iconColor: const Color(0xFF00529C),
-                bgColor: const Color(0xFFEFF6FF),
+                iconColor: AppColors.sbBlue,
+                bgColor: AppColors.sbBg,
                 onTap: () {
                   context.pushNamed(AppRoutes.report);
                 },
@@ -203,8 +203,8 @@ class DashboardScreen extends StatelessWidget {
               QuickActionButton(
                 icon: Icons.inventory_2_outlined,
                 label: 'Stok',
-                iconColor: const Color(0xFFF97316),
-                bgColor: const Color(0xFFFFF7ED),
+                iconColor: AppColors.sbOrange,
+                bgColor: AppColors.sbBg,
                 onTap: () {
                   context.pushNamed(AppRoutes.inventory);
                 },
@@ -212,8 +212,8 @@ class DashboardScreen extends StatelessWidget {
               QuickActionButton(
                 icon: Icons.fastfood_outlined,
                 label: 'Menu',
-                iconColor: const Color(0xFF16A34A),
-                bgColor: const Color(0xFFF0FDF4),
+                iconColor: AppColors.sbGreen,
+                bgColor: AppColors.sbBg,
                 onTap: () {
                   context.pushNamed(AppRoutes.productManagement);
                 },
@@ -258,7 +258,7 @@ class DashboardScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
+                  color: AppColors.sbBg,
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: const Row(
@@ -348,7 +348,10 @@ class DashboardScreen extends StatelessWidget {
                     ],
                     isCurved: true,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF00529C), Color(0xFF003B73)],
+                      colors: [
+                        AppColors.sbBlue,
+                        AppColors.sbBlueDark,
+                      ],
                     ),
                     barWidth: 3,
                     isStrokeCapRound: true,
@@ -359,8 +362,8 @@ class DashboardScreen extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFF00529C).withOpacity(0.2),
-                          const Color(0xFF00529C).withOpacity(0.0),
+                          AppColors.sbBlue.withOpacity(0.2),
+                          AppColors.sbBlue.withOpacity(0.0),
                         ],
                       ),
                     ),

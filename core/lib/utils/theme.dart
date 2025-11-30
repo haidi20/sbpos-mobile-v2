@@ -9,6 +9,8 @@ class AppColors {
   static const Color sbBlue = Color(0xFF1E40AF);
   static const Color sbOrange = Color(0xFFF97316);
   static const Color sbBg = Color(0xFFF8FAFC);
+  static const Color sbBlueDark = Color(0xFF003B73);
+  static const Color sbGreen = Color(0xFF16A34A);
 }
 
 final ThemeData theme = ThemeData(

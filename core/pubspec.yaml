@@ -41,6 +41,10 @@ dependencies:
     path: ../features/transaction
   product:
     path: ../features/product
+  notification:
+    path: ../features/notification
+  setting:
+    path: ../features/setting
 
 dev_dependencies:
   flutter_test:

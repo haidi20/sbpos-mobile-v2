@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/screens/card/setting_item.dart';
+import 'package:dashboard/presentation/screens/component/setting_item.dart';
 import 'package:dashboard/presentation/screens/sub_screens/help_setting_screen.dart';
 import 'package:dashboard/presentation/screens/sub_screens/store_setting_screen.dart';
 import 'package:dashboard/presentation/screens/sub_screens/payment_setting_screen.dart';

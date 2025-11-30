@@ -1,30 +1,5 @@
 import 'package:core/core.dart';
-
-// --- 1. MODELS ---
-
-class InventoryItem {
-  final int id;
-  final String name;
-  final double price;
-  final String category;
-  final String image;
-  int stock;
-  final int minStock;
-  final String unit;
-
-  InventoryItem({
-    required this.id,
-    required this.name,
-    required this.price,
-    required this.category,
-    required this.image,
-    required this.stock,
-    required this.minStock,
-    required this.unit,
-  });
-}
-
-// --- 2. MOCK DATA ---
+import 'package:product/data/model/inventory_model.dart';
 
 final List<InventoryItem> mockInventory = [
   InventoryItem(
@@ -94,15 +69,14 @@ class InventoryScreen extends StatefulWidget {
 
 class _InventoryScreenState extends State<InventoryScreen> {
   // State
-  List<InventoryItem> _items =
-      List.from(mockInventory); // Create a copy to allow modification
+  final List<InventoryItem> _items = List.from(mockInventory);
   String _searchQuery = "";
-  String _filter = 'all'; // 'all' or 'low'
+  String _filter = 'all';
 
   // Colors (Matching the theme)
-  final Color sbBlue = const Color(0xFF1E40AF);
-  final Color sbOrange = const Color(0xFFF97316);
-  final Color sbBg = const Color(0xFFF8FAFC);
+  final Color sbBlue = AppColors.sbBlue;
+  final Color sbOrange = AppColors.sbOrange;
+  final Color sbBg = AppColors.sbBg;
 
   // Logic: Adjust Stock
   void _handleStockAdjust(int id, int delta) {

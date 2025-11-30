@@ -1,5 +1,5 @@
-import 'dart:ui'; // Diperlukan untuk ImageFilter
-import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:core/core.dart';
 
 class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
   const CustomHeader({super.key});
@@ -10,10 +10,6 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Definisi warna (sesuaikan dengan config tailwind Anda)
-    const Color sbBlue = Color(0xFF1E40AF); // text-sb-blue
-    const Color sbOrange = Color(0xFFF97316); // text-sb-orange
-
     // ClipRect diperlukan agar efek blur tidak "bocor" ke luar area header
     return ClipRect(
       child: BackdropFilter(
@@ -58,11 +54,15 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                         children: [
                           TextSpan(
                             text: 'SB',
-                            style: TextStyle(color: sbBlue),
+                            style: TextStyle(
+                              color: AppColors.sbBlue,
+                            ),
                           ),
                           TextSpan(
                             text: 'POS',
-                            style: TextStyle(color: sbOrange),
+                            style: TextStyle(
+                              color: AppColors.sbOrange,
+                            ),
                           ),
                         ],
                       ),
@@ -73,7 +73,7 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                 // --- KANAN: Icon Bell dengan Badge ---
                 InkWell(
                   onTap: () {
-                    print("Notifikasi diklik");
+                    context.pushNamed(AppRoutes.notification);
                   },
                   borderRadius: BorderRadius.circular(50), // rounded-full
                   child: Container(

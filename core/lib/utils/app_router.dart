@@ -7,6 +7,7 @@ import 'package:dashboard/presentation/screens/inventory_screen.dart';
 import 'package:product/presentation/screens/product_pos_screen.dart';
 import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
+import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:dashboard/presentation/screens/product_management_screen.dart';
 
 class AppRouter {
@@ -40,6 +41,13 @@ class AppRouter {
           name: AppRoutes.dashboard,
           pageBuilder: (context, state) {
             return const MaterialPage(child: MainDashboardScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.notification,
+          name: AppRoutes.notification,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: NotificationScreen());
           },
         ),
         GoRoute(

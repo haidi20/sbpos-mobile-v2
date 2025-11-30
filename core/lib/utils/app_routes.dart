@@ -10,5 +10,6 @@ class AppRoutes {
   static const String productPos = '/product_pos';
   static const String landingPageMenu = '/landing';
   static const String transaction = '/transaction';
+  static const String notification = '/notification';
   static const String productManagement = '/product-management';
 }

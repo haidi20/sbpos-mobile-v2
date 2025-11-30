@@ -32,7 +32,8 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor:
-          const Color(0xFFF8FAFC), // Sesuai warna border di React (#f8fafc)
+          // const Color(0xFFF8FAFC), // Sesuai warna border di React (#f8fafc)
+          AppColors.sbBg,
 // --- 2. SETTING HEADER (APPBAR) ---
       // Penting: extendBodyBehindAppBar true agar konten bisa discroll
       // melewati belakang header, sehingga efek BLUR terlihat.

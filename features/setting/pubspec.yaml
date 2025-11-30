@@ -1,4 +1,4 @@
-name: dashboard
+name: setting
 description: A new Flutter package project.
 version: 0.0.1
 publish_to: none
@@ -20,9 +20,11 @@ dependencies:
     path: ../transaction
   product:
     path: ../product
+  dashboard:
+    path: ../dashboard
   notification:
     path: ../notification
-    
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
