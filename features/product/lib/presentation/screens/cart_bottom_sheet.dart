@@ -77,6 +77,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       }
     }
     _orderFocusNode.unfocus();
+    // Fokus ke item yang dipilih agar keyboard muncul segera
+    _itemFocusNodes[id]?.requestFocus();
   }
 
   @override
@@ -89,7 +91,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     // Karena getter VM tidak reactive via ref.watch(provider), kita hitung manual via state
     final double cartTotal =
         stateProductPos.cart.fold(0, (sum, item) => sum + item.subtotal);
-    final double finalTotal = cartTotal * 1.1; // Pajak 10%
+    // final double finalTotal = cartTotal * 1.1; // Pajak 10%
+    final double finalTotal = cartTotal;
 
     // 3. LISTEN STATE: Pengganti didUpdateWidget
     // Digunakan untuk sinkronisasi Controller jika state berubah drastis (add/remove item)
@@ -151,309 +154,9 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
         ),
         child: Column(
           children: [
-            // Drag Handle & Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-              child: Column(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Pesanan (${stateProductPos.cart.length})',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        // ACTION: Clear Cart
-                        onPressed: () => viewModel.clearCart(),
-                        child: const Text(
-                          'Hapus Semua',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Items List & General Note
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.65,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: stateProductPos.cart.length + 1,
-                itemBuilder: (context, index) {
-                  if (index < stateProductPos.cart.length) {
-                    final item = stateProductPos.cart[index];
-                    final id = item.product.id ?? 0;
-
-                    // Safety check jika controller belum ready (karena async gap)
-                    if (!_itemNoteControllers.containsKey(id)) {
-                      _itemNoteControllers[id] =
-                          TextEditingController(text: item.note);
-                      _itemFocusNodes[id] = FocusNode();
-                    }
-
-                    final controller = _itemNoteControllers[id]!;
-                    final focusNode = _itemFocusNodes[id]!;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.product.name ?? '',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      formatRupiah(item.product.price ?? 0),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.sbOrange,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    QtyButton(
-                                      icon: Icons.remove,
-                                      // ACTION: Update Qty -1
-                                      onTap: () =>
-                                          viewModel.setUpdateQuantity(id, -1),
-                                    ),
-                                    SizedBox(
-                                      width: 32,
-                                      child: Text(
-                                        '${item.quantity}',
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14),
-                                      ),
-                                    ),
-                                    QtyButton(
-                                      icon: Icons.add,
-                                      // ACTION: Update Qty +1
-                                      onTap: () =>
-                                          viewModel.setUpdateQuantity(id, 1),
-                                      isBlue: true,
-                                      color: AppColors.sbBlue,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: TextField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              maxLines: 2,
-                              keyboardType: TextInputType.multiline,
-                              textInputAction: TextInputAction.done,
-                              decoration: InputDecoration(
-                                hintText: 'Catatan item...',
-                                hintStyle: TextStyle(
-                                    color: Colors.grey.shade400, fontSize: 12),
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.all(8),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.sbBlue,
-                                  ),
-                                ),
-                              ),
-                              // ACTION: Update Item Note
-                              onChanged: (value) {
-                                viewModel.setItemNote(id, value);
-                              },
-                              onSubmitted: (_) {
-                                FocusScope.of(context).unfocus();
-                              },
-                              onTap: () {
-                                _activateItemNote(id);
-                                // ACTION: Set Active ID
-                                viewModel.setActiveNoteId(id);
-                              },
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 16),
-                            child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-                          )
-                        ],
-                      ),
-                    );
-                  } else {
-                    // --- GENERAL NOTE & SUMMARY BLOCK ---
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                            ? 24
-                            : 48,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Order General Note
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.yellow.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.yellow.shade100),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.notes,
-                                        size: 16,
-                                        color: Colors.yellow.shade700),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Catatan Pesanan',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.yellow.shade700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                TextField(
-                                  controller: _orderNoteController,
-                                  focusNode: _orderFocusNode,
-                                  maxLines: 3,
-                                  keyboardType: TextInputType.multiline,
-                                  textInputAction: TextInputAction.done,
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        "Contoh: Bungkus dipisah, Meja nomor 5...",
-                                    hintStyle: TextStyle(
-                                        color: Colors.grey.shade300,
-                                        fontSize: 13),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    contentPadding: const EdgeInsets.all(8),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                          color: Colors.grey.shade200),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                          color: Colors.yellow.shade400),
-                                    ),
-                                  ),
-                                  onSubmitted: (_) {
-                                    FocusScope.of(context).unfocus();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Summary
-                          ...[
-                            _buildSummaryRow(
-                                'Subtotal', formatRupiah(cartTotal)),
-                            _buildSummaryRow(
-                                'Pajak (10%)', formatRupiah(cartTotal * 0.1)),
-                            const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Divider(color: Color(0xFFE5E7EB))),
-                            _buildSummaryRow(
-                              'Total',
-                              formatRupiah(finalTotal),
-                              isTotal: true,
-                            ),
-                          ],
-                          const SizedBox(height: 24),
-
-                          // Pay Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Transaksi Berhasil!\nTotal: ${formatRupiah(finalTotal)}'),
-                                  ),
-                                );
-                                // ACTION: Clear Cart
-                                viewModel.clearCart();
-                                Navigator.pop(context); // Tutup bottom sheet
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.sbOrange,
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Bayar Sekarang',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
+            _buildHeader(stateProductPos, viewModel),
+            _buildItemsSection(
+                stateProductPos, viewModel, cartTotal, finalTotal),
           ],
         ),
       ),
@@ -481,6 +184,302 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildHeader(ProductPosState stateProductPos, dynamic viewModel) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+      child: Column(
+        children: [
+          Container(
+            width: 48,
+            height: 6,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Pesanan (${stateProductPos.cart.length})',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                // ACTION: Clear Cart
+                onPressed: () => viewModel.clearCart(),
+                child: const Text(
+                  'Hapus Semua',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItemsSection(ProductPosState stateProductPos, dynamic viewModel,
+      double cartTotal, double finalTotal) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.65,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        itemCount: stateProductPos.cart.length + 1,
+        itemBuilder: (context, index) {
+          if (index < stateProductPos.cart.length) {
+            final item = stateProductPos.cart[index];
+            final id = item.product.id ?? 0;
+
+            // Safety check jika controller belum ready (karena async gap)
+            if (!_itemNoteControllers.containsKey(id)) {
+              _itemNoteControllers[id] = TextEditingController(text: item.note);
+              _itemFocusNodes[id] = FocusNode();
+            }
+
+            final controller = _itemNoteControllers[id]!;
+            final focusNode = _itemFocusNodes[id]!;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.product.name ?? '',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              formatRupiah(item.product.price ?? 0),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.sbOrange,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            QtyButton(
+                              icon: Icons.remove,
+                              // ACTION: Update Qty -1
+                              onTap: () => viewModel.setUpdateQuantity(id, -1),
+                            ),
+                            SizedBox(
+                              width: 32,
+                              child: Text(
+                                '${item.quantity}',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
+                            QtyButton(
+                              icon: Icons.add,
+                              // ACTION: Update Qty +1
+                              onTap: () => viewModel.setUpdateQuantity(id, 1),
+                              isBlue: true,
+                              color: AppColors.sbBlue,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      maxLines: 2,
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        hintText: 'Catatan item...',
+                        hintStyle: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 12),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.all(8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: AppColors.sbBlue,
+                          ),
+                        ),
+                      ),
+                      // ACTION: Update Item Note
+                      onChanged: (value) {
+                        viewModel.setItemNote(id, value);
+                      },
+                      onSubmitted: (_) {
+                        FocusScope.of(context).unfocus();
+                      },
+                      onTap: () {
+                        _activateItemNote(id);
+                        // ACTION: Set Active ID
+                        viewModel.setActiveNoteId(id);
+                      },
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Divider(height: 1, color: Color(0xFFF3F4F6)),
+                  )
+                ],
+              ),
+            );
+          } else {
+            // --- GENERAL NOTE & SUMMARY BLOCK ---
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 24 : 48,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Order General Note
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.yellow.shade100),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.notes,
+                                size: 16, color: Colors.yellow.shade700),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Catatan Pesanan',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.yellow.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _orderNoteController,
+                          focusNode: _orderFocusNode,
+                          maxLines: 3,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            hintText:
+                                "Contoh: Bungkus dipisah, Meja nomor 5...",
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade300,
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.all(8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade200),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.yellow.shade400),
+                            ),
+                          ),
+                          onSubmitted: (_) {
+                            FocusScope.of(context).unfocus();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Summary
+                  ...[
+                    _buildSummaryRow('Subtotal', formatRupiah(cartTotal)),
+                    // _buildSummaryRow(
+                    //     'Pajak (10%)', formatRupiah(cartTotal * 0.1)),
+                    const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Divider(color: Color(0xFFE5E7EB))),
+                    _buildSummaryRow('Total', formatRupiah(finalTotal),
+                        isTotal: true),
+                  ],
+                  const SizedBox(height: 24),
+
+                  // Pay Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Transaksi Berhasil!\nTotal: ${formatRupiah(finalTotal)}'),
+                          ),
+                        );
+                        // ACTION: Clear Cart
+                        viewModel.clearCart();
+                        Navigator.pop(context); // Tutup bottom sheet
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.sbOrange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Bayar Sekarang',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }
