@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-
-enum AppTab { dashboard, orders }
+import 'package:dashboard/presentation/view_models/dashboard.state.dart';
 
 class BottomNavigationBarCustom extends StatelessWidget {
   final AppTab activeTab;
   final ValueChanged<AppTab> onTabChange;
 
   const BottomNavigationBarCustom({
-    Key? key,
+    super.key,
     required this.activeTab,
     required this.onTabChange,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,94 +1,53 @@
 import 'package:core/core.dart';
 import 'package:product/data/models/cart_model.dart';
 import 'package:product/presentation/widgets/qty_button.dart';
+import 'package:product/presentation/view_models/product_pos.state.dart';
+import 'package:product/presentation/providers/product_pos_provider.dart';
 
-class CartBottomSheet extends StatefulWidget {
-  final List<CartItem> cart;
-  final double total;
-  final Function(int, int) onUpdateQty;
-  final VoidCallback onClear;
-  final String orderNote;
-  final Function(String) onOrderNoteChanged;
-  final Function(int, String) onUpdateItemNote;
-  final int? activeNoteId;
-  final Function(int?) onSetActiveId;
-
-  const CartBottomSheet({
-    super.key,
-    required this.cart,
-    required this.total,
-    required this.onUpdateQty,
-    required this.onClear,
-    required this.orderNote,
-    required this.onOrderNoteChanged,
-    required this.onUpdateItemNote,
-    required this.activeNoteId,
-    required this.onSetActiveId,
-  });
+class CartBottomSheet extends ConsumerStatefulWidget {
+  const CartBottomSheet({super.key});
 
   @override
-  State<CartBottomSheet> createState() => _CartBottomSheetState();
+  ConsumerState<CartBottomSheet> createState() => _CartBottomSheetState();
 }
 
-class _CartBottomSheetState extends State<CartBottomSheet> {
-  late TextEditingController _orderNoteController;
-  final Map<int, TextEditingController> _itemNoteControllers =
-      {}; // key: product.id
-  final Map<int, FocusNode> _itemFocusNodes = {}; // key: product.id
+class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   late FocusNode _orderFocusNode;
+  final Map<int, FocusNode> _itemFocusNodes = {};
+  late TextEditingController _orderNoteController;
+  final Map<int, TextEditingController> _itemNoteControllers = {};
 
   @override
   void initState() {
     super.initState();
-    _orderNoteController = TextEditingController(text: widget.orderNote);
     _orderFocusNode = FocusNode();
 
+    // 1. Initial State Read (One time)
+    final stateProductPos = ref.read(productPosViewModelProvider);
+    // Avoid calling ref.watch in initState; use ref.read for notifiers
+    final viewModel = ref.read(productPosViewModelProvider.notifier);
+
+    _orderNoteController =
+        TextEditingController(text: stateProductPos.orderNote);
+
+    // Listener saat user mengetik di Order Note
     _orderNoteController.addListener(() {
-      widget.onOrderNoteChanged(_orderNoteController.text);
+      // Cek agar tidak looping infinite update
+      if (_orderNoteController.text != stateProductPos.orderNote) {
+        viewModel.setOrderNote(_orderNoteController.text);
+      }
     });
 
-    // Inisialisasi controller untuk setiap item
-    for (final item in widget.cart) {
-      final id = item.product.id ?? 0;
-      _itemNoteControllers[id] = TextEditingController(text: item.note);
-      _itemFocusNodes[id] = FocusNode();
-    }
+    // Inisialisasi controller item
+    _initializeItemControllers(stateProductPos.cart);
   }
 
-  @override
-  void didUpdateWidget(covariant CartBottomSheet oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Update order note jika berubah dari parent
-    if (oldWidget.orderNote != widget.orderNote) {
-      _orderNoteController.text = widget.orderNote;
-    }
-
-    // Update item notes jika cart berubah
-    if (oldWidget.cart.length != widget.cart.length) {
-      // Bersihkan controller lama
-      for (final id in _itemNoteControllers.keys) {
-        if (!widget.cart.any((item) => item.product.id == id)) {
-          _itemNoteControllers[id]?.dispose();
-          _itemFocusNodes[id]?.dispose();
-        }
-      }
-      _itemNoteControllers.clear();
-      _itemFocusNodes.clear();
-
-      // Buat ulang
-      for (final item in widget.cart) {
-        final id = item.product.id ?? 0;
+  void _initializeItemControllers(List<CartItem> cart) {
+    for (final item in cart) {
+      final id = item.product.id ?? 0;
+      if (!_itemNoteControllers.containsKey(id)) {
         _itemNoteControllers[id] = TextEditingController(text: item.note);
         _itemFocusNodes[id] = FocusNode();
-      }
-    } else {
-      // Update text jika note berubah
-      for (final item in widget.cart) {
-        final id = item.product.id;
-        if (_itemNoteControllers[id]?.text != (item.note)) {
-          _itemNoteControllers[id]?.text = item.note;
-        }
       }
     }
   }
@@ -111,6 +70,7 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
   }
 
   void _activateItemNote(int id) {
+    // Unfocus yang lain
     for (final nodeId in _itemFocusNodes.keys) {
       if (nodeId != id) {
         _itemFocusNodes[nodeId]?.unfocus();
@@ -121,10 +81,66 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final double finalTotal = widget.total * 1.1;
+    // 2. WATCH STATE: Agar UI rebuild saat cart/total berubah
+    final stateProductPos = ref.watch(productPosViewModelProvider);
+    final viewModel = ref.read(productPosViewModelProvider.notifier);
+
+    // Hitung Total (bisa ambil dari getter VM atau hitung manual di sini)
+    // Karena getter VM tidak reactive via ref.watch(provider), kita hitung manual via state
+    final double cartTotal =
+        stateProductPos.cart.fold(0, (sum, item) => sum + item.subtotal);
+    final double finalTotal = cartTotal * 1.1; // Pajak 10%
+
+    // 3. LISTEN STATE: Pengganti didUpdateWidget
+    // Digunakan untuk sinkronisasi Controller jika state berubah drastis (add/remove item)
+    ref.listen<ProductPosState>(productPosViewModelProvider, (previous, next) {
+      if (previous == null) return;
+
+      // A. Jika Order Note berubah dari luar (jarang terjadi di bottom sheet, tapi good practice)
+      if (previous.orderNote != next.orderNote &&
+          _orderNoteController.text != next.orderNote) {
+        _orderNoteController.text = next.orderNote;
+      }
+
+      // B. Logic Sinkronisasi Item Controllers
+      if (previous.cart.length != next.cart.length) {
+        // 1. Hapus controller untuk item yang hilang
+        final nextIds = next.cart.map((e) => e.product.id).toSet();
+        _itemNoteControllers.removeWhere((id, controller) {
+          if (!nextIds.contains(id)) {
+            controller.dispose();
+            _itemFocusNodes[id]?.dispose();
+            _itemFocusNodes.remove(id);
+            return true;
+          }
+          return false;
+        });
+
+        // 2. Tambah controller untuk item baru
+        for (final item in next.cart) {
+          final id = item.product.id ?? 0;
+          if (!_itemNoteControllers.containsKey(id)) {
+            _itemNoteControllers[id] = TextEditingController(text: item.note);
+            _itemFocusNodes[id] = FocusNode();
+          }
+        }
+      } else {
+        // Jika length sama, cek apakah text note berubah dari luar (bukan dari ketikan sendiri)
+        for (final item in next.cart) {
+          final id = item.product.id ?? 0;
+          final controller = _itemNoteControllers[id];
+          if (controller != null && controller.text != item.note) {
+            // Cek focus agar tidak mengganggu user yang sedang mengetik
+            if (!(_itemFocusNodes[id]?.hasFocus ?? false)) {
+              controller.text = item.note;
+            }
+          }
+        }
+      }
+    });
 
     return GestureDetector(
-      onTap: _unfocusAll, // Klik di luar input → unfocus semua
+      onTap: _unfocusAll,
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -153,16 +169,19 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Pesanan (${widget.cart.length})',
+                        'Pesanan (${stateProductPos.cart.length})',
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
-                        onPressed: widget.onClear,
+                        // ACTION: Clear Cart
+                        onPressed: () => viewModel.clearCart(),
                         child: const Text(
                           'Hapus Semua',
                           style: TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.w600),
+                            color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -172,14 +191,23 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
             ),
 
             // Items List & General Note
-            Expanded(
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.65,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: widget.cart.length + 1,
+                itemCount: stateProductPos.cart.length + 1,
                 itemBuilder: (context, index) {
-                  if (index < widget.cart.length) {
-                    final item = widget.cart[index];
+                  if (index < stateProductPos.cart.length) {
+                    final item = stateProductPos.cart[index];
                     final id = item.product.id ?? 0;
+
+                    // Safety check jika controller belum ready (karena async gap)
+                    if (!_itemNoteControllers.containsKey(id)) {
+                      _itemNoteControllers[id] =
+                          TextEditingController(text: item.note);
+                      _itemFocusNodes[id] = FocusNode();
+                    }
+
                     final controller = _itemNoteControllers[id]!;
                     final focusNode = _itemFocusNodes[id]!;
 
@@ -204,9 +232,10 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                     Text(
                                       formatRupiah(item.product.price ?? 0),
                                       style: const TextStyle(
-                                          color: AppColors.sbOrange,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.sbOrange,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -221,7 +250,9 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                   children: [
                                     QtyButton(
                                       icon: Icons.remove,
-                                      onTap: () => widget.onUpdateQty(id, -1),
+                                      // ACTION: Update Qty -1
+                                      onTap: () =>
+                                          viewModel.setUpdateQuantity(id, -1),
                                     ),
                                     SizedBox(
                                       width: 32,
@@ -235,7 +266,9 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                     ),
                                     QtyButton(
                                       icon: Icons.add,
-                                      onTap: () => widget.onUpdateQty(id, 1),
+                                      // ACTION: Update Qty +1
+                                      onTap: () =>
+                                          viewModel.setUpdateQuantity(id, 1),
                                       isBlue: true,
                                       color: AppColors.sbBlue,
                                     ),
@@ -271,16 +304,17 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                   ),
                                 ),
                               ),
+                              // ACTION: Update Item Note
                               onChanged: (value) {
-                                widget.onUpdateItemNote(id, value);
+                                viewModel.setItemNote(id, value);
                               },
                               onSubmitted: (_) {
-                                FocusScope.of(context)
-                                    .unfocus(); // tutup keyboard
+                                FocusScope.of(context).unfocus();
                               },
                               onTap: () {
                                 _activateItemNote(id);
-                                widget.onSetActiveId(id);
+                                // ACTION: Set Active ID
+                                viewModel.setActiveNoteId(id);
                               },
                             ),
                           ),
@@ -368,9 +402,9 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                           // Summary
                           ...[
                             _buildSummaryRow(
-                                'Subtotal', formatRupiah(widget.total)),
-                            _buildSummaryRow('Pajak (10%)',
-                                formatRupiah(widget.total * 0.1)),
+                                'Subtotal', formatRupiah(cartTotal)),
+                            _buildSummaryRow(
+                                'Pajak (10%)', formatRupiah(cartTotal * 0.1)),
                             const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8),
                                 child: Divider(color: Color(0xFFE5E7EB))),
@@ -393,7 +427,9 @@ class _CartBottomSheetState extends State<CartBottomSheet> {
                                         'Transaksi Berhasil!\nTotal: ${formatRupiah(finalTotal)}'),
                                   ),
                                 );
-                                widget.onClear();
+                                // ACTION: Clear Cart
+                                viewModel.clearCart();
+                                Navigator.pop(context); // Tutup bottom sheet
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.sbOrange,

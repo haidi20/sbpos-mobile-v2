@@ -1,131 +1,56 @@
-import 'package:core/core.dart'; // Sesuaikan import
+import 'package:core/core.dart';
 import 'package:product/data/data/product_data.dart';
-import 'package:product/data/models/cart_model.dart';
 import 'package:product/data/data/category_data.dart';
 import 'package:product/data/models/product_model.dart';
 import 'package:product/data/models/category_model.dart';
 import 'package:product/presentation/components/product_card.dart';
-import 'package:product/presentation/widgets/cart_bottom_sheet.dart';
+import 'package:product/presentation/view_models/product_pos.vm.dart';
+import 'package:product/presentation/view_models/product_pos.state.dart';
+import 'package:product/presentation/providers/product_pos_provider.dart';
+import 'package:product/presentation/controllers/product_pos.controller.dart';
 
-class ProductPosScreen extends StatefulWidget {
+class ProductPosScreen extends ConsumerStatefulWidget {
   const ProductPosScreen({super.key});
 
   @override
-  State<ProductPosScreen> createState() => _ProductPosScreenState();
+  ConsumerState<ProductPosScreen> createState() => _ProductPosScreenState();
 }
 
-class _ProductPosScreenState extends State<ProductPosScreen> {
-  // State
-  String _activeCategory = "All";
-  final List<CartItem> _cart = [];
-  String _orderNote = "";
-  int? _activeNoteId;
+class _ProductPosScreenState extends ConsumerState<ProductPosScreen> {
+  late ProductPosController _controller;
 
-  // Controller
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = "";
+  @override
+  void initState() {
+    super.initState();
+    _controller = ProductPosController(ref, context);
+  }
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
-  }
-
-  // Logic: Add to Cart
-  void _addToCart(ProductModel product) {
-    setState(() {
-      final index = _cart.indexWhere((item) => item.product.id == product.id);
-      if (index != -1) {
-        _cart[index].quantity++;
-      } else {
-        _cart.add(CartItem(product: product, quantity: 1, note: ''));
-      }
-    });
-  }
-
-  // Logic: Update Quantity
-  void _updateQuantity(int productId, int delta) {
-    setState(() {
-      final index = _cart.indexWhere((item) => item.product.id == productId);
-      if (index != -1) {
-        _cart[index].quantity += delta;
-        if (_cart[index].quantity <= 0) {
-          _cart.removeAt(index);
-        }
-      }
-    });
-  }
-
-  // Logic: Update Item Note
-  void _updateItemNote(int productId, String note) {
-    setState(() {
-      final index = _cart.indexWhere((i) => i.product.id == productId);
-      if (index != -1) {
-        _cart[index].note = note;
-      }
-    });
-  }
-
-  // Logic: Clear Cart
-  void _clearCart() {
-    setState(() {
-      _cart.clear();
-      _orderNote = "";
-      _activeNoteId = null;
-    });
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
-  }
-
-  // Logic: Set Active Note ID
-  void _setActiveNoteId(int? id) {
-    setState(() {
-      _activeNoteId = id;
-    });
-  }
-
-  double get _cartTotal => _cart.fold(0, (sum, item) => sum + item.subtotal);
-  int get _cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
-
-  void _showCartSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CartBottomSheet(
-        cart: _cart,
-        total: _cartTotal,
-        onUpdateQty: _updateQuantity,
-        onClear: _clearCart,
-        orderNote: _orderNote,
-        onOrderNoteChanged: (v) => setState(() => _orderNote = v),
-        onUpdateItemNote: _updateItemNote,
-        activeNoteId: _activeNoteId,
-        onSetActiveId: _setActiveNoteId,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(productPosViewModelProvider);
+    final viewModel = ref.read(productPosViewModelProvider.notifier);
+
     final filteredProducts = initialProducts.where((p) {
-      final matchesCategory = _activeCategory == "All" ||
-          (p.category?.name ?? '') == _activeCategory;
-      final matchesSearch = _searchQuery.isEmpty ||
+      final matchesCategory = state.activeCategory == "All" ||
+          (p.category?.name ?? '') == state.activeCategory;
+      final searchQuery = state.searchQuery ?? '';
+      final matchesSearch = searchQuery.isEmpty ||
           (p.name != null &&
-              p.name!.toLowerCase().contains(_searchQuery.toLowerCase()));
+              p.name!.toLowerCase().contains(
+                    searchQuery.toLowerCase(),
+                  ));
       return matchesCategory && matchesSearch;
     }).toList();
 
     return Scaffold(
       backgroundColor: AppColors.sbBg,
       body: GestureDetector(
-        // 👇 Ini kuncinya: DETEKSI TAP DI MANA SAJA & TUTUP KEYBOARD
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        // 👇 Pastikan tap tetap sampai ke widget di dalam (button, card, dll)
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         behavior: HitTestBehavior.translucent,
         child: SafeArea(
           child: Stack(
@@ -133,16 +58,22 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
               Column(
                 children: [
                   // --- HEADER SECTION ---
-                  _buildHeader(),
+                  _buildHeader(
+                    state: state,
+                    viewModel: viewModel,
+                  ),
                   // --- PRODUCT GRID ---
                   _buildProductList(
+                    viewModel: viewModel,
                     filteredProducts: filteredProducts,
                   ),
                 ],
               ),
-
               // --- FLOATING CART BUTTON ---
-              _buildCartBottomButton(),
+              _buildCartBottomButton(
+                state: state,
+                viewModel: viewModel,
+              ),
             ],
           ),
         ),
@@ -150,7 +81,10 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader({
+    required ProductPosState state,
+    required ProductPosViewModel viewModel,
+  }) {
     return Container(
       color: AppColors.sbBg,
       padding: const EdgeInsets.only(top: 16, bottom: 8),
@@ -186,8 +120,8 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
-              controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val),
+              controller: viewModel.searchController,
+              onChanged: (val) => viewModel.setSearchQuery(val),
               textInputAction: TextInputAction.search,
               // ✅ Tetap pertahankan onTapOutside sebagai cadangan
               onTapOutside: (event) {
@@ -197,12 +131,12 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                 hintText: 'Cari produk...',
                 hintStyle: TextStyle(color: Colors.grey[400]),
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                suffixIcon: _searchQuery.isNotEmpty
+                suffixIcon: (state.searchQuery ?? '').isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, color: Colors.grey),
                         onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = "");
+                          viewModel.searchController.clear();
+                          viewModel.setSearchQuery("");
                           FocusManager.instance.primaryFocus?.unfocus();
                         },
                       )
@@ -238,10 +172,10 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
               itemBuilder: (context, index) {
                 final CategoryModel cat = categories[index];
                 final catName = cat.name ?? 'All';
-                final isActive = _activeCategory == catName;
+                final isActive = state.activeCategory == catName;
                 return InkWell(
                   onTap: () {
-                    setState(() => _activeCategory = catName);
+                    viewModel.setActiveCategory(catName);
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
@@ -275,6 +209,7 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
   }
 
   Widget _buildProductList({
+    required ProductPosViewModel viewModel,
     required List<ProductModel> filteredProducts,
   }) {
     return Expanded(
@@ -297,8 +232,7 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                   sbBlue: AppColors.sbBlue,
                   sbOrange: AppColors.sbOrange,
                   onTap: () {
-                    // ✅ Tidak perlu unfocus di sini — GestureDetector global sudah handle
-                    _addToCart(product);
+                    viewModel.onAddToCart(product);
                   },
                 );
               },
@@ -306,8 +240,11 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
     );
   }
 
-  Widget _buildCartBottomButton() {
-    if (_cart.isNotEmpty) {
+  Widget _buildCartBottomButton({
+    required ProductPosState state,
+    required ProductPosViewModel viewModel,
+  }) {
+    if (state.cart.isNotEmpty) {
       return Positioned(
         bottom: 24,
         left: 16,
@@ -315,7 +252,7 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
         child: GestureDetector(
           onTap: () {
             FocusManager.instance.primaryFocus?.unfocus();
-            _showCartSheet();
+            _controller.onShowCartSheet();
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -365,7 +302,7 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "$_cartCount",
+                                  "${viewModel.cartCount}",
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -389,15 +326,14 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                                 fontSize: 12,
                               ),
                             ),
-                            Flexible(
-                              child: Text(
-                                "Rp ${_cartTotal.toStringAsFixed(0)}",
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                            Text(
+                              viewModel.cartTotal,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
                           ],
@@ -419,8 +355,11 @@ class _ProductPosScreenState extends State<ProductPosScreen> {
                       ),
                     ),
                     SizedBox(width: 8),
-                    Icon(Icons.arrow_forward_ios,
-                        color: Colors.white, size: 16),
+                    Icon(
+                      size: 16,
+                      color: Colors.white,
+                      Icons.arrow_forward_ios,
+                    ),
                   ],
                 ),
               ],

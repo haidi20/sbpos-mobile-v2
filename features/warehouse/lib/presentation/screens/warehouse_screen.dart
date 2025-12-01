@@ -1,7 +1,7 @@
 // warehouse/presentation/screens/warehouse_screen.dart
 import 'package:core/core.dart';
-import 'package:warehouse/presentation/providers/warehouse_provider.dart';
 import 'package:warehouse/presentation/view_models/warehouse.vm.dart';
+import 'package:warehouse/presentation/providers/warehouse_provider.dart';
 
 class WarehouseScreen extends ConsumerWidget {
   const WarehouseScreen({super.key});

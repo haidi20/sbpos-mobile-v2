@@ -1,24 +1,5 @@
+import 'dashboard.state.dart';
 import 'package:core/core.dart';
-
-class DashboardState {
-  final bool isLoading;
-  final String? error;
-
-  DashboardState({
-    this.isLoading = false,
-    this.error,
-  });
-
-  DashboardState copyWith({
-    bool? isLoading,
-    String? error,
-  }) {
-    return DashboardState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-    );
-  }
-}
 
 class DashboardViewModel extends StateNotifier<DashboardState> {
   // final GetDashboardData _getDashboardData;
@@ -29,13 +10,11 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
 
   DashboardViewModel() : super(DashboardState());
 
-  Future<void> fetchDashboardData() async {
-    state = state.copyWith(isLoading: true, error: null);
-    // final result = await _getDashboardData();
-    // result.fold(
-    //   (failure) =>
-    //       state = state.copyWith(isLoading: false, error: failure.message),
-    //   (data) => state = state.copyWith(isLoading: false, data: data),
-    // );
+  Future<void> getData() async {
+    //
+  }
+
+  void onTabChange(AppTab tab) {
+    state = state.copyWith(activeTab: tab);
   }
 }

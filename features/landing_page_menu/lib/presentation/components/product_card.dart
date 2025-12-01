@@ -2,19 +2,19 @@ import 'package:core/core.dart';
 import 'package:product/domain/entities/product_entity.dart';
 import 'package:landing_page_menu/presentation/controllers/landing_page_menu_controller.dart';
 
-class ProductCardWidget extends ConsumerStatefulWidget {
+class ProductCard extends ConsumerStatefulWidget {
   final ProductEntity product;
 
-  const ProductCardWidget({
+  const ProductCard({
     super.key,
     required this.product,
   });
 
   @override
-  ConsumerState<ProductCardWidget> createState() => _ProductCardWidgetState();
+  ConsumerState<ProductCard> createState() => _ProductCardState();
 }
 
-class _ProductCardWidgetState extends ConsumerState<ProductCardWidget> {
+class _ProductCardState extends ConsumerState<ProductCard> {
   late LandingPageMenuController controller;
 
   @override

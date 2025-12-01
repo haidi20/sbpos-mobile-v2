@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:landing_page_menu/landing_page_menu.dart';
-import 'package:landing_page_menu/presentation/widgets/product_card_widget.dart';
+import 'package:landing_page_menu/presentation/components/product_card.dart';
 import 'package:landing_page_menu/presentation/widgets/landing_page_menu_add_widget.dart';
 import 'package:landing_page_menu/presentation/widgets/shopping_cart_summary_bar_widget.dart';
 
@@ -137,8 +137,7 @@ class _LandingPageMenuScreenState extends ConsumerState<LandingPageMenuScreen> {
                                 childAspectRatio: 0.56,
                               ),
                               itemCount: state.products.length,
-                              itemBuilder: (context, index) =>
-                                  ProductCardWidget(
+                              itemBuilder: (context, index) => ProductCard(
                                 product: state.products[index],
                               ),
                             ),

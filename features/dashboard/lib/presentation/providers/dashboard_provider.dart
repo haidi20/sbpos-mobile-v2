@@ -1,6 +1,7 @@
-// dashboard_provider.dart
-// State provider for dashboard
+import 'package:core/core.dart';
+import 'package:dashboard/presentation/view_models/dashboard.state.dart';
+import 'package:dashboard/presentation/view_models/dashboard.vm.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final dashboardProvider = Provider((ref) => null);
+final dashboardViewModelProvider =
+    StateNotifierProvider<DashboardViewModel, DashboardState>(
+        (ref) => DashboardViewModel());
