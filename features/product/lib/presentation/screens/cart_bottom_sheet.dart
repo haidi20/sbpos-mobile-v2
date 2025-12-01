@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
-import 'package:product/data/models/cart_model.dart';
 import 'package:product/presentation/widgets/qty_button.dart';
 import 'package:product/presentation/view_models/product_pos.state.dart';
 import 'package:product/presentation/providers/product_pos_provider.dart';
+import 'package:product/presentation/controllers/cart_bottom_sheet.controller.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -12,73 +12,20 @@ class CartBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
-  late FocusNode _orderFocusNode;
-  final Map<int, FocusNode> _itemFocusNodes = {};
-  late TextEditingController _orderNoteController;
-  final Map<int, TextEditingController> _itemNoteControllers = {};
+  late final CartBottomSheetController _controller;
 
   @override
   void initState() {
     super.initState();
-    _orderFocusNode = FocusNode();
-
-    // 1. Initial State Read (One time)
-    final stateProductPos = ref.read(productPosViewModelProvider);
-    // Avoid calling ref.watch in initState; use ref.read for notifiers
-    final viewModel = ref.read(productPosViewModelProvider.notifier);
-
-    _orderNoteController =
-        TextEditingController(text: stateProductPos.orderNote);
-
-    // Listener saat user mengetik di Order Note
-    _orderNoteController.addListener(() {
-      // Cek agar tidak looping infinite update
-      if (_orderNoteController.text != stateProductPos.orderNote) {
-        viewModel.setOrderNote(_orderNoteController.text);
-      }
-    });
-
-    // Inisialisasi controller item
-    _initializeItemControllers(stateProductPos.cart);
-  }
-
-  void _initializeItemControllers(List<CartItem> cart) {
-    for (final item in cart) {
-      final id = item.product.id ?? 0;
-      if (!_itemNoteControllers.containsKey(id)) {
-        _itemNoteControllers[id] = TextEditingController(text: item.note);
-        _itemFocusNodes[id] = FocusNode();
-      }
-    }
+    _controller = CartBottomSheetController(ref, context);
+    // startListening uses ref.listen internally which must be called during
+    // build; instead we will call ref.listen in build and delegate to controller.
   }
 
   @override
   void dispose() {
-    _orderNoteController.dispose();
-    _orderFocusNode.dispose();
-    for (final controller in _itemNoteControllers.values) {
-      controller.dispose();
-    }
-    for (final node in _itemFocusNodes.values) {
-      node.dispose();
-    }
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _unfocusAll() {
-    FocusScope.of(context).unfocus();
-  }
-
-  void _activateItemNote(int id) {
-    // Unfocus yang lain
-    for (final nodeId in _itemFocusNodes.keys) {
-      if (nodeId != id) {
-        _itemFocusNodes[nodeId]?.unfocus();
-      }
-    }
-    _orderFocusNode.unfocus();
-    // Fokus ke item yang dipilih agar keyboard muncul segera
-    _itemFocusNodes[id]?.requestFocus();
   }
 
   @override
@@ -87,63 +34,17 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     final stateProductPos = ref.watch(productPosViewModelProvider);
     final viewModel = ref.read(productPosViewModelProvider.notifier);
 
-    // Hitung Total (bisa ambil dari getter VM atau hitung manual di sini)
-    // Karena getter VM tidak reactive via ref.watch(provider), kita hitung manual via state
-    final double cartTotal =
-        stateProductPos.cart.fold(0, (sum, item) => sum + item.subtotal);
-    // final double finalTotal = cartTotal * 1.1; // Pajak 10%
-    final double finalTotal = cartTotal;
-
-    // 3. LISTEN STATE: Pengganti didUpdateWidget
-    // Digunakan untuk sinkronisasi Controller jika state berubah drastis (add/remove item)
+    // listen should be called during build; delegate handling to controller
     ref.listen<ProductPosState>(productPosViewModelProvider, (previous, next) {
-      if (previous == null) return;
-
-      // A. Jika Order Note berubah dari luar (jarang terjadi di bottom sheet, tapi good practice)
-      if (previous.orderNote != next.orderNote &&
-          _orderNoteController.text != next.orderNote) {
-        _orderNoteController.text = next.orderNote;
-      }
-
-      // B. Logic Sinkronisasi Item Controllers
-      if (previous.cart.length != next.cart.length) {
-        // 1. Hapus controller untuk item yang hilang
-        final nextIds = next.cart.map((e) => e.product.id).toSet();
-        _itemNoteControllers.removeWhere((id, controller) {
-          if (!nextIds.contains(id)) {
-            controller.dispose();
-            _itemFocusNodes[id]?.dispose();
-            _itemFocusNodes.remove(id);
-            return true;
-          }
-          return false;
-        });
-
-        // 2. Tambah controller untuk item baru
-        for (final item in next.cart) {
-          final id = item.product.id ?? 0;
-          if (!_itemNoteControllers.containsKey(id)) {
-            _itemNoteControllers[id] = TextEditingController(text: item.note);
-            _itemFocusNodes[id] = FocusNode();
-          }
-        }
-      } else {
-        // Jika length sama, cek apakah text note berubah dari luar (bukan dari ketikan sendiri)
-        for (final item in next.cart) {
-          final id = item.product.id ?? 0;
-          final controller = _itemNoteControllers[id];
-          if (controller != null && controller.text != item.note) {
-            // Cek focus agar tidak mengganggu user yang sedang mengetik
-            if (!(_itemFocusNodes[id]?.hasFocus ?? false)) {
-              controller.text = item.note;
-            }
-          }
-        }
-      }
+      _controller.onStateChanged(previous, next);
     });
 
+    // Hitung total via controller
+    final double cartTotal = _controller.cartTotal;
+    final double finalTotal = _controller.finalTotal;
+
     return GestureDetector(
-      onTap: _unfocusAll,
+      onTap: () => _controller.unfocusAll(),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -240,13 +141,14 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
             final id = item.product.id ?? 0;
 
             // Safety check jika controller belum ready (karena async gap)
-            if (!_itemNoteControllers.containsKey(id)) {
-              _itemNoteControllers[id] = TextEditingController(text: item.note);
-              _itemFocusNodes[id] = FocusNode();
+            if (!_controller.itemNoteControllers.containsKey(id)) {
+              _controller.itemNoteControllers[id] =
+                  TextEditingController(text: item.note);
+              _controller.itemFocusNodes[id] = FocusNode();
             }
 
-            final controller = _itemNoteControllers[id]!;
-            final focusNode = _itemFocusNodes[id]!;
+            final controller = _controller.itemNoteControllers[id]!;
+            final focusNode = _controller.itemFocusNodes[id]!;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -346,7 +248,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                         FocusScope.of(context).unfocus();
                       },
                       onTap: () {
-                        _activateItemNote(id);
+                        _controller.activateItemNote(id);
                         // ACTION: Set Active ID
                         viewModel.setActiveNoteId(id);
                       },
@@ -396,8 +298,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                         ),
                         const SizedBox(height: 8),
                         TextField(
-                          controller: _orderNoteController,
-                          focusNode: _orderFocusNode,
+                          controller: _controller.orderNoteController,
+                          focusNode: _controller.orderFocusNode,
                           maxLines: 3,
                           keyboardType: TextInputType.multiline,
                           textInputAction: TextInputAction.done,
