@@ -1,13 +1,13 @@
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/component/quirk_action_button.dart';
+import 'package:dashboard/presentation/component/quirk_menu_button.dart';
 
-class QuickAction extends StatelessWidget {
-  const QuickAction({super.key});
+class QuickMenu extends StatelessWidget {
+  const QuickMenu({super.key});
 
   @override
   Widget build(BuildContext context) {
     List<Widget> menuList = [
-      QuickActionButton(
+      QuickMenuButton(
         icon: Icons.description_outlined,
         label: 'Laporan',
         iconColor: AppColors.sbBlue,
@@ -16,7 +16,7 @@ class QuickAction extends StatelessWidget {
           context.pushNamed(AppRoutes.report);
         },
       ),
-      QuickActionButton(
+      QuickMenuButton(
         icon: Icons.inventory_2_outlined,
         label: 'Stok',
         iconColor: AppColors.sbOrange,
@@ -25,7 +25,7 @@ class QuickAction extends StatelessWidget {
           context.pushNamed(AppRoutes.inventory);
         },
       ),
-      QuickActionButton(
+      QuickMenuButton(
         icon: Icons.fastfood_outlined,
         label: 'Menu',
         iconColor: AppColors.sbGreen,
@@ -34,7 +34,7 @@ class QuickAction extends StatelessWidget {
           context.pushNamed(AppRoutes.productManagement);
         },
       ),
-      QuickActionButton(
+      QuickMenuButton(
         icon: Icons.settings_outlined,
         label: 'Pengaturan',
         iconColor: AppColors.sbGray,

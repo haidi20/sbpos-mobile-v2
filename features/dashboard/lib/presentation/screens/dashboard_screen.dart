@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
+import 'package:dashboard/presentation/widgets/quick_menu.dart';
 import 'package:dashboard/presentation/component/hero_card.dart';
-import 'package:dashboard/presentation/widgets/quick_action.dart';
 import 'package:dashboard/presentation/widgets/analytic_chart.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -19,7 +19,7 @@ class DashboardScreen extends StatelessWidget {
             SizedBox(height: distance),
             HeroCard(),
             SizedBox(height: distance),
-            QuickAction(),
+            QuickMenu(),
             SizedBox(height: distance),
             AnalyticChart(),
             const SizedBox(height: 80),

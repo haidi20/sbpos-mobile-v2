@@ -1,13 +1,13 @@
 import 'package:core/core.dart';
 
-class QuickActionButton extends StatelessWidget {
+class QuickMenuButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color iconColor;
   final Color bgColor;
   final Function()? onTap;
 
-  const QuickActionButton({
+  const QuickMenuButton({
     super.key,
     required this.icon,
     required this.onTap,
