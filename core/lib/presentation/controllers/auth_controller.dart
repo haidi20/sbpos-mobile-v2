@@ -2,7 +2,7 @@
 
 import 'package:core/core.dart';
 import 'package:core/presentation/providers/auth_provider.dart';
-import 'package:core/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:core/presentation/view_models/auth.vm.dart';
 
 class AuthController {
   AuthController(this.ref, this.context);
