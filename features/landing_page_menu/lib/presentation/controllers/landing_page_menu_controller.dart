@@ -35,7 +35,7 @@ class LandingPageMenuController {
   void showReviewImage({
     required ProductEntity product,
   }) {
-    String imageUrl = product.imageUrl ??
+    String imageUrl = product.image ??
         'https://esb-order.oss-ap-southeast-5.aliyuncs.com/images/app/menu/MNU_861_20251027104452_optim.webp';
 
     ReviewImageModal.show(

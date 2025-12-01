@@ -294,19 +294,4 @@ class ProductEntity {
       shopeefoodPrice,
     ]);
   }
-
-  String? get imageUrl {
-    if (image == null) return null;
-    final url = image!.replaceAll(r'\/', '/').replaceAll(r'http:', 'http:');
-    return url;
-  }
-
-  String get formattedPrice {
-    if (price == null) return '';
-    final formatted = price!.toStringAsFixed(0).replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
-    return 'Rp $formatted';
-  }
 }

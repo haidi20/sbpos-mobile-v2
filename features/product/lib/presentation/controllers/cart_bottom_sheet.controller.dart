@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/data/models/cart_model.dart';
+import 'package:product/domain/entities/cart_entity.dart';
 import 'package:product/presentation/view_models/product_pos.vm.dart';
 import 'package:product/presentation/view_models/product_pos.state.dart';
 import 'package:product/presentation/providers/product_pos_provider.dart';
@@ -29,6 +29,7 @@ class CartBottomSheetController {
   final WidgetRef ref;
   final BuildContext context;
 
+  static final Logger _logger = Logger('CartBottomSheetController');
   late FocusNode _orderFocusNode;
   final Map<int, FocusNode> _itemFocusNodes = {};
   late TextEditingController _orderNoteController;
@@ -43,17 +44,17 @@ class CartBottomSheetController {
       .fold(0, (sum, item) => sum + item.subtotal);
 
   double get finalTotal => cartTotal;
-
-  // Expose controllers/focus nodes to UI
   TextEditingController get orderNoteController => _orderNoteController;
   FocusNode get orderFocusNode => _orderFocusNode;
   Map<int, TextEditingController> get itemNoteControllers =>
       _itemNoteControllers;
   Map<int, FocusNode> get itemFocusNodes => _itemFocusNodes;
 
-  // Controller initialized in the primary constructor
+  void activateItemNote(int id) => _activateItemNote(id);
 
-  void _initializeItemControllers(List<CartItem> cart) {
+  void unfocusAll() => _unfocusAll();
+
+  void _initializeItemControllers(List<CartItemEntity> cart) {
     for (final item in cart) {
       final id = item.product.id ?? 0;
       if (!_itemNoteControllers.containsKey(id)) {
@@ -111,8 +112,8 @@ class CartBottomSheetController {
     });
   }
 
-  /// Handler for state changes. Should be invoked from a `ref.listen` called
-  /// during widget build to avoid Riverpod debug assertion.
+  /// Handler untuk perubahan state. Harus dipanggil dari `ref.listen` yang dijalankan saat build widget
+  /// untuk menghindari debug assertion dari Riverpod.
   void onStateChanged(ProductPosState? previous, ProductPosState next) {
     if (previous == null) return;
 
@@ -158,9 +159,22 @@ class CartBottomSheetController {
     }
   }
 
-  void activateItemNote(int id) => _activateItemNote(id);
+  void onUpdateQuantity(int id, int delta) {
+    _viewModel.setUpdateQuantity(id, delta);
+    final stateProductPos = ref.read(productPosViewModelProvider);
 
-  void unfocusAll() => _unfocusAll();
+    final int total = stateProductPos.cart.length;
+
+    // _logger.info("total cart items after update: $total");
+
+    if (total == 0) {
+      FocusScope.of(context).unfocus();
+      // Close the modal bottom sheet if it's open.
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
 
   void dispose() {
     _orderNoteController.dispose();

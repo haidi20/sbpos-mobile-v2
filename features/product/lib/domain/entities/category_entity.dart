@@ -7,6 +7,8 @@ class CategoryEntity {
   final int? categoryParentsId;
   final int? businessId;
   final bool? isActive;
+  final double? value;
+  final int? color;
   final DateTime? deletedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -16,6 +18,8 @@ class CategoryEntity {
     this.id,
     this.idServer,
     this.name,
+    this.value,
+    this.color,
     this.categoryParentsId,
     this.businessId,
     this.isActive,
@@ -31,6 +35,8 @@ class CategoryEntity {
     String? name,
     int? categoryParentsId,
     int? businessId,
+    double? value,
+    int? color,
     bool? isActive,
     DateTime? deletedAt,
     DateTime? createdAt,
@@ -43,6 +49,8 @@ class CategoryEntity {
       name: name ?? this.name,
       categoryParentsId: categoryParentsId ?? this.categoryParentsId,
       businessId: businessId ?? this.businessId,
+      value: value ?? this.value,
+      color: color ?? this.color,
       isActive: isActive ?? this.isActive,
       deletedAt: deletedAt ?? this.deletedAt,
       createdAt: createdAt ?? this.createdAt,
@@ -91,6 +99,8 @@ class CategoryEntity {
         other.categoryParentsId == categoryParentsId &&
         other.businessId == businessId &&
         other.isActive == isActive &&
+        other.value == value &&
+        other.color == color &&
         other.deletedAt == deletedAt &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
@@ -102,6 +112,8 @@ class CategoryEntity {
         id,
         idServer,
         name,
+        value,
+        color,
         categoryParentsId,
         businessId,
         isActive,

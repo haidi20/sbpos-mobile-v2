@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
-import 'package:product/data/models/cart_model.dart';
+import 'package:product/domain/entities/cart_entity.dart';
 
 class CartItemNoteInput extends StatefulWidget {
-  final CartItem item;
+  final CartItemEntity item;
   final Function(String) onUpdateNote;
   final int? activeId;
   final Function(int?) onSetActiveId;

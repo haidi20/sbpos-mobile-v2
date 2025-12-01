@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
-import 'package:product/data/models/product_model.dart';
+import 'package:product/domain/entities/product_entity.dart';
 
 class ProductCard extends StatelessWidget {
-  final ProductModel product;
+  final ProductEntity product;
   final Color sbBlue;
   final Color sbOrange;
   final VoidCallback onTap;

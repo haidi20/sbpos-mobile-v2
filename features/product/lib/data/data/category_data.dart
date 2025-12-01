@@ -1,47 +1,46 @@
 import 'package:core/core.dart';
-import 'package:product/data/models/category_model.dart';
+import 'package:product/domain/entities/category_entity.dart';
 
-// final List<CategoryModel> categories = ["All", "Coffee", "Food", "Drink", "Pastry"];
-final List<CategoryModel> categories = [
-  CategoryModel(
+const List<CategoryEntity> categories = [
+  CategoryEntity(
     id: 1,
     name: "All",
   ),
-  CategoryModel(
+  CategoryEntity(
     id: 2,
     name: "Coffee",
   ),
-  CategoryModel(
+  CategoryEntity(
     id: 3,
     name: "Food",
   ),
-  CategoryModel(
+  CategoryEntity(
     id: 4,
     name: "Drink",
   ),
-  CategoryModel(
+  CategoryEntity(
     id: 5,
     name: "Pastry",
   ),
 ];
 
-final List<CategoryModel> categoryData = [
-  CategoryModel(
+final List<CategoryEntity> categoryData = [
+  CategoryEntity(
     name: 'Coffee',
     value: 45,
     color: AppColors.sbBlue.value,
   ),
-  CategoryModel(
+  CategoryEntity(
     name: 'Food',
     value: 30,
     color: AppColors.sbOrange.value,
   ),
-  CategoryModel(
+  CategoryEntity(
     name: 'Drink',
     value: 15,
     color: AppColors.sbLightBlue.value,
   ),
-  CategoryModel(
+  CategoryEntity(
     name: 'Snack',
     value: 10,
     color: AppColors.sbGold.value,

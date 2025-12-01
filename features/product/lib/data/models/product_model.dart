@@ -25,7 +25,6 @@ class ProductModel {
   final DateTime? updatedAt;
   final DateTime? syncedAt;
 
-  // 👇 Field baru untuk kategori induk & objek kategori
   final int? categoryParentId;
   final String? categoryParentName;
   final CategoryModel? category;
@@ -156,6 +155,12 @@ class ProductModel {
       return null;
     }
 
+    // Logic pembersih URL dipindah kesini (Best Practice)
+    String? cleanImage(String? url) {
+      if (url == null) return null;
+      return url.replaceAll(r'\/', '/').replaceAll(r'http:', 'https:');
+    }
+
     return ProductModel(
       id: json['id'] as int?,
       idServer: json['id'] as int?,
@@ -171,7 +176,7 @@ class ProductModel {
       price: parseDouble(json['price']),
       qty: parseDouble(json['qty']),
       alertQuantity: parseDouble(json['alert_quantity']),
-      image: json['image'] as String?,
+      image: cleanImage(json['image'] as String?),
       productDetails: json['product_details'] as String?,
       isActive: parseBool(json['is_active']),
       isDiffPrice: parseBool(json['is_diffPrice']),

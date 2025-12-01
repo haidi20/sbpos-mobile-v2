@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:product/data/data/product_data.dart';
 import 'package:product/data/data/category_data.dart';
-import 'package:product/data/models/product_model.dart';
-import 'package:product/data/models/category_model.dart';
+import 'package:product/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:product/presentation/components/product_card.dart';
 import 'package:product/presentation/view_models/product_pos.vm.dart';
 import 'package:product/presentation/view_models/product_pos.state.dart';
@@ -170,7 +170,7 @@ class _ProductPosScreenState extends ConsumerState<ProductPosScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final CategoryModel cat = categories[index];
+                final CategoryEntity cat = categories[index];
                 final catName = cat.name ?? 'All';
                 final isActive = state.activeCategory == catName;
                 return InkWell(
@@ -210,7 +210,7 @@ class _ProductPosScreenState extends ConsumerState<ProductPosScreen> {
 
   Widget _buildProductList({
     required ProductPosViewModel viewModel,
-    required List<ProductModel> filteredProducts,
+    required List<ProductEntity> filteredProducts,
   }) {
     return Expanded(
       child: filteredProducts.isEmpty

@@ -1,32 +1,32 @@
-import 'package:product/data/models/cart_model.dart';
+import 'package:product/domain/entities/cart_entity.dart';
 
 class ProductPosState {
   final String? error;
   final bool isLoading;
   final String orderNote;
   final int? activeNoteId;
-  final List<CartItem> cart;
   final String? searchQuery;
   final String activeCategory;
+  final List<CartItemEntity> cart;
 
   ProductPosState({
     this.error,
     this.searchQuery,
     this.activeNoteId,
-    List<CartItem>? cart,
-    this.isLoading = false,
     this.orderNote = "",
+    this.isLoading = false,
+    List<CartItemEntity>? cart,
     this.activeCategory = "All",
   }) : cart = cart ?? const [];
 
   ProductPosState copyWith({
     String? error,
     bool? isLoading,
-    String? searchQuery,
-    String? activeCategory,
-    List<CartItem>? cart,
     String? orderNote,
     int? activeNoteId,
+    String? searchQuery,
+    String? activeCategory,
+    List<CartItemEntity>? cart,
   }) {
     return ProductPosState(
       error: error ?? this.error,

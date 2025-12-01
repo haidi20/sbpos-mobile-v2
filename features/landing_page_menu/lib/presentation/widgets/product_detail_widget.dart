@@ -80,7 +80,7 @@ class _ProductDetailWidgetState extends ConsumerState<ProductDetailWidget> {
             // ✅ Gambar full width & crop atas–bawah → seperti foto contoh
             Positioned.fill(
               child: Image.network(
-                widget.product.imageUrl ?? defaultImageUrl,
+                widget.product.image ?? defaultImageUrl,
                 fit: BoxFit.cover, // ✅ Crop atas–bawah
                 errorBuilder: (context, error, stackTrace) {
                   return Container(

@@ -1,8 +1,7 @@
-import 'package:product/data/models/cart_model.dart';
-import 'package:product/data/models/product_model.dart';
-
-import 'product_pos.state.dart';
 import 'package:core/core.dart';
+import 'product_pos.state.dart';
+import 'package:product/domain/entities/cart_entity.dart';
+import 'package:product/domain/entities/product_entity.dart';
 
 class ProductPosViewModel extends StateNotifier<ProductPosState> {
   ProductPosViewModel() : super(ProductPosState());
@@ -25,13 +24,13 @@ class ProductPosViewModel extends StateNotifier<ProductPosState> {
   void setUpdateQuantity(int productId, int delta) {
     final index = state.cart.indexWhere((item) => item.product.id == productId);
     if (index != -1) {
-      final updatedCart = List<CartItem>.from(state.cart);
+      final updatedCart = List<CartItemEntity>.from(state.cart);
       final newQuantity = updatedCart[index].quantity + delta;
       if (newQuantity <= 0) {
         updatedCart.removeAt(index);
       } else {
         final old = updatedCart[index];
-        updatedCart[index] = CartItem(
+        updatedCart[index] = CartItemEntity(
           product: old.product,
           quantity: newQuantity,
           note: old.note,
@@ -45,9 +44,9 @@ class ProductPosViewModel extends StateNotifier<ProductPosState> {
   void setItemNote(int productId, String note) {
     final index = state.cart.indexWhere((i) => i.product.id == productId);
     if (index != -1) {
-      final updatedCart = List<CartItem>.from(state.cart);
+      final updatedCart = List<CartItemEntity>.from(state.cart);
       final old = updatedCart[index];
-      updatedCart[index] = CartItem(
+      updatedCart[index] = CartItemEntity(
         product: old.product,
         quantity: old.quantity,
         note: note,
@@ -86,21 +85,21 @@ class ProductPosViewModel extends StateNotifier<ProductPosState> {
   }
 
   // Add to Cart
-  void onAddToCart(ProductModel product) {
+  void onAddToCart(ProductEntity product) {
     final index =
         state.cart.indexWhere((item) => item.product.id == product.id);
     if (index != -1) {
-      final updatedCart = List<CartItem>.from(state.cart);
+      final updatedCart = List<CartItemEntity>.from(state.cart);
       final old = updatedCart[index];
-      updatedCart[index] = CartItem(
+      updatedCart[index] = CartItemEntity(
         product: old.product,
         quantity: old.quantity + 1,
         note: old.note,
       );
       state = state.copyWith(cart: updatedCart);
     } else {
-      final updatedCart = List<CartItem>.from(state.cart)
-        ..add(CartItem(
+      final updatedCart = List<CartItemEntity>.from(state.cart)
+        ..add(CartItemEntity(
           note: '',
           quantity: 1,
           product: product,
