@@ -80,7 +80,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
           final saved = await _saveToLocal(txModels);
           return Right(saved!.map((m) => m.toEntity()).toList());
         } else {
-          return _fallbackToLocal(fallbackFailure: const ServerFailure());  
+          return _fallbackToLocal(fallbackFailure: const ServerFailure());
         }
       } on ServerException {
         return _fallbackToLocal(fallbackFailure: const ServerFailure());
@@ -104,7 +104,15 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
       // 1) Selalu simpan lokal terlebih dahulu menggunakan INSERT (synced_at null)
       final localInserted = await local.insertTransaction(txModel);
-      if (localInserted == null) return const Left(UnknownFailure());
+      // _logger
+      //     .info('setTransaction - localInserted: ${localInserted?.toJson()}');
+      if (localInserted == null) {
+        // print for test-time debugging when logger may not be configured
+        // ignore: avoid_print
+        print(
+            'setTransaction: local.insertTransaction returned NULL for txModel: ${txModel.toJson()}');
+        return const Left(UnknownFailure());
+      }
 
       // Jika pemanggil memaksa offline, kembalikan hasil lokal segera
       if (isOffline == true) {
@@ -241,13 +249,57 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       final txModel = transaction.toModel();
 
-      // update local first
-      await local.updateTransaction(txModel.toInsertDbLocal());
+      // If the transaction has no local id, treat this as a create to ensure
+      // a local row exists before attempting an update. This prevents
+      // returning UnknownFailure when callers try to update an unsaved tx.
+      if (txModel.id == null) {
+        _logger.info(
+            'updateTransaction: no local id found, delegating to setTransaction');
+        return await setTransaction(transaction, isOffline: isOffline);
+      }
+
+      // update local first - ensure 'id' is present in map for update
+      final txMapForUpdate =
+          Map<String, dynamic>.from(txModel.toInsertDbLocal())
+            ..['id'] = txModel.id;
+
+      try {
+        final updateCount = await local.updateTransaction(txMapForUpdate);
+        if (updateCount == 0) {
+          // nothing was updated locally (maybe row missing) -> fallback to create
+          _logger.warning(
+              'updateTransaction: local update affected 0 rows, falling back to setTransaction');
+          return await setTransaction(transaction, isOffline: isOffline);
+        }
+      } catch (e, st) {
+        // unexpected local DB error -> log and fallback to create
+        _logger.warning(
+            'updateTransaction: local update threw, fallback to set', e, st);
+        return await setTransaction(transaction, isOffline: isOffline);
+      }
+
+      // If details are provided, replace existing details in local DB so
+      // quantities and subtotals are persisted.
+      if (txModel.details != null && txModel.details!.isNotEmpty) {
+        try {
+          // remove existing details for this transaction then insert new ones
+          await local.deleteDetailsByTransactionId(txModel.id ?? 0);
+          await local.insertDetails(txModel.details!);
+        } catch (e, st) {
+          _logger.warning(
+              'updateTransaction: replacing details failed, continuing', e, st);
+          // don't fail the whole update for detail errors; attempt to continue
+        }
+      }
 
       // if offline requested, return local
       if (isOffline == true) {
         final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) return const Left(UnknownFailure());
+        if (localTx == null) {
+          _logger.warning(
+              'updateTransaction: expected local transaction missing, creating via setTransaction');
+          return await setTransaction(transaction, isOffline: true);
+        }
         return Right(localTx.toEntity());
       }
 

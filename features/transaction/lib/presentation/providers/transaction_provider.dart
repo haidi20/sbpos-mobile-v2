@@ -36,7 +36,15 @@ final deleteTransaction = Provider((ref) {
 
 final transactionViewModelProvider =
     StateNotifierProvider<TransactionViewModel, TransactionState>((ref) {
-  // TransactionViewModel saat ini belum menerima usecase di konstruktor.
-  // Buat tanpa argumen agar sesuai dengan `TransactionViewModel()`.
-  return TransactionViewModel();
+  final createTxn = ref.watch(createTransaction);
+  final updateTxn = ref.watch(updateTransaction);
+  final deleteTxn = ref.watch(deleteTransaction);
+  final getTxn = ref.watch(getTransaction);
+
+  return TransactionViewModel(
+    createTxn,
+    updateTxn,
+    deleteTxn,
+    getTxn,
+  );
 });

@@ -29,6 +29,7 @@ class CartBottomSheetController {
   final Map<int, FocusNode> _itemFocusNodes = {};
   late TextEditingController _orderNoteController;
   final Map<int, TextEditingController> _itemNoteControllers = {};
+  late final Logger _logger = Logger('CartBottomSheetController');
 
   late final TransactionViewModel _viewModel;
   late final TransactionState _stateProductPos;
@@ -54,8 +55,8 @@ class CartBottomSheetController {
     for (final item in details) {
       final id = (item as dynamic).productId ?? 0;
       if (!_itemNoteControllers.containsKey(id)) {
-        _itemNoteControllers[id] =
-            TextEditingController(text: (item as dynamic).note);
+        final noteText = (item as dynamic).note ?? '';
+        _itemNoteControllers[id] = TextEditingController(text: noteText);
         _itemFocusNodes[id] = FocusNode();
       }
     }
@@ -92,8 +93,8 @@ class CartBottomSheetController {
         for (final item in next.details) {
           final id = (item as dynamic).productId ?? 0;
           if (!_itemNoteControllers.containsKey(id)) {
-            _itemNoteControllers[id] =
-                TextEditingController(text: (item as dynamic).note);
+            final noteText = (item as dynamic).note ?? '';
+            _itemNoteControllers[id] = TextEditingController(text: noteText);
             _itemFocusNodes[id] = FocusNode();
           }
         }
@@ -102,10 +103,11 @@ class CartBottomSheetController {
         for (final item in next.details) {
           final id = (item as dynamic).productId ?? 0;
           final controller = _itemNoteControllers[id];
-          if (controller != null && controller.text != (item as dynamic).note) {
+          final noteText = (item as dynamic).note ?? '';
+          if (controller != null && controller.text != noteText) {
             final node = _itemFocusNodes[id];
             if (node == null || !node.hasFocus) {
-              controller.text = (item as dynamic).note;
+              controller.text = noteText;
             }
           }
         }
@@ -152,29 +154,42 @@ class CartBottomSheetController {
       for (final item in next.details) {
         final id = (item as dynamic).productId ?? 0;
         final controller = _itemNoteControllers[id];
-        if (controller != null && controller.text != (item as dynamic).note) {
+        final noteText = (item as dynamic).note ?? '';
+        if (controller != null && controller.text != noteText) {
           final node = _itemFocusNodes[id];
           if (node == null || !node.hasFocus) {
-            controller.text = (item as dynamic).note;
+            controller.text = noteText;
           }
         }
       }
     }
   }
 
-  void onUpdateQuantity(int id, int delta) {
-    _viewModel.setUpdateQuantity(id, delta);
-
+  void onUpdateQuantity(int id, int delta) async {
+    await _viewModel.setUpdateQuantity(id, delta);
     final int total = _viewModel.cartCount;
 
-    // _logger.info("total cart items after update: $total");
+    _logger.info("total cart items after update: $total");
 
-    if (total == 0) {
-      FocusScope.of(context).unfocus();
-      // Close the modal bottom sheet if it's open.
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
+    // Only proceed if the context is still mounted
+    if (context.mounted) {
+      if (total == 0) {
+        FocusScope.of(context).unfocus();
+        // Close the modal bottom sheet if it's open.
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
       }
+    }
+  }
+
+  void onClearCart() {
+    _viewModel.onClearCart();
+
+    FocusScope.of(context).unfocus();
+    // Close the modal bottom sheet if it's open.
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
     }
   }
 

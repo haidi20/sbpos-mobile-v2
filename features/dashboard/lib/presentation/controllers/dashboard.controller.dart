@@ -8,7 +8,7 @@ class DashboardController {
   final BuildContext context;
 
   void onAddClick() {
-    _logger.info('[DashboardController] onAddClick invoked');
+    // _logger.info('[DashboardController] onAddClick invoked');
 
     context.pushNamed(AppRoutes.transaction);
   }

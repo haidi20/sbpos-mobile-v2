@@ -227,4 +227,9 @@ class TransactionEntity {
         updatedAt,
         deletedAt,
       );
+
+  @override
+  String toString() {
+    return 'TransactionEntity(id: $id, shiftId: $shiftId, warehouseId: $warehouseId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, details: $details)';
+  }
 }

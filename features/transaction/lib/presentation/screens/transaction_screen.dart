@@ -120,7 +120,7 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
-              controller: viewModel.searchController,
+              controller: _controller.searchController,
               onChanged: (val) => viewModel.setSearchQuery(val),
               textInputAction: TextInputAction.search,
               // ✅ Tetap pertahankan onTapOutside sebagai cadangan
@@ -135,7 +135,7 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
                     ? IconButton(
                         icon: const Icon(Icons.clear, color: Colors.grey),
                         onPressed: () {
-                          viewModel.searchController.clear();
+                          _controller.searchController.clear();
                           viewModel.setSearchQuery("");
                           FocusManager.instance.primaryFocus?.unfocus();
                         },

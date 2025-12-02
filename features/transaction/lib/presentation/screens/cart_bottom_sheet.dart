@@ -81,13 +81,13 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Pesanan (${stateTransaction.details.length})',
+                'Pesanan (${viewModel.cartCount} items)',
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton(
                 // ACTION: Clear Cart
-                onPressed: () => viewModel.clearCart(),
+                onPressed: () => _controller.onClearCart(),
                 child: const Text(
                   'Hapus Semua',
                   style: TextStyle(

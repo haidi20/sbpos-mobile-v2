@@ -1,5 +1,6 @@
 // Domain entity for transaction detail
 
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 
 class TransactionDetailEntity {
@@ -89,6 +90,42 @@ class TransactionDetailEntity {
     );
   }
 
+  /// Create a TransactionDetailEntity from a ProductEntity
+  factory TransactionDetailEntity.fromProductEntity({
+    required int transactionId,
+    required ProductEntity product,
+    int? qty,
+    String? note,
+  }) {
+    final intPrice = product.price?.toInt();
+    final effectiveQty = qty ?? 1;
+    return TransactionDetailEntity(
+      transactionId: transactionId,
+      productId: product.id,
+      productName: product.name,
+      productPrice: intPrice,
+      qty: effectiveQty,
+      subtotal: (intPrice ?? 0) * effectiveQty,
+      note: note,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// Convert this detail into a minimal ProductEntity
+  ProductEntity toProductEntity() {
+    return ProductEntity(
+      id: productId,
+      name: productName,
+      price: productPrice?.toDouble(),
+      qty: qty?.toDouble(),
+      deletedAt: deletedAt,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      productDetails: note,
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -120,4 +157,21 @@ class TransactionDetailEntity {
         deletedAt,
         note,
       );
+
+  @override
+  String toString() {
+    return 'TransactionDetailEntity('
+        'id: $id, '
+        'transactionId: $transactionId, '
+        'productId: $productId, '
+        'productName: $productName, '
+        'productPrice: $productPrice, '
+        'qty: $qty, '
+        'subtotal: $subtotal, '
+        'createdAt: $createdAt, '
+        'updatedAt: $updatedAt, '
+        'deletedAt: $deletedAt, '
+        'note: $note'
+        ')';
+  }
 }
