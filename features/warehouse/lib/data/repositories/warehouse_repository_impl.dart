@@ -17,14 +17,22 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
   });
 
   Future<List<WarehouseEntity>> _getLocalEntities() async {
-    final localData = await local.getWarehouses();
-    return localData.map((model) => model.toEntity()).toList();
+    final localResp = await local.getWarehouses();
+    return localResp.map((model) => model.toEntity()).toList();
   }
 
-  Future<void> _saveToLocal(List<WarehouseModel>? warehouses) async {
+  Future<List<WarehouseModel>?> _saveToLocal(
+      List<WarehouseModel>? warehouses) async {
     if (warehouses != null && warehouses.isNotEmpty) {
-      await local.insertSyncWarehouses(warehouses: warehouses);
+      final response = await local.insertSyncWarehouses(warehouses: warehouses);
+      if (response.isEmpty) {
+        _logger.warning('No warehouses were synchronized to local database.');
+        return null;
+      }
+
+      return response;
     }
+    return null;
   }
 
   Future<Either<Failure, List<WarehouseEntity>>> _fallbackToLocal({
@@ -47,10 +55,11 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
         final response = await remote.fetchWarehouses();
 
         if (response.success == true && response.data != null) {
-          await _saveToLocal(response.data);
-          final entities =
-              response.data!.map((model) => model.toEntity()).toList();
-          return Right(entities);
+          // Simpan hasil remote ke local terlebih dahulu
+          final getWarehouses = await _saveToLocal(response.data);
+
+          return Right(
+              getWarehouses!.map((model) => model.toEntity()).toList());
         } else {
           return _fallbackToLocal(fallbackFailure: const ServerFailure());
         }

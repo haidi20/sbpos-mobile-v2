@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:product/presentation/widgets/qty_button.dart';
-import 'package:product/presentation/view_models/product_pos.state.dart';
-import 'package:product/presentation/providers/product_pos_provider.dart';
-import 'package:product/presentation/controllers/cart_bottom_sheet.controller.dart';
+import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
+import 'package:transaction/presentation/providers/transaction_provider.dart';
+import 'package:transaction/presentation/view_models/transaction.state.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -31,11 +31,12 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   @override
   Widget build(BuildContext context) {
     // 2. WATCH STATE: Agar UI rebuild saat cart/total berubah
-    final stateProductPos = ref.watch(productPosViewModelProvider);
-    final viewModel = ref.read(productPosViewModelProvider.notifier);
+    final stateTransaction = ref.watch(transactionViewModelProvider);
+    final viewModel = ref.read(transactionViewModelProvider.notifier);
 
     // listen should be called during build; delegate handling to controller
-    ref.listen<ProductPosState>(productPosViewModelProvider, (previous, next) {
+    ref.listen<TransactionState>(transactionViewModelProvider,
+        (previous, next) {
       _controller.onStateChanged(previous, next);
     });
 
@@ -51,10 +52,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
         ),
         child: Column(
           children: [
-            _buildHeader(stateProductPos, viewModel),
+            _buildHeader(stateTransaction, viewModel),
             _buildOrderList(
               viewModel: viewModel,
-              stateProductPos: stateProductPos,
+              stateTransaction: stateTransaction,
             ),
           ],
         ),
@@ -62,7 +63,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     );
   }
 
-  Widget _buildHeader(ProductPosState stateProductPos, dynamic viewModel) {
+  Widget _buildHeader(TransactionState stateTransaction, dynamic viewModel) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       child: Column(
@@ -80,7 +81,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Pesanan (${stateProductPos.cart.length})',
+                'Pesanan (${stateTransaction.cart.length})',
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
@@ -104,7 +105,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
 
   Widget _buildOrderList({
     required dynamic viewModel,
-    required ProductPosState stateProductPos,
+    required TransactionState stateTransaction,
   }) {
     final double cartTotal = _controller.cartTotal;
     final double finalTotal = _controller.finalTotal;
@@ -113,13 +114,13 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       height: MediaQuery.of(context).size.height * 0.65,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        itemCount: stateProductPos.cart.length + 1,
+        itemCount: stateTransaction.cart.length + 1,
         itemBuilder: (context, index) {
-          if (index < stateProductPos.cart.length) {
+          if (index < stateTransaction.cart.length) {
             return _buildOrderCard(
               index: index,
               viewModel: viewModel,
-              stateProductPos: stateProductPos,
+              stateTransaction: stateTransaction,
             );
           }
 
@@ -253,9 +254,9 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   Widget _buildOrderCard({
     required int index,
     required dynamic viewModel,
-    required ProductPosState stateProductPos,
+    required TransactionState stateTransaction,
   }) {
-    final item = stateProductPos.cart[index];
+    final item = stateTransaction.cart[index];
     final id = item.product.id ?? 0;
 
     // Safety check jika controller belum ready (karena async gap)

@@ -1,34 +1,95 @@
-import 'package:core/utils/helpers/base_error_helper.dart';
+import 'package:core/core.dart';
+import 'package:core/data/datasources/core_database.dart';
 import 'package:warehouse/data/models/warehouse_model.dart';
-import 'package:warehouse/data/datasources/warehouse_database.dart';
+import 'package:warehouse/data/datasources/db/warehouse.dao.dart';
 
 class WarehouseLocalDataSource with BaseErrorHelper {
-  final WarehouseDatabase databaseHelper = WarehouseDatabase();
+  final CoreDatabase databaseHelper = CoreDatabase();
+  final _logger = Logger('WarehouseLocalDataSource');
 
   Future<List<WarehouseModel>> getWarehouses() async {
-    final result = await databaseHelper.getWarehouses();
+    try {
+      final db = await databaseHelper.database;
+      if (db == null) {
+        _logger.warning("Database gagal dibuka/null");
+        return [];
+      }
+      final query = WarehouseDao(db);
 
-    if (result.isNotEmpty) {
-      return result.map((e) => WarehouseModel.fromDbLocal(e)).toList();
-    } else {
+      final result = await query.getWarehouses();
+
+      return result;
+    } catch (e, st) {
+      _logger.severe('Error getWarehouses', e, st);
       return [];
     }
   }
 
-  Future<void> insertSyncWarehouses({
+  Future<WarehouseModel?> insertDataWarehouse(
+    WarehouseModel insertWarehouse,
+  ) async {
+    try {
+      final db = await databaseHelper.database;
+      if (db == null) {
+        _logger.warning("Database gagal dibuka/null");
+        return null;
+      }
+      final query = WarehouseDao(db);
+
+      final insertedWarehouse =
+          await query.insertWarehouse(insertWarehouse.toInsertDbLocal());
+
+      return insertedWarehouse;
+    } catch (e, st) {
+      _logger.severe('Error insertDataWarehouse', e, st);
+      rethrow;
+    }
+  }
+
+  Future<List<WarehouseModel>> insertSyncWarehouses({
     required List<WarehouseModel>? warehouses,
   }) async {
-    if (warehouses == null || warehouses.isEmpty) return;
+    if (warehouses == null || warehouses.isEmpty) return [];
 
-    final now = DateTime.now();
+    try {
+      final now = DateTime.now();
 
-    // Isi syncedAt = sekarang pada setiap model sebelum konversi
-    final dbEntities = warehouses.map((e) {
-      // Jika WarehouseModel punya copyWith (immutable)
-      final modelWithSync = e.copyWith(syncedAt: now);
-      return modelWithSync.toInsertDbLocal();
-    }).toList();
+      final dbEntities = warehouses.map((e) {
+        final modelWithSync = e.copyWith(syncedAt: now);
+        return modelWithSync.toInsertDbLocal();
+      }).toList();
 
-    await databaseHelper.insertSyncWarehouses(dbEntities);
+      final db = await databaseHelper.database;
+      if (db == null) {
+        _logger.warning("Database gagal dibuka/null");
+        return [];
+      }
+      final query = WarehouseDao(db);
+      final result = await query.insertSyncWarehouses(dbEntities);
+
+      return result;
+    } catch (e, st) {
+      _logger.severe('Error insertSyncWarehouses', e, st);
+      return [];
+    }
+  }
+
+  Future<int> deleteAllWarehouses({
+    required int id,
+  }) async {
+    try {
+      final db = await databaseHelper.database;
+      if (db == null) {
+        _logger.warning("Database gagal dibuka/null");
+        return 0;
+      }
+      final query = WarehouseDao(db);
+      final result = await query.deleteWarehouse(id);
+
+      return result;
+    } catch (e, st) {
+      _logger.severe('Error deleteAllWarehouses', e, st);
+      rethrow;
+    }
   }
 }

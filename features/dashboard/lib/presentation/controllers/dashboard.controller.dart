@@ -10,6 +10,6 @@ class DashboardController {
   void onAddClick() {
     _logger.info('[DashboardController] onAddClick invoked');
 
-    context.pushNamed(AppRoutes.productPos);
+    context.pushNamed(AppRoutes.transaction);
   }
 }

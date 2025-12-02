@@ -1,6 +1,6 @@
 import 'package:product/domain/entities/cart_entity.dart';
 
-class ProductPosState {
+class TransactionState {
   final String? error;
   final bool isLoading;
   final String orderNote;
@@ -9,7 +9,7 @@ class ProductPosState {
   final String activeCategory;
   final List<CartItemEntity> cart;
 
-  ProductPosState({
+  TransactionState({
     this.error,
     this.searchQuery,
     this.activeNoteId,
@@ -19,7 +19,7 @@ class ProductPosState {
     this.activeCategory = "All",
   }) : cart = cart ?? const [];
 
-  ProductPosState copyWith({
+  TransactionState copyWith({
     String? error,
     bool? isLoading,
     String? orderNote,
@@ -28,7 +28,7 @@ class ProductPosState {
     String? activeCategory,
     List<CartItemEntity>? cart,
   }) {
-    return ProductPosState(
+    return TransactionState(
       error: error ?? this.error,
       isLoading: isLoading ?? this.isLoading,
       searchQuery: searchQuery ?? this.searchQuery,

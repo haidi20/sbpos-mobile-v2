@@ -6,25 +6,25 @@ import 'package:transaction/presentation/providers/transaction_provider.dart';
 
 class CartBottomSheetController {
   CartBottomSheetController(this.ref, this.context) {
-    _stateTransaction = ref.read(transactionViewModelProvider);
+    _stateProductPos = ref.read(transactionViewModelProvider);
     _viewModel = ref.read(transactionViewModelProvider.notifier);
 
     _orderFocusNode = FocusNode();
 
     _orderNoteController =
-        TextEditingController(text: _stateTransaction.orderNote);
+        TextEditingController(text: _stateProductPos.orderNote);
 
     // Listener saat user mengetik di Order Note
     _orderNoteController.addListener(() {
-      if (_orderNoteController.text != _stateTransaction.orderNote) {
+      if (_orderNoteController.text != _stateProductPos.orderNote) {
         _viewModel.setOrderNote(_orderNoteController.text);
       }
     });
 
     // Inisialisasi controller item
-    _initializeItemControllers(_stateTransaction.cart);
+    _initializeItemControllers(_stateProductPos.cart);
   }
-  // static final Logger _logger = Logger('TransactionController');
+  // static final Logger _logger = Logger('ProductPosController');
 
   final WidgetRef ref;
   final BuildContext context;
@@ -36,8 +36,7 @@ class CartBottomSheetController {
   final Map<int, TextEditingController> _itemNoteControllers = {};
 
   late final TransactionViewModel _viewModel;
-  late final TransactionState _stateTransaction;
-
+  late final TransactionState _stateProductPos;
   double get cartTotal => ref
       .read(transactionViewModelProvider)
       .cart

@@ -1,12 +1,11 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/screens/cart_bottom_sheet.dart';
 
-class ProductPosController {
+class TransactionController {
   final WidgetRef ref;
   final BuildContext context;
 
-  ProductPosController(this.ref, this.context);
-
+  TransactionController(this.ref, this.context);
   void onShowCartSheet() {
     showModalBottomSheet(
       context: context,

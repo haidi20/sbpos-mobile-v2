@@ -18,6 +18,10 @@ dependencies:
     path: ../warehouse
   dashboard:
     path: ../dashboard
+  product:
+    path: ../product
+  setting:
+    path: ../setting
 dev_dependencies:
   flutter_test:
     sdk: flutter

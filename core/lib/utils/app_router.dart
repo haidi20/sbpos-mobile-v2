@@ -4,11 +4,11 @@ import 'package:core/presentation/screens/login_screen.dart';
 import 'package:setting/presentation/screens/setting_screen.dart';
 import 'package:dashboard/presentation/screens/report_screen.dart';
 import 'package:product/presentation/screens/inventory_screen.dart';
-import 'package:product/presentation/screens/product_pos_screen.dart';
-import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/presentation/screens/product_management_screen.dart';
+import 'package:transaction/presentation/screens/transaction_history_screen.dart';
+import 'package:transaction/presentation/screens/transaction_screen.dart';
 
 class AppRouter {
   static final AppRouter _instance = AppRouter._();
@@ -58,10 +58,10 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: AppRoutes.productPos,
-          name: AppRoutes.productPos,
+          path: AppRoutes.transactionHistory,
+          name: AppRoutes.transactionHistory,
           pageBuilder: (context, state) {
-            return const MaterialPage(child: ProductPosScreen());
+            return const MaterialPage(child: TransactionHistoryScreen());
           },
         ),
         GoRoute(

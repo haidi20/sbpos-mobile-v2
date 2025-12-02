@@ -1,10 +1,10 @@
 import 'package:core/core.dart';
-import 'product_pos.state.dart';
+import 'transaction.state.dart';
 import 'package:product/domain/entities/cart_entity.dart';
 import 'package:product/domain/entities/product_entity.dart';
 
-class ProductPosViewModel extends StateNotifier<ProductPosState> {
-  ProductPosViewModel() : super(ProductPosState());
+class TransactionViewModel extends StateNotifier<TransactionState> {
+  TransactionViewModel() : super(TransactionState());
 
   final TextEditingController _searchController = TextEditingController();
 

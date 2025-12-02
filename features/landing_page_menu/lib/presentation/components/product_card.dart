@@ -58,7 +58,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: CachedNetworkImage(
-                  imageUrl: widget.product.imageUrl ??
+                  imageUrl: widget.product.image ??
                       'https://esb-order.oss-ap-southeast-5.aliyuncs.com/images/app/menu/MNU_861_20251027104452_optim.webp',
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
@@ -103,7 +103,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
 
             // Harga
             Text(
-              widget.product.formattedPrice,
+              widget.product.price?.toString() ?? '0',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
