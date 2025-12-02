@@ -1,10 +1,14 @@
 import 'package:core/core.dart';
+import 'package:transaction/data/dummy/transaction.dummy.dart';
 import 'transaction.state.dart';
-import 'package:product/domain/entities/cart_entity.dart';
 import 'package:product/domain/entities/product_entity.dart';
+import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionViewModel extends StateNotifier<TransactionState> {
-  TransactionViewModel() : super(TransactionState());
+  TransactionViewModel() : super(TransactionState()) {
+    //
+  }
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -14,44 +18,62 @@ class TransactionViewModel extends StateNotifier<TransactionState> {
     super.dispose();
   }
 
-  String get cartTotal =>
-      formatRupiah(state.cart.fold(0, (sum, item) => sum + item.subtotal));
+  List<TransactionDetailEntity> get filteredDetails {
+    final query = state.searchQuery?.toLowerCase() ?? "";
+    final category = state.activeCategory;
 
-  int get cartCount => state.cart.fold(0, (sum, item) => sum + item.quantity);
+    return state.details.where((item) {
+      final matchesQuery =
+          item.productName?.toLowerCase().contains(query) ?? false;
+      final matchesCategory = category == "All" ||
+          (item.note?.toLowerCase() == category.toLowerCase());
+      return matchesQuery && matchesCategory;
+    }).toList();
+  }
+
+  String get cartTotal {
+    final total = state.details.fold<int>(0, (sum, item) {
+      if (item.subtotal != null) return sum + (item.subtotal ?? 0);
+      final price = item.productPrice ?? 0;
+      final qty = item.qty ?? 0;
+      return sum + (price * qty);
+    });
+    return formatRupiah(total.toDouble());
+  }
+
+  int get cartCount =>
+      state.details.fold(0, (sum, item) => sum + (item.qty ?? 0));
 
   TextEditingController get searchController => _searchController;
 
   void setUpdateQuantity(int productId, int delta) {
-    final index = state.cart.indexWhere((item) => item.product.id == productId);
+    final index =
+        state.details.indexWhere((item) => item.productId == productId);
     if (index != -1) {
-      final updatedCart = List<CartItemEntity>.from(state.cart);
-      final newQuantity = updatedCart[index].quantity + delta;
-      if (newQuantity <= 0) {
-        updatedCart.removeAt(index);
+      final updated = List<TransactionDetailEntity>.from(state.details);
+      final old = updated[index];
+      final newQty = (old.qty ?? 0) + delta;
+      if (newQty <= 0) {
+        updated.removeAt(index);
       } else {
-        final old = updatedCart[index];
-        updatedCart[index] = CartItemEntity(
-          product: old.product,
-          quantity: newQuantity,
-          note: old.note,
+        final price = old.productPrice ?? 0;
+        updated[index] = old.copyWith(
+          qty: newQty,
+          subtotal: price * newQty,
         );
       }
-      state = state.copyWith(cart: updatedCart);
+      state = state.copyWith(details: updated);
     }
   }
 
   // Update Item Note
   void setItemNote(int productId, String note) {
-    final index = state.cart.indexWhere((i) => i.product.id == productId);
+    final index = state.details.indexWhere((i) => i.productId == productId);
     if (index != -1) {
-      final updatedCart = List<CartItemEntity>.from(state.cart);
-      final old = updatedCart[index];
-      updatedCart[index] = CartItemEntity(
-        product: old.product,
-        quantity: old.quantity,
-        note: note,
-      );
-      state = state.copyWith(cart: updatedCart);
+      final updated = List<TransactionDetailEntity>.from(state.details);
+      final old = updated[index];
+      updated[index] = old.copyWith(note: note);
+      state = state.copyWith(details: updated);
     }
   }
 
@@ -73,7 +95,8 @@ class TransactionViewModel extends StateNotifier<TransactionState> {
   // Clear Cart
   void clearCart() {
     state = state.copyWith(
-      cart: [],
+      details: [],
+      transaction: null,
       orderNote: "",
       activeNoteId: null,
     );
@@ -86,25 +109,27 @@ class TransactionViewModel extends StateNotifier<TransactionState> {
 
   // Add to Cart
   void onAddToCart(ProductEntity product) {
-    final index =
-        state.cart.indexWhere((item) => item.product.id == product.id);
+    final index = state.details.indexWhere((d) => d.productId == product.id);
     if (index != -1) {
-      final updatedCart = List<CartItemEntity>.from(state.cart);
-      final old = updatedCart[index];
-      updatedCart[index] = CartItemEntity(
-        product: old.product,
-        quantity: old.quantity + 1,
-        note: old.note,
+      final updated = List<TransactionDetailEntity>.from(state.details);
+      final old = updated[index];
+      final newQty = (old.qty ?? 0) + 1;
+      updated[index] = old.copyWith(
+        qty: newQty,
+        subtotal: (old.productPrice ?? product.price?.toInt() ?? 0) * newQty,
       );
-      state = state.copyWith(cart: updatedCart);
+      state = state.copyWith(details: updated);
     } else {
-      final updatedCart = List<CartItemEntity>.from(state.cart)
-        ..add(CartItemEntity(
-          note: '',
-          quantity: 1,
-          product: product,
-        ));
-      state = state.copyWith(cart: updatedCart);
+      final newDetail = TransactionDetailEntity(
+        productId: product.id,
+        productName: product.name,
+        productPrice: product.price?.toInt(),
+        qty: 1,
+        subtotal: product.price?.toInt(),
+      );
+      final updated = List<TransactionDetailEntity>.from(state.details)
+        ..add(newDetail);
+      state = state.copyWith(details: updated);
     }
   }
 }

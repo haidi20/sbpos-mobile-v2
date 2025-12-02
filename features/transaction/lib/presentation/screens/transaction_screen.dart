@@ -244,7 +244,7 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
     required TransactionState state,
     required TransactionViewModel viewModel,
   }) {
-    if (state.cart.isNotEmpty) {
+    if (state.details.isNotEmpty) {
       return Positioned(
         bottom: 24,
         left: 16,

@@ -81,7 +81,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Pesanan (${stateTransaction.cart.length})',
+                'Pesanan (${stateTransaction.details.length})',
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
@@ -114,9 +114,9 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       height: MediaQuery.of(context).size.height * 0.65,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        itemCount: stateTransaction.cart.length + 1,
+        itemCount: viewModel.filteredDetails.length + 1,
         itemBuilder: (context, index) {
-          if (index < stateTransaction.cart.length) {
+          if (index < viewModel.filteredDetails.length) {
             return _buildOrderCard(
               index: index,
               viewModel: viewModel,
@@ -256,8 +256,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     required dynamic viewModel,
     required TransactionState stateTransaction,
   }) {
-    final item = stateTransaction.cart[index];
-    final id = item.product.id ?? 0;
+    final item = stateTransaction.details[index];
+    final id = item.productId ?? 0;
 
     // Safety check jika controller belum ready (karena async gap)
     if (!_controller.itemNoteControllers.containsKey(id)) {
@@ -281,7 +281,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.product.name ?? '',
+                      item.productName ?? '',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -289,7 +289,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      formatRupiah(item.product.price ?? 0),
+                      formatRupiah((item.productPrice ?? 0).toDouble()),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -315,7 +315,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                     SizedBox(
                       width: 32,
                       child: Text(
-                        '${item.quantity}',
+                        '${item.qty ?? 0}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),

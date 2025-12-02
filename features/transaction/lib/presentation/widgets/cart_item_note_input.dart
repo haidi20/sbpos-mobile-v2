@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/cart_entity.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class CartItemNoteInput extends StatefulWidget {
-  final CartItemEntity item;
+  final TransactionDetailEntity item;
   final Function(String) onUpdateNote;
   final int? activeId;
   final Function(int?) onSetActiveId;
@@ -10,8 +10,8 @@ class CartItemNoteInput extends StatefulWidget {
   const CartItemNoteInput({
     super.key,
     required this.item,
-    required this.onUpdateNote,
     required this.activeId,
+    required this.onUpdateNote,
     required this.onSetActiveId,
   });
 
@@ -26,7 +26,7 @@ class _CartItemNoteInputState extends State<CartItemNoteInput> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.item.note);
+    _controller = TextEditingController(text: widget.item.note ?? '');
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
   }
@@ -34,28 +34,28 @@ class _CartItemNoteInputState extends State<CartItemNoteInput> {
   @override
   void didUpdateWidget(covariant CartItemNoteInput oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.activeId == widget.item.product.id && !_focusNode.hasFocus) {
+    if (widget.activeId == widget.item.productId && !_focusNode.hasFocus) {
       _focusNode.requestFocus();
     }
     // Sinkronisasi controller jika state luar (misal: tombol X ditekan) mereset catatan
-    if (_controller.text != widget.item.note) {
-      _controller.text = widget.item.note;
+    if (_controller.text != (widget.item.note ?? '')) {
+      _controller.text = widget.item.note ?? '';
     }
   }
 
   void _handleFocusChange() {
     if (!_focusNode.hasFocus) {
       // Logika Blur: Ketika input kehilangan fokus
-      if (widget.activeId == widget.item.product.id) {
+      if (widget.activeId == widget.item.productId) {
         widget.onSetActiveId(null);
       }
       // Jika catatan kosong saat blur, reset teks controller (agar placeholder muncul saat dibuka lagi)
-      if (widget.item.note.isEmpty && _controller.text.isNotEmpty) {
+      if ((widget.item.note ?? '').isEmpty && _controller.text.isNotEmpty) {
         _controller.clear();
       }
     } else {
       // Logika Focus: Ketika input mendapat fokus
-      widget.onSetActiveId(widget.item.product.id);
+      widget.onSetActiveId(widget.item.productId);
     }
   }
 
@@ -69,13 +69,13 @@ class _CartItemNoteInputState extends State<CartItemNoteInput> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasNote = widget.item.note.isNotEmpty;
-    final bool isActive = widget.activeId == widget.item.product.id;
+    final bool hasNote = (widget.item.note ?? '').isNotEmpty;
+    final bool isActive = widget.activeId == widget.item.productId;
 
     if (!hasNote && !isActive) {
       // State 1: Tampilkan tombol 'Tambah Catatan'
       return TextButton.icon(
-        onPressed: () => widget.onSetActiveId(widget.item.product.id),
+        onPressed: () => widget.onSetActiveId(widget.item.productId),
         icon: Icon(Icons.edit, size: 14, color: Colors.grey.shade400),
         label: Text('Tambah Catatan',
             style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),

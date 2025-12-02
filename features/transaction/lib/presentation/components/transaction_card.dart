@@ -72,9 +72,11 @@ class TransactionCard extends StatelessWidget {
                               size: 12, color: Colors.grey.shade500),
                           const SizedBox(width: 4),
                           Text(
-                            tx.date ?? '-',
+                            (tx.date ?? '-').toString(),
                             style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade500),
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -97,7 +99,7 @@ class TransactionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      formatRupiah(tx.totalAmount ?? 0),
+                      formatRupiah(tx.totalAmount?.toDouble() ?? 0.0),
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.sbBlue,

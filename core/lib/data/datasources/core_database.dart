@@ -1,7 +1,8 @@
 import 'package:core/core.dart';
 import 'package:core/data/datasources/db/auth_user.table.dart';
 import 'package:warehouse/data/datasources/db/warehouse.table.dart';
-import 'package:product/data/datasources/db/cart.table.dart';
+import 'package:transaction/data/datasources/db/transaction.table.dart';
+import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 
 class CoreDatabase {
   static CoreDatabase? _databaseHelper;
@@ -52,7 +53,8 @@ class CoreDatabase {
     try {
       await db.execute(AuthUserTable.createTableQuery);
       await db.execute(WarehouseTable.createTableQuery);
-      await db.execute(CartTable.createTableQuery);
+      await db.execute(TransactionTable.createTableQuery);
+      await db.execute(TransactionDetailTable.createTableQuery);
     } catch (e, stack) {
       _logger.severe('Failed to create tables', e, stack);
       rethrow;

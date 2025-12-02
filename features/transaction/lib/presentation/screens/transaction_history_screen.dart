@@ -1,8 +1,10 @@
 import 'package:core/core.dart';
-import 'package:transaction/data/data/transaction_data.dart';
+import 'package:transaction/data/dummy/transaction.dummy.dart';
 import 'package:transaction/data/models/transaction_model.dart';
 import 'package:transaction/presentation/components/transaction_card.dart';
 import 'package:transaction/presentation/screens/transaction_history_detail_screen.dart';
+import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -16,11 +18,37 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String _searchQuery = "";
 
   void _showTransactionDetail(BuildContext context, TransactionModel tx) {
+    // Convert model to domain entity and extract details if available
+    final entity = TransactionEntity.fromModel(tx);
+    final rawItems = (tx as dynamic).items as List<dynamic>?;
+    final details = (rawItems ?? []).map((it) {
+      final dyn = it as dynamic;
+      final int? productPrice = dyn.productPrice is double
+          ? (dyn.productPrice as double).toInt()
+          : dyn.productPrice as int?;
+      final int? subtotal = dyn.subtotal is double
+          ? (dyn.subtotal as double).toInt()
+          : dyn.subtotal as int?;
+      return TransactionDetailEntity(
+        id: dyn.id,
+        transactionId: dyn.transactionId,
+        productId: dyn.productId,
+        productName: dyn.productName,
+        productPrice: productPrice,
+        qty: dyn.qty,
+        subtotal: subtotal,
+        note: dyn.note,
+      );
+    }).toList();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => TransactionHistoryDetailScreen(tx: tx),
+      builder: (context) => TransactionHistoryDetailScreen(
+        tx: entity,
+        details: details,
+      ),
     );
   }
 

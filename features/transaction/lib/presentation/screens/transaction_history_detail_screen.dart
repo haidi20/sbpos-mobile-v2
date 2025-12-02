@@ -1,20 +1,25 @@
 import 'package:core/core.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/presentation/components/detail_info_card.dart';
 import 'package:transaction/presentation/components/summary_row_card.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 
 class TransactionHistoryDetailScreen extends StatelessWidget {
-  final TransactionModel tx;
+  final TransactionEntity tx;
+  final List<TransactionDetailEntity> details;
 
   const TransactionHistoryDetailScreen({
     super.key,
     required this.tx,
+    required this.details,
   });
 
   @override
   Widget build(BuildContext context) {
     final notes = tx.notes ?? '';
+    final dateString =
+        '${tx.date.day}/${tx.date.month}/${tx.date.year} ${tx.date.hour.toString().padLeft(2, '0')}:${tx.date.minute.toString().padLeft(2, '0')}';
 
     return Container(
       decoration: const BoxDecoration(
@@ -93,7 +98,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        formatRupiah(tx.totalAmount ?? 0),
+                        formatRupiah(tx.totalAmount.toDouble()),
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -131,12 +136,12 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                       DetailInfoCard(
                         icon: Icons.access_time,
                         label: 'Tanggal',
-                        value: tx.date ?? '-',
+                        value: dateString,
                       ),
                       DetailInfoCard(
                         icon: Icons.person_outline,
                         label: 'Kasir (ID)',
-                        value: 'User #${tx.userId}',
+                        value: tx.userId != null ? 'User #${tx.userId}' : '-',
                       ),
                       DetailInfoCard(
                         icon: Icons.store_outlined,
@@ -167,7 +172,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Items List
-                  ...((tx.items ?? []).map((item) {
+                  ...((details).map((item) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
@@ -187,7 +192,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${item.qty ?? 0} x ${formatRupiah(item.productPrice ?? 0)}',
+                                  '${item.qty ?? 0} x ${formatRupiah((item.productPrice ?? 0).toDouble())}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade500,
@@ -197,7 +202,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            formatRupiah(item.subtotal ?? 0),
+                            formatRupiah((item.subtotal ?? 0).toDouble()),
                             style: const TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 14,
@@ -282,7 +287,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCard(TransactionModel tx) {
+  Widget _buildSummaryCard(TransactionEntity tx) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -293,9 +298,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
         children: [
           SummaryRowCard(
             label: 'Subtotal',
-            value: formatRupiah(
-              tx.totalAmount ?? 0,
-            ),
+            value: formatRupiah(tx.totalAmount.toDouble()),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -308,10 +311,8 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
             ),
           ),
           SummaryRowCard(
-            label: 'Bayar (${tx.paymentMethod})',
-            value: formatRupiah(
-              tx.paidAmount ?? 0,
-            ),
+            label: 'Bayar (${tx.paymentMethod ?? '-'})',
+            value: formatRupiah((tx.paidAmount ?? 0).toDouble()),
           ),
           const SizedBox(height: 8),
           Row(
@@ -325,7 +326,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                formatRupiah(tx.changeMoney ?? 0),
+                formatRupiah(tx.changeMoney.toDouble()),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.sbBlue,

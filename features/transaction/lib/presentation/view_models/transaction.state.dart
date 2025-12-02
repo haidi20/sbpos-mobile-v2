@@ -1,4 +1,5 @@
-import 'package:product/domain/entities/cart_entity.dart';
+import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionState {
   final String? error;
@@ -7,7 +8,8 @@ class TransactionState {
   final int? activeNoteId;
   final String? searchQuery;
   final String activeCategory;
-  final List<CartItemEntity> cart;
+  final TransactionEntity? transaction;
+  final List<TransactionDetailEntity> details;
 
   TransactionState({
     this.error,
@@ -15,9 +17,10 @@ class TransactionState {
     this.activeNoteId,
     this.orderNote = "",
     this.isLoading = false,
-    List<CartItemEntity>? cart,
+    this.transaction,
+    List<TransactionDetailEntity>? details,
     this.activeCategory = "All",
-  }) : cart = cart ?? const [];
+  }) : details = details ?? const [];
 
   TransactionState copyWith({
     String? error,
@@ -26,14 +29,16 @@ class TransactionState {
     int? activeNoteId,
     String? searchQuery,
     String? activeCategory,
-    List<CartItemEntity>? cart,
+    TransactionEntity? transaction,
+    List<TransactionDetailEntity>? details,
   }) {
     return TransactionState(
       error: error ?? this.error,
       isLoading: isLoading ?? this.isLoading,
       searchQuery: searchQuery ?? this.searchQuery,
       activeCategory: activeCategory ?? this.activeCategory,
-      cart: cart ?? this.cart,
+      transaction: transaction ?? this.transaction,
+      details: details ?? this.details,
       orderNote: orderNote ?? this.orderNote,
       activeNoteId: activeNoteId ?? this.activeNoteId,
     );

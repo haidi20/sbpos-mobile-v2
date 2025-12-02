@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/cart_entity.dart';
 import 'package:transaction/presentation/view_models/transaction.vm.dart';
 import 'package:transaction/presentation/view_models/transaction.state.dart';
 import 'package:transaction/presentation/providers/transaction_provider.dart';
@@ -21,8 +20,8 @@ class CartBottomSheetController {
       }
     });
 
-    // Inisialisasi controller item
-    _initializeItemControllers(_stateProductPos.cart);
+    // Inisialisasi controller item dari details
+    _initializeItemControllers(_stateProductPos.details);
   }
   // static final Logger _logger = Logger('ProductPosController');
 
@@ -37,10 +36,12 @@ class CartBottomSheetController {
 
   late final TransactionViewModel _viewModel;
   late final TransactionState _stateProductPos;
-  double get cartTotal => ref
-      .read(transactionViewModelProvider)
-      .cart
-      .fold(0, (sum, item) => sum + item.subtotal);
+  double get cartTotal =>
+      ref.read(transactionViewModelProvider).details.fold(0, (sum, item) {
+        final subtotal =
+            item.subtotal ?? ((item.productPrice ?? 0) * (item.qty ?? 0));
+        return sum + (subtotal ?? 0);
+      }).toDouble();
 
   double get finalTotal => cartTotal;
   TextEditingController get orderNoteController => _orderNoteController;
@@ -53,11 +54,12 @@ class CartBottomSheetController {
 
   void unfocusAll() => _unfocusAll();
 
-  void _initializeItemControllers(List<CartItemEntity> cart) {
-    for (final item in cart) {
-      final id = item.product.id ?? 0;
+  void _initializeItemControllers(List<dynamic> details) {
+    for (final item in details) {
+      final id = (item as dynamic).productId ?? 0;
       if (!_itemNoteControllers.containsKey(id)) {
-        _itemNoteControllers[id] = TextEditingController(text: item.note);
+        _itemNoteControllers[id] =
+            TextEditingController(text: (item as dynamic).note);
         _itemFocusNodes[id] = FocusNode();
       }
     }
@@ -76,9 +78,10 @@ class CartBottomSheetController {
       }
 
       // B. Logic Sinkronisasi Item Controllers
-      if (previous.cart.length != next.cart.length) {
+      if (previous.details.length != next.details.length) {
         // 1. Hapus controller untuk item yang hilang
-        final nextIds = next.cart.map((e) => e.product.id).toSet();
+        final nextIds =
+            next.details.map((e) => (e as dynamic).productId).toSet();
         _itemNoteControllers.removeWhere((id, controller) {
           if (!nextIds.contains(id)) {
             controller.dispose();
@@ -90,21 +93,22 @@ class CartBottomSheetController {
         });
 
         // 2. Tambah controller untuk item baru
-        for (final item in next.cart) {
-          final id = item.product.id ?? 0;
+        for (final item in next.details) {
+          final id = (item as dynamic).productId ?? 0;
           if (!_itemNoteControllers.containsKey(id)) {
-            _itemNoteControllers[id] = TextEditingController(text: item.note);
+            _itemNoteControllers[id] =
+                TextEditingController(text: (item as dynamic).note);
             _itemFocusNodes[id] = FocusNode();
           }
         }
       } else {
         // Jika length sama, cek apakah text note berubah dari luar
-        for (final item in next.cart) {
-          final id = item.product.id ?? 0;
+        for (final item in next.details) {
+          final id = (item as dynamic).productId ?? 0;
           final controller = _itemNoteControllers[id];
-          if (controller != null && controller.text != item.note) {
+          if (controller != null && controller.text != (item as dynamic).note) {
             if (!(_itemFocusNodes[id]?.hasFocus ?? false)) {
-              controller.text = item.note;
+              controller.text = (item as dynamic).note;
             }
           }
         }
@@ -124,9 +128,9 @@ class CartBottomSheetController {
     }
 
     // B. Logic Sinkronisasi Item Controllers
-    if (previous.cart.length != next.cart.length) {
+    if (previous.details.length != next.details.length) {
       // 1. Hapus controller untuk item yang hilang
-      final nextIds = next.cart.map((e) => e.product.id).toSet();
+      final nextIds = next.details.map((e) => (e as dynamic).productId).toSet();
       _itemNoteControllers.removeWhere((id, controller) {
         if (!nextIds.contains(id)) {
           controller.dispose();
@@ -138,21 +142,22 @@ class CartBottomSheetController {
       });
 
       // 2. Tambah controller untuk item baru
-      for (final item in next.cart) {
-        final id = item.product.id ?? 0;
+      for (final item in next.details) {
+        final id = (item as dynamic).productId ?? 0;
         if (!_itemNoteControllers.containsKey(id)) {
-          _itemNoteControllers[id] = TextEditingController(text: item.note);
+          _itemNoteControllers[id] =
+              TextEditingController(text: (item as dynamic).note);
           _itemFocusNodes[id] = FocusNode();
         }
       }
     } else {
       // Jika length sama, cek apakah text note berubah dari luar
-      for (final item in next.cart) {
-        final id = item.product.id ?? 0;
+      for (final item in next.details) {
+        final id = (item as dynamic).productId ?? 0;
         final controller = _itemNoteControllers[id];
-        if (controller != null && controller.text != item.note) {
+        if (controller != null && controller.text != (item as dynamic).note) {
           if (!(_itemFocusNodes[id]?.hasFocus ?? false)) {
-            controller.text = item.note;
+            controller.text = (item as dynamic).note;
           }
         }
       }
