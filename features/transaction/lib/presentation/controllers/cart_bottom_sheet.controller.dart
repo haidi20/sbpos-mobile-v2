@@ -23,12 +23,8 @@ class CartBottomSheetController {
     // Inisialisasi controller item dari details
     _initializeItemControllers(_stateProductPos.details);
   }
-  // static final Logger _logger = Logger('ProductPosController');
-
   final WidgetRef ref;
   final BuildContext context;
-
-  static final Logger _logger = Logger('CartBottomSheetController');
   late FocusNode _orderFocusNode;
   final Map<int, FocusNode> _itemFocusNodes = {};
   late TextEditingController _orderNoteController;
@@ -40,7 +36,7 @@ class CartBottomSheetController {
       ref.read(transactionViewModelProvider).details.fold(0, (sum, item) {
         final subtotal =
             item.subtotal ?? ((item.productPrice ?? 0) * (item.qty ?? 0));
-        return sum + (subtotal ?? 0);
+        return sum + subtotal;
       }).toDouble();
 
   double get finalTotal => cartTotal;
@@ -107,7 +103,8 @@ class CartBottomSheetController {
           final id = (item as dynamic).productId ?? 0;
           final controller = _itemNoteControllers[id];
           if (controller != null && controller.text != (item as dynamic).note) {
-            if (!(_itemFocusNodes[id]?.hasFocus ?? false)) {
+            final node = _itemFocusNodes[id];
+            if (node == null || !node.hasFocus) {
               controller.text = (item as dynamic).note;
             }
           }
@@ -156,7 +153,8 @@ class CartBottomSheetController {
         final id = (item as dynamic).productId ?? 0;
         final controller = _itemNoteControllers[id];
         if (controller != null && controller.text != (item as dynamic).note) {
-          if (!(_itemFocusNodes[id]?.hasFocus ?? false)) {
+          final node = _itemFocusNodes[id];
+          if (node == null || !node.hasFocus) {
             controller.text = (item as dynamic).note;
           }
         }

@@ -1,9 +1,9 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/presentation/components/detail_info_card.dart';
 import 'package:transaction/presentation/components/summary_row_card.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionHistoryDetailScreen extends StatelessWidget {
   final TransactionEntity tx;
@@ -259,7 +259,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {},
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.sbBlue),
+                        side: const BorderSide(color: AppColors.sbBlue),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
@@ -268,7 +268,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                         ),
                         backgroundColor: Colors.white,
                       ),
-                      child: Text(
+                      child: const Text(
                         'Cetak Struk',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,

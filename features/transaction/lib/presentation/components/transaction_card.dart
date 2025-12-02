@@ -7,10 +7,10 @@ class TransactionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const TransactionCard({
+    super.key,
     required this.tx,
     required this.onTap,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

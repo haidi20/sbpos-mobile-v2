@@ -105,6 +105,29 @@ class ApiHelper {
     return response;
   }
 
+  Future<http.Response> put({
+    required String url,
+    Map<String, dynamic>? body,
+  }) async {
+    final client = await apiClient; // Memastikan apiClient didefinisikan
+    final ioClient = IOClient(client);
+
+    getUserLogin = await _localDataSource.getUser();
+    final token = getUserLogin?.token ?? "";
+
+    final headers = {
+      HttpHeaders.authorizationHeader: "Bearer $token",
+    };
+
+    final response = await ioClient.put(
+      Uri.parse(url),
+      headers: headers,
+      body: body,
+    );
+
+    return response;
+  }
+
   Future<http.StreamedResponse> postWithImage({
     required String url,
     required Map<String, dynamic> body,
@@ -318,7 +341,7 @@ class ApiHelper {
   }
 
   // delete
-  Future<dynamic> delete({
+  Future<http.Response> delete({
     var url,
     final headers,
     var body,

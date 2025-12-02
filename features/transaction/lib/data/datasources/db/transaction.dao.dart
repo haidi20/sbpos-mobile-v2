@@ -32,9 +32,36 @@ class TransactionDao {
     }
   }
 
+  Future<TransactionModel?> getTransactionById(int id) async {
+    try {
+      final txResult = await database.query(
+        TransactionTable.tableName,
+        where: '${TransactionTable.colId} = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      if (txResult.isEmpty) return null;
+
+      final details = await database.query(
+        TransactionDetailTable.tableName,
+        where: '${TransactionDetailTable.colTransactionId} = ?',
+        whereArgs: [id],
+      );
+      final txModel = TransactionModel.fromDbLocal(txResult.first);
+      final detailModels =
+          details.map((e) => TransactionDetailModel.fromDbLocal(e)).toList();
+      return txModel.copyWith(details: detailModels);
+    } catch (e, s) {
+      _logger.severe('Error getTransactionById: $e', e, s);
+      rethrow;
+    }
+  }
+
   Future<TransactionModel> insertTransaction(Map<String, dynamic> tx) async {
     try {
       return await database.transaction((txn) async {
+        // Pastikan record yang di-insert pertama kali memiliki `synced_at` = NULL
+        tx[TransactionTable.colSyncedAt] = null;
         final id = await txn.insert(TransactionTable.tableName, tx);
         final inserted = await txn.query(
           TransactionTable.tableName,
@@ -47,6 +74,48 @@ class TransactionDao {
       });
     } catch (e, s) {
       _logger.severe('Error insertTransaction: $e', e, s);
+      rethrow;
+    }
+  }
+
+  /// Insert transaction beserta detailnya dalam satu transaksi DB.
+  /// `tx` adalah map untuk table transactions, `details` adalah list map untuk transaction_details.
+  Future<TransactionModel> insertSyncTransaction(
+      Map<String, dynamic> tx, List<Map<String, dynamic>> details) async {
+    try {
+      return await database.transaction((txn) async {
+        final id = await txn.insert(TransactionTable.tableName, tx);
+
+        List<TransactionDetailModel> insertedDetails = [];
+        for (var d in details) {
+          // pastikan transaction_id terisi
+          d[TransactionDetailTable.colTransactionId] = id;
+          final detailId =
+              await txn.insert(TransactionDetailTable.tableName, d);
+          final result = await txn.query(
+            TransactionDetailTable.tableName,
+            where: '${TransactionDetailTable.colId} = ?',
+            whereArgs: [detailId],
+            limit: 1,
+          );
+          if (result.isNotEmpty) {
+            insertedDetails
+                .add(TransactionDetailModel.fromDbLocal(result.first));
+          }
+        }
+
+        final txResult = await txn.query(
+          TransactionTable.tableName,
+          where: '${TransactionTable.colId} = ?',
+          whereArgs: [id],
+          limit: 1,
+        );
+
+        return TransactionModel.fromDbLocal(txResult.first)
+            .copyWith(details: insertedDetails);
+      });
+    } catch (e, s) {
+      _logger.severe('Error insertSyncTransaction: $e', e, s);
       rethrow;
     }
   }
@@ -69,6 +138,20 @@ class TransactionDao {
       return await database.delete(TransactionTable.tableName);
     } catch (e, s) {
       _logger.severe('Error clearTransactions: $e', e, s);
+      rethrow;
+    }
+  }
+
+  Future<int> updateTransaction(Map<String, dynamic> tx) async {
+    try {
+      return await database.update(
+        TransactionTable.tableName,
+        tx,
+        where: '${TransactionTable.colId} = ?',
+        whereArgs: [tx['id']],
+      );
+    } catch (e, s) {
+      _logger.severe('Error updateTransaction: $e', e, s);
       rethrow;
     }
   }

@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:flutter/foundation.dart';
+import 'package:transaction/data/responses/transaction.response.dart';
 
 /// Data source untuk mengambil data transaksi dari API remote.
 /// Struktur dan perilaku mengikuti pola pada `warehouse_remote_data_source.dart`.
@@ -16,26 +16,54 @@ class TransactionRemoteDataSource with BaseErrorHelper {
         api = api ?? API,
         _apiHelper = apiHelper ?? ApiHelper();
 
-  Future<dynamic> fetchTransactions({Map<String, dynamic>? params}) async {
+  Future<TransactionResponse> fetchTransactions(
+      {Map<String, dynamic>? params}) async {
     final response = await handleApiResponse(
       () async =>
           _apiHelper.get(url: '$host/$api/transactions', params: params ?? {}),
     );
 
-    final decoded = jsonDecode(response.body);
-    return decoded;
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
   }
 
-  Future<void> _writeResponseToFile(dynamic response) async {
-    if (!kDebugMode) return;
+  /// Kirim transaksi ke API remote. Mengembalikan respons ter-decode.
+  Future<TransactionResponse> postTransaction(
+      Map<String, dynamic> payload) async {
+    final response = await handleApiResponse(
+      () async =>
+          _apiHelper.post(url: '$host/$api/transactions', body: payload),
+    );
 
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      final filePath = '${dir.path}/response_transactions.json';
-      final file = File(filePath);
-      await file.writeAsString(response.body, flush: true);
-    } catch (e, st) {
-      print('Error menyimpan file transactions: $e\n$st');
-    }
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
   }
+
+  Future<TransactionResponse> getTransaction(int id) async {
+    final response = await handleApiResponse(
+      () async => _apiHelper.get(url: '$host/$api/transactions/$id'),
+    );
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  Future<TransactionResponse> updateTransaction(
+      int id, Map<String, dynamic> payload) async {
+    final response = await handleApiResponse(
+      () async =>
+          _apiHelper.put(url: '$host/$api/transactions/$id', body: payload),
+    );
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  Future<TransactionResponse> deleteTransaction(int id) async {
+    final response = await handleApiResponse(
+      () async => _apiHelper.delete(url: '$host/$api/transactions/$id'),
+    );
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  // _writeResponseToFile removed — tidak digunakan
 }
