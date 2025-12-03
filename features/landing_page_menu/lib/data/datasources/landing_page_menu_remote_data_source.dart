@@ -47,6 +47,7 @@ class LandingPageMenuRemoteDataSource with BaseErrorHelper {
     }
   }
 
+  // ignore: unused_element
   Future<void> _writeResponseToFile(dynamic response) async {
     if (!kDebugMode) return;
 

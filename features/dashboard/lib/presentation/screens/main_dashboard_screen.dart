@@ -1,10 +1,10 @@
 import 'package:core/core.dart';
-import 'package:dashboard/presentation/controllers/dashboard.controller.dart';
 import 'package:dashboard/presentation/widgets/main_header.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:dashboard/presentation/view_models/dashboard.state.dart';
-import 'package:transaction/presentation/screens/transaction_screen.dart';
 import 'package:dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:transaction/presentation/screens/transaction.screen.dart';
+import 'package:dashboard/presentation/controllers/dashboard.controller.dart';
 import 'package:dashboard/presentation/widgets/bottom_navigation_bar_custom.dart';
 import 'package:dashboard/presentation/component/floating_action_button_custom.dart';
 

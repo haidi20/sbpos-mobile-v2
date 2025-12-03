@@ -81,12 +81,12 @@ class CoreRemoteDataSource with BaseErrorHelper {
       await file.writeAsString(response.body, flush: true);
 
       if (await file.exists()) {
-        print("ada file response_api.json");
+        debugPrint("ada file response_api.json");
       } else {
-        print('❌ Gagal menyimpan file');
+        debugPrint('❌ Gagal menyimpan file');
       }
     } catch (e, st) {
-      print('Error menyimpan file: $e\n$st');
+      debugPrint('Error menyimpan file: $e\n$st');
     }
   }
 }

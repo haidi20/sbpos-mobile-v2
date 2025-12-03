@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
@@ -149,7 +150,7 @@ class ApiHelper {
           final item = value[i];
           item.toJson().forEach((nestedKey, nestedValue) {
             if (nestedKey != "image_file") {
-              print("bukan image_file");
+              debugPrint("bukan image_file");
               request.fields['$key[$i][$nestedKey]'] = jsonEncode(nestedValue);
             }
           });
@@ -174,7 +175,7 @@ class ApiHelper {
       } else {
         // print(" key = $key & value = $value");
         if (value is File && value.existsSync()) {
-          print("ada image_file");
+          debugPrint("ada image_file");
           request.fields['image_status'] = "ada image";
           request.files.add(await http.MultipartFile.fromPath(
             'image',
@@ -261,7 +262,7 @@ class ApiHelper {
       } else {
         // print(" key = $key & value = $value");
         if (value is File && value.existsSync()) {
-          print("ada image_file");
+          debugPrint("ada image_file");
           request.fields['image_status'] = "ada image";
           request.files.add(await http.MultipartFile.fromPath(
             'image',
@@ -336,7 +337,7 @@ class ApiHelper {
       throw ApiNotRespondingException(
           'API not responded in time', url.toString());
     } catch (e) {
-      print('Error occured with code : $e');
+      debugPrint('Error occured with code : $e');
     }
   }
 

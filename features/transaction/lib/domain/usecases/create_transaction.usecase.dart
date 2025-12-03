@@ -9,6 +9,9 @@ class CreateTransaction {
 
   Future<Either<Failure, TransactionEntity>> call(TransactionEntity tx,
       {bool? isOffline}) async {
-    return await repository.createTransaction(tx, isOffline: isOffline);
+    // Ensure newly created transactions are marked as pending by default.
+    final txWithPending = tx.copyWith(status: TransactionStatus.pending);
+    return await repository.createTransaction(txWithPending,
+        isOffline: isOffline);
   }
 }

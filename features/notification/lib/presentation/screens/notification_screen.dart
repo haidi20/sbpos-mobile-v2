@@ -5,7 +5,7 @@ import 'package:notification/data/data/notification_data.dart';
 import 'package:notification/data/models/notification_model.dart';
 
 class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({Key? key}) : super(key: key);
+  const NotificationScreen({super.key});
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();

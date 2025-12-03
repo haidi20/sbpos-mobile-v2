@@ -1,5 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
+
+final _helpersLogger = Logger('helpers');
 
 IconData getIconData(String? iconName) {
   final name = (iconName ?? '').toLowerCase().trim();
@@ -43,4 +49,56 @@ String formatRupiah(double amount) {
   final formatter =
       NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   return formatter.format(amount);
+}
+
+/// Pastikan map hanya berisi nilai yang didukung sqflite (num, String, Uint8List).
+/// - Konversi DateTime ke string ISO
+/// - Konversi bool ke integer (1/0)
+/// - Encode Map/Iterable ke string JSON
+/// - Hapus key dengan nilai null agar tidak memasukkan `Null` ke sqflite
+Map<String, dynamic> sanitizeForDb(Map<String, dynamic> src) {
+  final out = <String, dynamic>{};
+  // Keep a shallow copy for debug logging
+  final before = Map<String, dynamic>.from(src);
+
+  src.forEach((key, value) {
+    // drop nulls
+    if (value == null) return;
+    // drop empty trimmed strings
+    if (value is String && value.trim().isEmpty) return;
+    // drop empty collections
+    if (value is Iterable && value.isEmpty) return;
+    if (value is Map && value.isEmpty) return;
+
+    if (value is DateTime) {
+      out[key] = value.toIso8601String();
+    } else if (value is bool) {
+      out[key] = value ? 1 : 0;
+    } else if (value is num || value is String || value is Uint8List) {
+      out[key] = value;
+    } else if (value is Map || value is Iterable) {
+      try {
+        out[key] = jsonEncode(value);
+      } catch (_) {
+        out[key] = value.toString();
+      }
+    } else {
+      // fallback to string representation
+      out[key] = value.toString();
+    }
+  });
+
+  // debug logging of sanitization
+  _helpersLogger.fine('sanitizeForDb before: $before');
+  _helpersLogger.fine('sanitizeForDb after: $out');
+  return out;
+}
+
+/// Extension untuk memformat DateTime ke string format "Hari, dd MMMM yyyy HH:mm" dalam bahasa Indonesia.
+extension DateTimeReadableId on DateTime {
+  String toReadableId() {
+    // Format: "Hari, dd MMMM yyyy HH:mm" dalam bahasa Indonesia
+    final formatter = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID');
+    return formatter.format(this);
+  }
 }

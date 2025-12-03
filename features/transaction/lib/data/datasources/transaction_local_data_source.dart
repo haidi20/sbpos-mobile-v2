@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+// dart:typed_data not needed here
 import 'package:core/core.dart';
 import 'package:core/data/datasources/core_database.dart';
 import 'package:transaction/data/models/transaction_model.dart';
@@ -28,9 +28,9 @@ class TransactionLocalDataSource with BaseErrorHelper {
     if (isShowLog) _logger.severe(msg, error, st);
   }
 
-  /// Optional [testDb] can be provided for integration tests to use an
-  /// in-memory or injected database instance. When provided, the helper
-  /// will use it instead of the global CoreDatabase.
+  /// [testDb] opsional dapat diberikan untuk pengujian integrasi agar menggunakan
+  /// instance database in-memory atau yang di-inject. Jika disediakan, helper
+  /// akan menggunakannya alih-alih CoreDatabase global.
   TransactionLocalDataSource({Database? testDb}) : _testDb = testDb;
 
   // Simple retry helper for transient DB exceptions (e.g., simulated disk issues)
@@ -66,31 +66,6 @@ class TransactionLocalDataSource with BaseErrorHelper {
     }
   }
 
-  Future<TransactionModel?> insertTransaction(TransactionModel tx) async {
-    try {
-      final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
-      }
-      final query = createDao(db);
-      final raw = tx.toInsertDbLocal();
-      final sanitized = _sanitizeForDb(raw);
-      _logFine('insertTransaction - sanitized tx map: $sanitized');
-      final inserted = await _withRetry(
-        () async => await query.insertTransaction(
-          sanitized,
-        ),
-      );
-      _logInfo('insertTransaction: success id=${inserted.id}');
-
-      return inserted;
-    } catch (e, st) {
-      _logSevere('Error insertTransaction', e, st);
-      rethrow;
-    }
-  }
-
   Future<TransactionModel?> getTransactionById(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
@@ -113,6 +88,48 @@ class TransactionLocalDataSource with BaseErrorHelper {
     }
   }
 
+  /// Returns the latest transaction (created_at desc) or null if none.
+  Future<TransactionModel?> getLatestTransaction() async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database gagal dibuka/null');
+        return null;
+      }
+      final query = createDao(db);
+      final latest = await query.getLatestTransaction();
+      return latest;
+    } catch (e, st) {
+      _logSevere('Error getLatestTransaction', e, st);
+      rethrow;
+    }
+  }
+
+  Future<TransactionModel?> insertTransaction(TransactionModel tx) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database gagal dibuka/null');
+        return null;
+      }
+      final query = createDao(db);
+      final raw = tx.toInsertDbLocal();
+      final sanitized = sanitizeForDb(raw);
+      _logFine('insertTransaction - sanitized tx map: $sanitized');
+      final inserted = await _withRetry(
+        () async => await query.insertTransaction(
+          sanitized,
+        ),
+      );
+      _logInfo('insertTransaction: success id=${inserted.id}');
+
+      return inserted;
+    } catch (e, st) {
+      _logSevere('Error insertTransaction', e, st);
+      rethrow;
+    }
+  }
+
   /// Insert transaksi bersama details dalam satu operasi atomik.
   Future<TransactionModel?> insertSyncTransaction(TransactionModel tx) async {
     try {
@@ -128,8 +145,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
       final details = tx.details ?? [];
       final detailsMapsRaw = details.map((d) => d.toInsertDbLocal()).toList();
 
-      final txMap = _sanitizeForDb(txMapRaw);
-      final detailsMaps = detailsMapsRaw.map(_sanitizeForDb).toList();
+      final txMap = sanitizeForDb(txMapRaw);
+      final detailsMaps = detailsMapsRaw.map(sanitizeForDb).toList();
       final inserted = await _withRetry(
           () async => await query.insertSyncTransaction(txMap, detailsMaps));
       _logFine('insertSyncTransaction - tx: $txMap');
@@ -150,7 +167,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
         return null;
       }
       final query = createDao(db);
-      final maps = details.map((d) => d.toInsertDbLocal()).toList();
+      final maps =
+          details.map((d) => sanitizeForDb(d.toInsertDbLocal())).toList();
       final inserted =
           await _withRetry(() async => await query.insertDetails(maps));
       final insertedCount = inserted.length;
@@ -187,7 +205,10 @@ class TransactionLocalDataSource with BaseErrorHelper {
         return 0;
       }
       final query = TransactionDao(db);
-      final result = await query.updateTransaction(tx);
+      final sanitized = sanitizeForDb(Map<String, dynamic>.from(tx));
+      // keep id in map for DAO.updateTransaction to use; ensure it's present
+      if (tx.containsKey('id')) sanitized['id'] = tx['id'];
+      final result = await query.updateTransaction(sanitized);
       _logInfo('updateTransaction: success id=${tx['id']} rows=$result');
       return result;
     } catch (e, st) {
@@ -216,35 +237,4 @@ class TransactionLocalDataSource with BaseErrorHelper {
   /// Overridable factory for DAO to support testing (e.g. injecting flaky DAO).
   @visibleForTesting
   TransactionDao createDao(Database db) => TransactionDao(db);
-
-  /// Ensure the map only contains values supported by sqflite (num, String, Uint8List).
-  /// - Converts DateTime to ISO string
-  /// - Converts bool to integer (1/0)
-  /// - Encodes Map/Iterable to JSON string
-  /// - Drops keys with null values to avoid passing raw `Null` into sqflite
-  Map<String, dynamic> _sanitizeForDb(Map<String, dynamic> src) {
-    final out = <String, dynamic>{};
-    src.forEach((key, value) {
-      if (value == null) {
-        return; // skip nulls to avoid sqflite unsupported-type warnings
-      }
-      if (value is DateTime) {
-        out[key] = value.toIso8601String();
-      } else if (value is bool) {
-        out[key] = value ? 1 : 0;
-      } else if (value is num || value is String || value is Uint8List) {
-        out[key] = value;
-      } else if (value is Map || value is Iterable) {
-        try {
-          out[key] = jsonEncode(value);
-        } catch (_) {
-          out[key] = value.toString();
-        }
-      } else {
-        // fallback to string representation
-        out[key] = value.toString();
-      }
-    });
-    return out;
-  }
 }

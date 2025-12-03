@@ -1,6 +1,11 @@
 import 'package:core/presentation/controllers/auth_controller.dart';
+import 'package:core/presentation/widgets/footer_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// The file uses a temporary `isLoading` placeholder during refactor.
+// Suppress dead_code warnings until the auth provider is wired.
+// ignore_for_file: dead_code
 
 void main() {
   runApp(
@@ -73,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     // Listen to the provider to update UI when loading changes
     // final authState = ref.watch(authViewModelProvider);
     // final isLoading = authState.isLoading;
-    const bool isLoading = false;
+    bool isLoading = false;
 
     return Scaffold(
       backgroundColor: sbBg,
@@ -230,14 +235,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ),
 
                   const SizedBox(height: 32),
-                  const Text(
-                    'SB POS App v1.2.0 • Build 20231024',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  const FooterText(),
                 ],
               ),
             ),

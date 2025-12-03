@@ -1,5 +1,6 @@
 import 'package:transaction/data/models/transaction_model.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
+import 'package:transaction/domain/entitties/transaction.entity.dart';
 
 final List<TransactionModel> transactionList = [
   TransactionModel(
@@ -17,7 +18,7 @@ final List<TransactionModel> transactionList = [
     totalQty: 3,
     paidAmount: 58000,
     changeMoney: 0,
-    status: 'completed',
+    status: TransactionStatus.lunas,
     details: [
       TransactionDetailModel(
         id: 1,
@@ -54,7 +55,7 @@ final List<TransactionModel> transactionList = [
     totalQty: 1,
     paidAmount: 50000,
     changeMoney: 15000,
-    status: 'completed',
+    status: TransactionStatus.lunas,
     details: [
       TransactionDetailModel(
         id: 3,
@@ -82,7 +83,7 @@ final List<TransactionModel> transactionList = [
     totalQty: 4,
     paidAmount: 120000,
     changeMoney: 0,
-    status: 'completed',
+    status: TransactionStatus.lunas,
     details: [
       TransactionDetailModel(
         id: 4,

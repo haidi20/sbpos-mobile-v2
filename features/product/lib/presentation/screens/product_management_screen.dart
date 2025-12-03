@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 import 'package:product/data/data/product_data.dart';
 import 'package:product/data/data/category_data.dart';
-import 'package:product/data/models/product_model.dart';
+import 'package:product/domain/entities/product_entity.dart';
 import 'package:product/presentation/components/product_management_card.dart';
 import 'package:product/presentation/screens/product_management_form_screen.dart';
 
@@ -18,10 +18,11 @@ class ProductManagementScreen extends StatefulWidget {
 class _ProductManagementScreenState extends State<ProductManagementScreen> {
   // State
   String _activeCategory = "All";
-  final List<ProductModel> _products = List.from(initialProducts);
+  // initialProducts is a list of ProductEntity; convert to ProductEntity
+  final List<ProductEntity> _products = initialProducts.toList();
 
   // Filter Logic
-  List<ProductModel> get _filteredProducts {
+  List<ProductEntity> get _filteredProducts {
     return _products.where((p) {
       if (_activeCategory == "All") return true;
       final name = p.category?.name ?? '';

@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-import 'package:transaction/presentation/components/detail_info_card.dart';
-import 'package:transaction/presentation/components/summary_row_card.dart';
+import 'package:transaction/presentation/components/detail_info.card.dart';
+import 'package:transaction/presentation/components/summary_row.card.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 

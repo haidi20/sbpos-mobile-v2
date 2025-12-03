@@ -8,7 +8,7 @@ class GetTransactionsUsecase {
   GetTransactionsUsecase(this.repository);
 
   Future<Either<Failure, List<TransactionEntity>>> call(
-      {bool? isOffline}) async {
+      {bool isOffline = false}) async {
     return await repository.getTransactions(isOffline: isOffline);
   }
 }

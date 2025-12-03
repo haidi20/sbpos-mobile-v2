@@ -1,6 +1,6 @@
+import 'package:core/core.dart';
 import 'transaction.table.dart';
 import 'transaction_detail.table.dart';
-import 'package:core/core.dart';
 import 'package:transaction/data/models/transaction_model.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 
@@ -12,6 +12,8 @@ class TransactionDao {
   void _logInfo(String message) {
     if (isShowLog) _logger.info(message);
   }
+
+  // fine logging helper (not used currently)
 
   void _logSevere(String message, [Object? error, StackTrace? stack]) {
     if (isShowLog) _logger.severe(message, error, stack);
@@ -68,6 +70,37 @@ class TransactionDao {
     }
   }
 
+  /// Get the latest transaction by `created_at` descending (limit 1) with its details.
+  Future<TransactionModel?> getLatestTransaction() async {
+    try {
+      final txResult = await database.query(
+        TransactionTable.tableName,
+        orderBy: '${TransactionTable.colCreatedAt} DESC',
+        limit: 1,
+      );
+      if (txResult.isEmpty) return null;
+
+      final row = txResult.first;
+      final id = row[TransactionTable.colId] as int?;
+      if (id == null) return null;
+
+      final details = await database.query(
+        TransactionDetailTable.tableName,
+        where: '${TransactionDetailTable.colTransactionId} = ?',
+        whereArgs: [id],
+      );
+
+      final txModel = TransactionModel.fromDbLocal(row);
+      final detailModels =
+          details.map((e) => TransactionDetailModel.fromDbLocal(e)).toList();
+      _logInfo('getLatestTransaction: success id=$id');
+      return txModel.copyWith(details: detailModels);
+    } catch (e, s) {
+      _logSevere('Error getLatestTransaction: $e', e, s);
+      rethrow;
+    }
+  }
+
   Future<TransactionModel> insertTransaction(Map<String, dynamic> tx) async {
     try {
       return await database.transaction((txn) async {
@@ -75,6 +108,9 @@ class TransactionDao {
         tx[TransactionTable.colSyncedAt] = null;
         final cleanedTx = Map<String, dynamic>.from(tx)
           ..removeWhere((k, v) => v == null);
+        // Ensure status defaults to 'Pending' for newly inserted transactions
+        cleanedTx[TransactionTable.colStatus] =
+            cleanedTx[TransactionTable.colStatus] ?? 'Pending';
         final id = await txn.insert(TransactionTable.tableName, cleanedTx);
         final inserted = await txn.query(
           TransactionTable.tableName,
@@ -101,6 +137,9 @@ class TransactionDao {
       return await database.transaction((txn) async {
         final cleanedTx = Map<String, dynamic>.from(tx)
           ..removeWhere((k, v) => v == null);
+        // Ensure status defaults to 'Pending' when inserting sync
+        cleanedTx[TransactionTable.colStatus] =
+            cleanedTx[TransactionTable.colStatus] ?? 'Pending';
         final id = await txn.insert(TransactionTable.tableName, cleanedTx);
 
         List<TransactionDetailModel> insertedDetails = [];
@@ -173,7 +212,7 @@ class TransactionDao {
       final id = tx['id'];
       final cleaned = Map<String, dynamic>.from(tx)
         ..removeWhere((k, v) => v == null);
-      // remove id from update map
+      // remove id from update map if present
       cleaned.remove('id');
       final res = await database.update(
         TransactionTable.tableName,
@@ -281,6 +320,9 @@ class TransactionDao {
       rethrow;
     }
   }
+
+  /// Sanitize a map for DB insertion/updating.
+  /// Mirrors the logic in TransactionLocalDataSource._sanitizeForDb to keep behavior consistent.
 
   Future<int> deleteDetailsByTransactionId(int txId) async {
     try {

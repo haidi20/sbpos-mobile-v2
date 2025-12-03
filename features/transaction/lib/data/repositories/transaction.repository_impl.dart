@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:transaction/data/models/transaction_model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
@@ -19,7 +20,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   Future<List<TransactionEntity>> _getLocalEntities() async {
     final localResp = await local.getTransactions();
-    return localResp.map((model) => model.toEntity()).toList();
+    return localResp
+        .map((model) => TransactionEntity.fromModel(model))
+        .toList();
   }
 
   Future<List<TransactionModel>?> _saveToLocal(
@@ -60,8 +63,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
     bool? isOffline,
   }) async {
     // Jika pemanggil memaksa mode offline, langsung ambil dari local.
+    // Return local list even when empty to avoid surfacing network errors
+    // when caller explicitly requested offline mode.
     if (isOffline == true) {
-      return _fallbackToLocal(fallbackFailure: const NetworkFailure());
+      final localEntities = await _getLocalEntities();
+      return Right(localEntities);
     }
 
     final networkInfo = NetworkInfoImpl(Connectivity());
@@ -78,7 +84,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         final txModels = resp.data!;
         if (txModels.isNotEmpty) {
           final saved = await _saveToLocal(txModels);
-          return Right(saved!.map((m) => m.toEntity()).toList());
+          return Right(
+              saved!.map((m) => TransactionEntity.fromModel(m)).toList());
         } else {
           return _fallbackToLocal(fallbackFailure: const ServerFailure());
         }
@@ -107,10 +114,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
       // _logger
       //     .info('setTransaction - localInserted: ${localInserted?.toJson()}');
       if (localInserted == null) {
-        // print for test-time debugging when logger may not be configured
-        // ignore: avoid_print
-        print(
-            'setTransaction: local.insertTransaction returned NULL for txModel: ${txModel.toJson()}');
+        if (kDebugMode) {
+          debugPrint(
+              'setTransaction: local.insertTransaction returned NULL for txModel: ${txModel.toJson()}');
+        }
         return const Left(UnknownFailure());
       }
 
@@ -123,12 +130,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
               .toList();
           await local.insertDetails(detailsWithTxId);
         }
-        return Right(localInserted
-            .copyWith(
-                details: txModel.details
-                    ?.map((d) => d.copyWith(transactionId: localInserted.id))
-                    .toList())
-            .toEntity());
+        return Right(TransactionEntity.fromModel(localInserted.copyWith(
+          details: txModel.details
+              ?.map((d) => d.copyWith(transactionId: localInserted.id))
+              .toList(),
+        )));
       }
 
       // 2) Jika online, kirim ke remote setelah insert lokal; jika sukses, update lokal dengan id_server + synced_at
@@ -140,8 +146,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
         if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
           // fallback: simpan lokal
           final inserted = await local.insertSyncTransaction(txModel);
-          if (inserted == null) return const Left(ServerFailure());
-          return Right(inserted.toEntity());
+          if (inserted == null) {
+            return const Left(ServerFailure());
+          }
+          return Right(TransactionEntity.fromModel(inserted));
         }
 
         final TransactionModel created = resp.data!.first;
@@ -163,19 +171,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
           await local.insertDetails(detailsWithTxId);
         }
 
-        return Right(localInserted
-            .copyWith(
-              idServer: idServer,
-              syncedAt: syncAt,
-              details: txModel.details,
-            )
-            .toEntity());
+        return Right(TransactionEntity.fromModel(localInserted.copyWith(
+          idServer: idServer,
+          syncedAt: syncAt,
+          details: txModel.details,
+        )));
       } on ServerException {
         // jika server error, kembalikan hasil lokal yang sudah disimpan
-        return Right(localInserted.toEntity());
+        return Right(TransactionEntity.fromModel(localInserted));
       } on NetworkException {
         // jika gagal jaringan, kembalikan hasil lokal yang sudah disimpan
-        return Right(localInserted.toEntity());
+        return Right(TransactionEntity.fromModel(localInserted));
       }
     } catch (e, st) {
       _logger.severe('Error saat menyimpan transaksi:', e, st);
@@ -204,7 +210,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     // check local first when offline or when requested
     if (isOffline == true) {
       final localModel = await local.getTransactionById(id);
-      if (localModel != null) return Right(localModel.toEntity());
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
       return const Left(UnknownFailure());
     }
 
@@ -213,7 +221,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
     if (!isConnected) {
       final localModel = await local.getTransactionById(id);
-      if (localModel != null) return Right(localModel.toEntity());
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
       return const Left(NetworkFailure());
     }
 
@@ -221,23 +231,102 @@ class TransactionRepositoryImpl implements TransactionRepository {
       final resp = await remote.getTransaction(id);
       if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
         final localModel = await local.getTransactionById(id);
-        if (localModel != null) return Right(localModel.toEntity());
+        if (localModel != null) {
+          return Right(TransactionEntity.fromModel(localModel));
+        }
         return const Left(ServerFailure());
       }
       final model = resp.data!.first;
       // save to local (replace existing)
       await local.insertSyncTransaction(model);
-      return Right(model.toEntity());
+      return Right(TransactionEntity.fromModel(model));
     } on ServerException {
       final localModel = await local.getTransactionById(id);
-      if (localModel != null) return Right(localModel.toEntity());
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
       return const Left(ServerFailure());
     } on NetworkException {
       final localModel = await local.getTransactionById(id);
-      if (localModel != null) return Right(localModel.toEntity());
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
       return const Left(NetworkFailure());
     } catch (e, st) {
       _logger.severe('Error getTransaction:', e, st);
+      return const Left(UnknownFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+      {bool? isOffline}) async {
+    // If caller forces offline, return local latest
+    if (isOffline == true) {
+      final localModel = await local.getLatestTransaction();
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
+      return const Left(UnknownFailure());
+    }
+
+    final networkInfo = NetworkInfoImpl(Connectivity());
+    final bool isConnected = await networkInfo.isConnected;
+
+    if (!isConnected) {
+      final localModel = await local.getLatestTransaction();
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
+      return const Left(NetworkFailure());
+    }
+
+    try {
+      final TransactionResponse resp = await remote.fetchTransactions();
+
+      if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
+        final localModel = await local.getLatestTransaction();
+        if (localModel != null) {
+          return Right(TransactionEntity.fromModel(localModel));
+        }
+        return const Left(ServerFailure());
+      }
+
+      final List<TransactionModel> txModels = resp.data!;
+      // pick latest by createdAt desc
+      txModels.sort((a, b) {
+        final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+
+      final latest = txModels.first;
+
+      try {
+        // insert sync to local (include details)
+        final inserted = await local.insertSyncTransaction(latest);
+        if (inserted != null) {
+          return Right(TransactionEntity.fromModel(inserted));
+        }
+      } catch (e, st) {
+        _logger.warning('Failed to persist latest transaction to local', e, st);
+      }
+
+      return Right(TransactionEntity.fromModel(latest));
+    } on ServerException {
+      final localModel = await local.getLatestTransaction();
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
+      return const Left(ServerFailure());
+    } on NetworkException {
+      final localModel = await local.getLatestTransaction();
+      if (localModel != null) {
+        return Right(TransactionEntity.fromModel(localModel));
+      }
+      return const Left(NetworkFailure());
+    } catch (e, st) {
+      _logger.severe('Error getLatestTransaction:', e, st);
       return const Left(UnknownFailure());
     }
   }
@@ -300,15 +389,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
               'updateTransaction: expected local transaction missing, creating via setTransaction');
           return await setTransaction(transaction, isOffline: true);
         }
-        return Right(localTx.toEntity());
+        return Right(TransactionEntity.fromModel(localTx));
       }
 
       final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
       if (!isConnected) {
         final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) return const Left(NetworkFailure());
-        return Right(localTx.toEntity());
+        if (localTx == null) {
+          return const Left(NetworkFailure());
+        }
+        return Right(TransactionEntity.fromModel(localTx));
       }
 
       // determine server id
@@ -322,8 +413,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
         final resp = await remote.updateTransaction(idServer, txModel.toJson());
         if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
           final localTx = await local.getTransactionById(txModel.id ?? 0);
-          if (localTx == null) return const Left(ServerFailure());
-          return Right(localTx.toEntity());
+          if (localTx == null) {
+            return const Left(ServerFailure());
+          }
+          return Right(TransactionEntity.fromModel(localTx));
         }
 
         final created = resp.data!.first;
@@ -335,16 +428,22 @@ class TransactionRepositoryImpl implements TransactionRepository {
         });
 
         final updatedLocal = await local.getTransactionById(txModel.id ?? 0);
-        if (updatedLocal == null) return const Left(UnknownFailure());
-        return Right(updatedLocal.toEntity());
+        if (updatedLocal == null) {
+          return const Left(UnknownFailure());
+        }
+        return Right(TransactionEntity.fromModel(updatedLocal));
       } on ServerException {
         final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) return const Left(ServerFailure());
-        return Right(localTx.toEntity());
+        if (localTx == null) {
+          return const Left(ServerFailure());
+        }
+        return Right(TransactionEntity.fromModel(localTx));
       } on NetworkException {
         final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) return const Left(NetworkFailure());
-        return Right(localTx.toEntity());
+        if (localTx == null) {
+          return const Left(NetworkFailure());
+        }
+        return Right(TransactionEntity.fromModel(localTx));
       }
     } catch (e, st) {
       _logger.severe('Error updateTransaction:', e, st);
@@ -359,15 +458,21 @@ class TransactionRepositoryImpl implements TransactionRepository {
       // delete local first
       await local.deleteTransaction(id);
 
-      if (isOffline == true) return const Right(true);
+      if (isOffline == true) {
+        return const Right(true);
+      }
 
       final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
-      if (!isConnected) return const Right(true);
+      if (!isConnected) {
+        return const Right(true);
+      }
 
       try {
         final resp = await remote.deleteTransaction(id);
-        if (resp.success == true) return const Right(true);
+        if (resp.success == true) {
+          return const Right(true);
+        }
         return const Right(true);
       } on ServerException {
         return const Right(true);

@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
-import 'package:product/presentation/widgets/qty_button.dart';
+import 'package:transaction/presentation/components/order.card.dart';
 import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
-import 'package:transaction/presentation/providers/transaction_provider.dart';
-import 'package:transaction/presentation/view_models/transaction.state.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -31,11 +31,11 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   @override
   Widget build(BuildContext context) {
     // 2. WATCH STATE: Agar UI rebuild saat cart/total berubah
-    final stateTransaction = ref.watch(transactionViewModelProvider);
-    final viewModel = ref.read(transactionViewModelProvider.notifier);
+    final stateTransaction = ref.watch(transactionPosViewModelProvider);
+    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
     // listen should be called during build; delegate handling to controller
-    ref.listen<TransactionState>(transactionViewModelProvider,
+    ref.listen<TransactionPosState>(transactionPosViewModelProvider,
         (previous, next) {
       _controller.onStateChanged(previous, next);
     });
@@ -63,7 +63,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     );
   }
 
-  Widget _buildHeader(TransactionState stateTransaction, dynamic viewModel) {
+  Widget _buildHeader(TransactionPosState stateTransaction, dynamic viewModel) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       child: Column(
@@ -105,7 +105,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
 
   Widget _buildOrderList({
     required dynamic viewModel,
-    required TransactionState stateTransaction,
+    required TransactionPosState stateTransaction,
   }) {
     final double cartTotal = _controller.cartTotal;
     final double finalTotal = _controller.finalTotal;
@@ -117,9 +117,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
         itemCount: viewModel.filteredDetails.length + 1,
         itemBuilder: (context, index) {
           if (index < viewModel.filteredDetails.length) {
-            return _buildOrderCard(
+            return OrderCard(
               index: index,
               viewModel: viewModel,
+              controller: _controller,
               stateTransaction: stateTransaction,
             );
           }
@@ -225,7 +226,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                         ),
                       );
                       // ACTION: Clear Cart
-                      viewModel.clearCart();
+                      viewModel.onClearCart();
                       Navigator.pop(context); // Tutup bottom sheet
                     },
                     style: ElevatedButton.styleFrom(
@@ -247,139 +248,6 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildOrderCard({
-    required int index,
-    required dynamic viewModel,
-    required TransactionState stateTransaction,
-  }) {
-    final item = stateTransaction.details[index];
-    final id = item.productId ?? 0;
-
-    // Safety check jika controller belum ready (karena async gap)
-    if (!_controller.itemNoteControllers.containsKey(id)) {
-      _controller.itemNoteControllers[id] =
-          TextEditingController(text: item.note);
-      _controller.itemFocusNodes[id] = FocusNode();
-    }
-
-    final focusNode = _controller.itemFocusNodes[id]!;
-    final controller = _controller.itemNoteControllers[id]!;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.productName ?? '',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      formatRupiah((item.productPrice ?? 0).toDouble()),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.sbOrange,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    QtyButton(
-                      icon: Icons.remove,
-                      // ACTION: Update Qty -1
-                      onTap: () => _controller.onUpdateQuantity(id, -1),
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: Text(
-                        '${item.qty ?? 0}',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ),
-                    QtyButton(
-                      icon: Icons.add,
-                      // ACTION: Update Qty +1
-                      onTap: () => _controller.onUpdateQuantity(id, 1),
-                      isBlue: true,
-                      color: AppColors.sbBlue,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              maxLines: 2,
-              keyboardType: TextInputType.multiline,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                hintText: 'Catatan item...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(
-                    color: AppColors.sbBlue,
-                  ),
-                ),
-              ),
-              // ACTION: Update Item Note
-              onChanged: (value) {
-                viewModel.setItemNote(id, value);
-              },
-              onSubmitted: (_) {
-                FocusScope.of(context).unfocus();
-              },
-              onTap: () {
-                _controller.activateItemNote(id);
-                // ACTION: Set Active ID
-                viewModel.setActiveNoteId(id);
-              },
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: Divider(
-              height: 1,
-              color: Color(0xFFF3F4F6),
-            ),
-          )
-        ],
       ),
     );
   }

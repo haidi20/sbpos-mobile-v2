@@ -4,11 +4,8 @@ class NotificationTabs extends StatelessWidget {
   final String activeTab;
   final Function(String) onTabChanged;
 
-  const NotificationTabs({
-    Key? key,
-    required this.activeTab,
-    required this.onTabChanged,
-  }) : super(key: key);
+  const NotificationTabs(
+      {super.key, required this.activeTab, required this.onTabChanged});
 
   @override
   Widget build(BuildContext context) {

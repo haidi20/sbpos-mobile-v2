@@ -19,6 +19,10 @@ abstract class TransactionRepository {
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
       {bool? isOffline});
 
+  /// Get the latest single transaction (created_at desc limit 1)
+  Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+      {bool? isOffline});
+
   /// Get single transaction by id
   Future<Either<Failure, TransactionEntity>> getTransaction(int id,
       {bool? isOffline});

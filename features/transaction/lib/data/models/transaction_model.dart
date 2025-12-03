@@ -1,5 +1,5 @@
 import 'package:transaction/data/models/transaction_detail.model.dart';
-import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/transaction_status.dart';
 
 class TransactionModel {
   final int? id;
@@ -17,7 +17,7 @@ class TransactionModel {
   final int? totalQty;
   final int? paidAmount;
   final int? changeMoney;
-  final String? status;
+  final TransactionStatus? status;
   final String? cancelationOtp;
   final String? cancelationReason;
   final DateTime? createdAt;
@@ -68,7 +68,7 @@ class TransactionModel {
     int? totalQty,
     int? paidAmount,
     int? changeMoney,
-    String? status,
+    TransactionStatus? status,
     String? cancelationOtp,
     String? cancelationReason,
     DateTime? createdAt,
@@ -120,7 +120,7 @@ class TransactionModel {
         totalQty: _toInt(json['total_qty']),
         paidAmount: _toInt(json['paid_amount']),
         changeMoney: _toInt(json['change_money']),
-        status: json['status'],
+        status: _statusFromString(json['status'] as String?),
         cancelationOtp: json['cancelation_otp'],
         cancelationReason: json['cancelation_reason'],
         createdAt: json['created_at'] != null
@@ -156,8 +156,10 @@ class TransactionModel {
         'total_amount': totalAmount,
         'total_qty': totalQty,
         'paid_amount': paidAmount,
-        'change_money': changeMoney,
-        'status': status,
+        // DB migration expects change_money NOT NULL DEFAULT 0
+        'change_money': changeMoney ?? 0,
+        // store enum as string for DB/JSON
+        'status': _statusToString(status) ?? 'Pending',
         'cancelation_otp': cancelationOtp,
         'cancelation_reason': cancelationReason,
         'created_at': createdAt?.toIso8601String(),
@@ -182,8 +184,10 @@ class TransactionModel {
         'total_amount': totalAmount,
         'total_qty': totalQty,
         'paid_amount': paidAmount,
-        'change_money': changeMoney,
-        'status': status,
+        // ensure DB non-null default
+        'change_money': changeMoney ?? 0,
+        // store enum as string
+        'status': _statusToString(status) ?? 'Pending',
         'cancelation_otp': cancelationOtp,
         'cancelation_reason': cancelationReason,
         'created_at': createdAt?.toIso8601String(),
@@ -192,8 +196,8 @@ class TransactionModel {
         'synced_at': syncedAt?.toIso8601String(),
       };
 
-  // Convert to domain entity
-  TransactionEntity toEntity() => TransactionEntity.fromModel(this);
+  // Conversion to domain entity is provided by `TransactionEntity.fromModel` to
+  // avoid circular imports. Use that constructor where needed.
 
   factory TransactionModel.fromDbLocal(Map<String, dynamic> map) {
     return TransactionModel(
@@ -208,11 +212,14 @@ class TransactionModel {
       paymentMethod: map['payment_method'] as String?,
       date: _toDate(map['date']),
       notes: map['notes'] as String?,
-      totalAmount: _toInt(map['total_amount']),
-      totalQty: _toInt(map['total_qty']),
+      // migration defines total_amount and total_qty as NOT NULL
+      totalAmount: _toInt(map['total_amount']) ?? 0,
+      totalQty: _toInt(map['total_qty']) ?? 0,
       paidAmount: _toInt(map['paid_amount']),
-      changeMoney: _toInt(map['change_money']),
-      status: map['status'] as String?,
+      // ensure changeMoney defaults to 0
+      changeMoney: _toInt(map['change_money']) ?? 0,
+      // parse stored status string into enum, default to Pending
+      status: _statusFromString(map['status'] as String?),
       cancelationOtp: map['cancelation_otp'] as String?,
       cancelationReason: map['cancelation_reason'] as String?,
       createdAt: _toDate(map['created_at']),
@@ -234,5 +241,33 @@ class TransactionModel {
     if (v is DateTime) return v;
     if (v is String) return DateTime.tryParse(v);
     return null;
+  }
+
+  // Helpers to convert status between stored string and enum
+  static TransactionStatus? _statusFromString(String? s) {
+    switch (s) {
+      case 'Lunas':
+        return TransactionStatus.lunas;
+      case 'Pending':
+        return TransactionStatus.pending;
+      case 'Batal':
+        return TransactionStatus.batal;
+      default:
+        return TransactionStatus.unknown;
+    }
+  }
+
+  static String? _statusToString(TransactionStatus? status) {
+    if (status == null) return null;
+    switch (status) {
+      case TransactionStatus.lunas:
+        return 'Lunas';
+      case TransactionStatus.pending:
+        return 'Pending';
+      case TransactionStatus.batal:
+        return 'Batal';
+      default:
+        return '';
+    }
   }
 }

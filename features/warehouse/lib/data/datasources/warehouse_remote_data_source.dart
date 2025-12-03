@@ -27,10 +27,12 @@ class WarehouseRemoteDataSource with BaseErrorHelper {
     // await _writeResponseToFile(response);
 
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-    // print("decoded : $decoded");
+    // debug info (disabled in production)
+    // debugPrint("decoded : $decoded");
     return WarehouseResponse.fromJson(decoded);
   }
 
+  // ignore: unused_element
   Future<void> _writeResponseToFile(dynamic response) async {
     if (!kDebugMode) return;
 
@@ -41,12 +43,12 @@ class WarehouseRemoteDataSource with BaseErrorHelper {
       await file.writeAsString(response.body, flush: true);
 
       if (await file.exists()) {
-        print("ada file response_api.json");
+        debugPrint('ada file response_api.json');
       } else {
-        print('❌ Gagal menyimpan file');
+        debugPrint('❌ Gagal menyimpan file');
       }
     } catch (e, st) {
-      print('Error menyimpan file: $e\n$st');
+      debugPrint('Error menyimpan file: $e\n$st');
     }
   }
 }

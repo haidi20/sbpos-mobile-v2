@@ -5,11 +5,8 @@ class NotificationItem extends StatelessWidget {
   final dynamic notification;
   final VoidCallback onTap;
 
-  const NotificationItem({
-    Key? key,
-    required this.onTap,
-    required this.notification,
-  }) : super(key: key);
+  const NotificationItem(
+      {super.key, required this.onTap, required this.notification});
 
   // Helper untuk Warna Background Icon
   Color _getBgColor(String type) {

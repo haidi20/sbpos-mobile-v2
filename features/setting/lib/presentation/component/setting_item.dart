@@ -7,13 +7,13 @@ class SettingItem extends StatelessWidget {
   final Color? iconColor;
   final VoidCallback onTap;
 
-  const SettingItem({
-    required this.icon,
-    required this.label,
-    this.subLabel,
-    this.iconColor,
-    required this.onTap,
-  });
+  const SettingItem(
+      {super.key,
+      required this.icon,
+      required this.label,
+      this.subLabel,
+      this.iconColor,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {

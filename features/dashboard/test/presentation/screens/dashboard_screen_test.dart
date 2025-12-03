@@ -34,9 +34,7 @@ void main() {
   testWidgets('Adding product to cart increases cart count', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: DashboardScreen()));
 
-    // Switch to Order tab using bottom nav
-    final orderTab = find.widgetWithText(IconButton, 'Order');
-    // The bottom nav uses IconButton with a Column child; tap by icon
+    // Switch to Order tab using bottom nav; tap by icon
     final orderIcon = find.byIcon(Icons.shopping_bag);
     expect(orderIcon, findsOneWidget);
     await tester.tap(orderIcon);

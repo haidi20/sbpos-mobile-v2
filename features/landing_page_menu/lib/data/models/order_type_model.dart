@@ -58,11 +58,7 @@ class OrderTypeModel {
       return null;
     }
 
-    String? parseString(dynamic value) {
-      if (value == null) return null;
-      if (value is String) return value;
-      return value.toString();
-    }
+    // parseString removed (unused) to satisfy analyzer
 
     return OrderTypeModel(
       id: parseInt(json['id']),

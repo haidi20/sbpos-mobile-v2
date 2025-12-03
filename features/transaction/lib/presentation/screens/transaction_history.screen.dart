@@ -1,10 +1,10 @@
 import 'package:core/core.dart';
 import 'package:transaction/data/dummy/transaction.dummy.dart';
 import 'package:transaction/data/models/transaction_model.dart';
-import 'package:transaction/presentation/components/transaction_card.dart';
-import 'package:transaction/presentation/screens/transaction_history_detail_screen.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/presentation/components/transaction.card.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
+import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});

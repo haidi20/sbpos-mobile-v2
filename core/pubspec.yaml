@@ -26,8 +26,11 @@ dependencies:
   cached_network_image: ^3.3.1
   flutter_cache_manager: 3.4.1
   cupertino_icons: ^1.0.8
+  google_fonts: ^5.0.0
+  lucide_icons: any
   # fl_chart: ^0.71.0
   fl_chart: 0.69.0
+
   # features
   dashboard:
     path: ../features/dashboard

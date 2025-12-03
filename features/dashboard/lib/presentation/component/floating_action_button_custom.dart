@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class FloatingActionButtonCustom extends StatelessWidget {
   final VoidCallback onAddClick;
 
-  const FloatingActionButtonCustom({
-    Key? key,
-    required this.onAddClick,
-  }) : super(key: key);
+  const FloatingActionButtonCustom({super.key, required this.onAddClick});
 
   @override
   Widget build(BuildContext context) {

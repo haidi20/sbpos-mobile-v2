@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
-import 'package:transaction/presentation/view_models/transaction.vm.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
-import 'package:transaction/domain/usecases/get_transaction.usecase.dart';
+import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:product/domain/entities/product_entity.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 
 class FakeRepo implements TransactionRepository {
   @override
@@ -58,6 +58,12 @@ class FakeRepo implements TransactionRepository {
   }
 
   @override
+  Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
   Future<Either<Failure, TransactionEntity>> setTransaction(
       TransactionEntity transaction,
       {bool? isOffline}) {
@@ -102,17 +108,17 @@ class _FakeRepoWithLocalTransaction extends FakeRepo {
 }
 
 void main() {
-  group('TransactionViewModel', () {
-    late TransactionViewModel vm;
+  group('TransactionPosViewModel', () {
+    late TransactionPosViewModel vm;
     late FakeRepo repo;
 
     setUp(() {
       repo = FakeRepo();
-      vm = TransactionViewModel(
+      vm = TransactionPosViewModel(
         CreateTransaction(repo),
         UpdateTransaction(repo),
         DeleteTransaction(repo),
-        GetTransaction(repo),
+        GetTransactionActive(repo),
       );
     });
 
@@ -129,11 +135,11 @@ void main() {
     test('initializes by loading local transaction when available (offline)',
         () async {
       final localRepo = _FakeRepoWithLocalTransaction();
-      final vmLocal = TransactionViewModel(
+      final vmLocal = TransactionPosViewModel(
         CreateTransaction(localRepo),
         UpdateTransaction(localRepo),
         DeleteTransaction(localRepo),
-        GetTransaction(localRepo),
+        GetTransactionActive(localRepo),
       );
 
       await Future.delayed(const Duration(milliseconds: 10));

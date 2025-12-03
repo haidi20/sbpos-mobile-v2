@@ -10,6 +10,8 @@ class AppRoutes {
   static const String transaction = '/transaction';
   static const String landingPageMenu = '/landing';
   static const String notification = '/notification';
+  static const String comingSoonScreen = '/coming-soon';
+  static const String transactionPos = '/transaction-pos';
   static const String productManagement = '/product-management';
   static const String transactionHistory = '/transaction_history';
 }

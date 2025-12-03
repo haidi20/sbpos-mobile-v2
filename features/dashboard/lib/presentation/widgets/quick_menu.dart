@@ -4,6 +4,8 @@ import 'package:dashboard/presentation/component/quirk_menu_button.dart';
 class QuickMenu extends StatelessWidget {
   const QuickMenu({super.key});
 
+  final bool isComingSoon = false;
+
   @override
   Widget build(BuildContext context) {
     List<Widget> menuList = [
@@ -13,7 +15,12 @@ class QuickMenu extends StatelessWidget {
         iconColor: AppColors.sbBlue,
         bgColor: AppColors.sbBg,
         onTap: () {
-          context.pushNamed(AppRoutes.report);
+          if (isComingSoon) {
+            context.pushNamed(AppRoutes.comingSoonScreen);
+            return;
+          } else {
+            context.pushNamed(AppRoutes.report);
+          }
         },
       ),
       QuickMenuButton(
@@ -22,7 +29,12 @@ class QuickMenu extends StatelessWidget {
         iconColor: AppColors.sbOrange,
         bgColor: AppColors.sbBg,
         onTap: () {
-          context.pushNamed(AppRoutes.inventory);
+          if (isComingSoon) {
+            context.pushNamed(AppRoutes.comingSoonScreen);
+            return;
+          } else {
+            context.pushNamed(AppRoutes.inventory);
+          }
         },
       ),
       QuickMenuButton(
@@ -31,7 +43,12 @@ class QuickMenu extends StatelessWidget {
         iconColor: AppColors.sbGreen,
         bgColor: AppColors.sbBg,
         onTap: () {
-          context.pushNamed(AppRoutes.productManagement);
+          if (isComingSoon) {
+            context.pushNamed(AppRoutes.comingSoonScreen);
+            return;
+          } else {
+            context.pushNamed(AppRoutes.productManagement);
+          }
         },
       ),
       QuickMenuButton(
@@ -40,7 +57,12 @@ class QuickMenu extends StatelessWidget {
         iconColor: AppColors.sbGray,
         bgColor: AppColors.sbBg,
         onTap: () {
-          context.pushNamed(AppRoutes.settings);
+          if (isComingSoon) {
+            context.pushNamed(AppRoutes.comingSoonScreen);
+            return;
+          } else {
+            context.pushNamed(AppRoutes.settings);
+          }
         },
       ),
     ];

@@ -6,13 +6,13 @@ import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/repositories/transaction.repository_impl.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
-import 'package:transaction/presentation/view_models/transaction.vm.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
-import 'package:transaction/domain/usecases/get_transaction.usecase.dart';
+import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/data/datasources/transaction_remote_data_source.dart';
 import 'package:product/domain/entities/product_entity.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 
 class FakeRemote extends TransactionRemoteDataSource {
   FakeRemote() : super(host: 'http://localhost', api: 'test');
@@ -22,11 +22,11 @@ void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
-  group('TransactionViewModel integration (end-to-end local DB)', () {
+  group('TransactionPosViewModel integration (end-to-end local DB)', () {
     late Database db;
     late TransactionLocalDataSource local;
     late TransactionRepositoryImpl repo;
-    late TransactionViewModel vm;
+    late TransactionPosViewModel vm;
 
     setUp(() async {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
@@ -34,11 +34,11 @@ void main() {
       await db.execute(TransactionDetailTable.createTableQuery);
       local = TransactionLocalDataSource(testDb: db);
       repo = TransactionRepositoryImpl(remote: FakeRemote(), local: local);
-      vm = TransactionViewModel(
+      vm = TransactionPosViewModel(
         CreateTransaction(repo),
         UpdateTransaction(repo),
         DeleteTransaction(repo),
-        GetTransaction(repo),
+        GetTransactionActive(repo),
       );
     });
 

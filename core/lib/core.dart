@@ -28,6 +28,8 @@ export 'package:fl_chart/fl_chart.dart';
 export 'package:go_router/go_router.dart';
 export 'package:dartz/dartz.dart' hide State;
 export 'package:intl/date_time_patterns.dart';
+export 'package:google_fonts/google_fonts.dart';
+export 'package:lucide_icons/lucide_icons.dart';
 export 'package:intl/date_symbol_data_local.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:flutter_hooks/flutter_hooks.dart';

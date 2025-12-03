@@ -10,9 +10,7 @@ class ProductFormSheet extends StatelessWidget {
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(
-            24,
-          ),
+          top: Radius.circular(24),
         ),
       ),
       padding: EdgeInsets.only(
@@ -45,15 +43,18 @@ class ProductFormSheet extends StatelessWidget {
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: Colors.grey.shade300,
-                  style: BorderStyle
-                      .solid), // Dashed border not native, solid used
+                style: BorderStyle.solid,
+                color: Colors.grey.shade300,
+              ), // Dashed border not native, solid used
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.image_outlined,
-                    size: 32, color: Colors.grey.shade400),
+                Icon(
+                  Icons.image_outlined,
+                  size: 32,
+                  color: Colors.grey.shade400,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Upload Foto',
@@ -80,7 +81,7 @@ class ProductFormSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FormLabel('Harga'),
-                    const FormInput(hint: '0', isNumber: true),
+                    FormInput(hint: '0', isNumber: true),
                   ],
                 ),
               ),
@@ -137,9 +138,7 @@ class ProductFormSheet extends StatelessWidget {
                     foregroundColor: Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(

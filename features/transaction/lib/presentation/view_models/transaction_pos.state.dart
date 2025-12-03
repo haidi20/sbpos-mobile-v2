@@ -1,7 +1,7 @@
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
-class TransactionState {
+class TransactionPosState {
   final String? error;
   final bool isLoading;
   final String orderNote;
@@ -11,18 +11,18 @@ class TransactionState {
   final TransactionEntity? transaction;
   final List<TransactionDetailEntity> details;
 
-  TransactionState({
+  TransactionPosState({
     this.error,
+    this.transaction,
     this.searchQuery,
     this.activeNoteId,
     this.orderNote = "",
     this.isLoading = false,
-    this.transaction,
-    List<TransactionDetailEntity>? details,
     this.activeCategory = "All",
+    List<TransactionDetailEntity>? details,
   }) : details = details ?? const [];
 
-  TransactionState copyWith({
+  TransactionPosState copyWith({
     String? error,
     bool? isLoading,
     String? orderNote,
@@ -32,15 +32,15 @@ class TransactionState {
     TransactionEntity? transaction,
     List<TransactionDetailEntity>? details,
   }) {
-    return TransactionState(
+    return TransactionPosState(
       error: error ?? this.error,
-      isLoading: isLoading ?? this.isLoading,
-      searchQuery: searchQuery ?? this.searchQuery,
-      activeCategory: activeCategory ?? this.activeCategory,
-      transaction: transaction ?? this.transaction,
       details: details ?? this.details,
+      isLoading: isLoading ?? this.isLoading,
       orderNote: orderNote ?? this.orderNote,
+      searchQuery: searchQuery ?? this.searchQuery,
+      transaction: transaction ?? this.transaction,
       activeNoteId: activeNoteId ?? this.activeNoteId,
+      activeCategory: activeCategory ?? this.activeCategory,
     );
   }
 }

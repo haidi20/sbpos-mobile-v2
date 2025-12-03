@@ -1,12 +1,12 @@
 import 'package:core/core.dart';
-import 'package:transaction/presentation/view_models/transaction.vm.dart';
-import 'package:transaction/presentation/view_models/transaction.state.dart';
-import 'package:transaction/presentation/providers/transaction_provider.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class CartBottomSheetController {
   CartBottomSheetController(this.ref, this.context) {
-    _stateProductPos = ref.read(transactionViewModelProvider);
-    _viewModel = ref.read(transactionViewModelProvider.notifier);
+    _stateProductPos = ref.read(transactionPosViewModelProvider);
+    _viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
     _orderFocusNode = FocusNode();
 
@@ -31,10 +31,10 @@ class CartBottomSheetController {
   final Map<int, TextEditingController> _itemNoteControllers = {};
   late final Logger _logger = Logger('CartBottomSheetController');
 
-  late final TransactionViewModel _viewModel;
-  late final TransactionState _stateProductPos;
+  late final TransactionPosViewModel _viewModel;
+  late final TransactionPosState _stateProductPos;
   double get cartTotal =>
-      ref.read(transactionViewModelProvider).details.fold(0, (sum, item) {
+      ref.read(transactionPosViewModelProvider).details.fold(0, (sum, item) {
         final subtotal =
             item.subtotal ?? ((item.productPrice ?? 0) * (item.qty ?? 0));
         return sum + subtotal;
@@ -62,9 +62,9 @@ class CartBottomSheetController {
     }
   }
 
-  /// Start listening to TransactionState changes to synchronize controllers
+  /// Start listening to TransactionPosState changes to synchronize controllers
   void startListening() {
-    ref.listen<TransactionState>(transactionViewModelProvider,
+    ref.listen<TransactionPosState>(transactionPosViewModelProvider,
         (previous, next) {
       if (previous == null) return;
 
@@ -117,7 +117,7 @@ class CartBottomSheetController {
 
   /// Handler untuk perubahan state. Harus dipanggil dari `ref.listen` yang dijalankan saat build widget
   /// untuk menghindari debug assertion dari Riverpod.
-  void onStateChanged(TransactionState? previous, TransactionState next) {
+  void onStateChanged(TransactionPosState? previous, TransactionPosState next) {
     if (previous == null) return;
 
     // A. Jika Order Note berubah dari luar

@@ -1,10 +1,11 @@
 import 'package:core/core.dart';
 import 'package:core/data/models/user_model.dart';
+import 'package:core/data/datasources/db/auth_user.table.dart';
 import 'package:flutter_bcrypt/flutter_bcrypt.dart';
 
 class AuthUserQuery {
   final Database? database;
-  final String _tblUsers = 'users';
+  final String _tblUsers = AuthUserTable.tableName;
   final _logger = Logger('AuthUserQuery');
 
   AuthUserQuery(this.database);

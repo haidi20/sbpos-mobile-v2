@@ -55,6 +55,13 @@ class FakeTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+      {bool? isOffline}) async {
+    if (shouldFail) return const Left(UnknownFailure());
+    return Right(_sampleEntity());
+  }
+
+  @override
   Future<Either<Failure, TransactionEntity>> setTransaction(
       TransactionEntity transaction,
       {bool? isOffline}) {

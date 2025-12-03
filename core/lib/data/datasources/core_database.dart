@@ -40,6 +40,15 @@ class CoreDatabase {
         databasePath,
         version: versionDb,
         onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+        onOpen: (Database db) async {
+          // Ensure tables exist on open (helps when DB file exists but some tables are missing)
+          try {
+            await _ensureTables(db);
+          } catch (e, stack) {
+            _logger.warning('Failed to ensure tables on open', e, stack);
+          }
+        },
       );
 
       return db;
@@ -58,6 +67,58 @@ class CoreDatabase {
     } catch (e, stack) {
       _logger.severe('Failed to create tables', e, stack);
       rethrow;
+    }
+  }
+
+  Future<void> _ensureTables(Database db) async {
+    // Execute CREATE TABLE IF NOT EXISTS for all known tables to avoid 'no such table' errors
+    final queries = [
+      AuthUserTable.createTableQuery,
+      WarehouseTable.createTableQuery,
+      TransactionTable.createTableQuery,
+      TransactionDetailTable.createTableQuery,
+    ];
+
+    for (var q in queries) {
+      final safeQ = q.replaceFirst(
+          RegExp(r'CREATE TABLE', caseSensitive: false),
+          'CREATE TABLE IF NOT EXISTS');
+      await db.execute(safeQ);
+    }
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    _logger.info('Upgrading database from v$oldVersion to v$newVersion');
+    // Apply incremental migrations for each version step
+    for (var v = oldVersion + 1; v <= newVersion; v++) {
+      try {
+        switch (v) {
+          case 2:
+            // Example migration v1 -> v2:
+            // - add `last_login` column to `auth_users`
+            // Note: ALTER TABLE ADD COLUMN is safe in SQLite (adds NULLable column)
+            await db.execute(
+                'ALTER TABLE ${AuthUserTable.tableName} ADD COLUMN last_login INTEGER');
+            _logger.info('Migration to v2 applied: add last_login column');
+            break;
+
+          case 3:
+            // Example migration v2 -> v3:
+            // - create a settings table
+            await db.execute(
+                'CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)');
+            _logger.info('Migration to v3 applied: create settings table');
+            break;
+
+          // Add more cases here for future versions
+
+          default:
+            _logger.info('No migration defined for v$v');
+        }
+      } catch (e, stack) {
+        // Log and continue: avoid failing entire upgrade on single migration
+        _logger.warning('Migration to v$v failed', e, stack);
+      }
     }
   }
 }

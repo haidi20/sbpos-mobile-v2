@@ -158,12 +158,7 @@ class CategoryModel {
       return null;
     }
 
-    double? toDouble(dynamic v) {
-      if (v == null) return null;
-      if (v is num) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-      return null;
-    }
+    // toDouble removed (unused) to satisfy analyzer information.
 
     return CategoryModel(
       id: toInt(map['id']),

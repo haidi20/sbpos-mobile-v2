@@ -3,15 +3,11 @@ import 'package:product/domain/entities/product_entity.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductEntity product;
-  final Color sbBlue;
-  final Color sbOrange;
   final VoidCallback onTap;
 
   const ProductCard({
     super.key,
     required this.product,
-    required this.sbBlue,
-    required this.sbOrange,
     required this.onTap,
   });
 
@@ -59,7 +55,8 @@ class ProductCard extends StatelessWidget {
                                           width: 24,
                                           height: 24,
                                           child: CircularProgressIndicator(
-                                              strokeWidth: 2),
+                                            strokeWidth: 2,
+                                          ),
                                         ),
                                       ),
                                     );
@@ -94,10 +91,10 @@ class ProductCard extends StatelessWidget {
                           8,
                         ),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         size: 16,
                         Icons.add,
-                        color: sbBlue,
+                        color: AppColors.sbBlue,
                       ),
                     ),
                   )
@@ -119,10 +116,10 @@ class ProductCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               formatRupiah(product.price ?? 0),
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
-                color: sbOrange,
+                color: AppColors.sbOrange,
               ),
             ),
           ],

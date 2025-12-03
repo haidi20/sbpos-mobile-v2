@@ -17,11 +17,11 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: distance),
-            HeroCard(),
+            const HeroCard(),
             SizedBox(height: distance),
-            QuickMenu(),
+            const QuickMenu(),
             SizedBox(height: distance),
-            AnalyticChart(),
+            const AnalyticChart(),
             const SizedBox(height: 80),
           ],
         ),

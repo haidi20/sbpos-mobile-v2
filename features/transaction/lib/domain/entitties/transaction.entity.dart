@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
+
+import 'transaction_status.dart';
+export 'transaction_status.dart';
 import 'package:transaction/data/models/transaction_model.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
-
-enum TransactionStatus { lunas, pending, batal, unknown }
 
 class TransactionEntity {
   final int? id;
@@ -114,7 +116,7 @@ class TransactionEntity {
       totalQty: model.totalQty!,
       paidAmount: model.paidAmount,
       changeMoney: model.changeMoney ?? 0,
-      status: _statusFromString(model.status),
+      status: model.status ?? TransactionStatus.pending,
       cancelationOtp: model.cancelationOtp,
       cancelationReason: model.cancelationReason,
       createdAt: model.createdAt,
@@ -142,7 +144,7 @@ class TransactionEntity {
       totalQty: totalQty,
       paidAmount: paidAmount,
       changeMoney: changeMoney,
-      status: _statusToString(status),
+      status: status,
       cancelationOtp: cancelationOtp,
       cancelationReason: cancelationReason,
       createdAt: createdAt,
@@ -152,31 +154,8 @@ class TransactionEntity {
     );
   }
 
-  static TransactionStatus _statusFromString(String? status) {
-    switch (status) {
-      case 'Lunas':
-        return TransactionStatus.lunas;
-      case 'Pending':
-        return TransactionStatus.pending;
-      case 'Batal':
-        return TransactionStatus.batal;
-      default:
-        return TransactionStatus.unknown;
-    }
-  }
-
-  static String _statusToString(TransactionStatus status) {
-    switch (status) {
-      case TransactionStatus.lunas:
-        return 'Lunas';
-      case TransactionStatus.pending:
-        return 'Pending';
-      case TransactionStatus.batal:
-        return 'Batal';
-      default:
-        return '';
-    }
-  }
+  // status conversion helpers moved to the data model where DB/JSON
+  // serialization occurs. Keep this entity focused on domain logic.
 
   @override
   bool operator ==(Object other) {
@@ -232,4 +211,7 @@ class TransactionEntity {
   String toString() {
     return 'TransactionEntity(id: $id, shiftId: $shiftId, warehouseId: $warehouseId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, details: $details)';
   }
+
+  Color get statusColor => status.color;
+  String get statusValue => status.value.toUpperCase();
 }
