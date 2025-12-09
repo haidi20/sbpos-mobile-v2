@@ -1,7 +1,6 @@
-import 'package:core/presentation/controllers/auth_controller.dart';
+import 'package:core/core.dart';
 import 'package:core/presentation/widgets/footer_text.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/presentation/controllers/auth_controller.dart';
 
 // The file uses a temporary `isLoading` placeholder during refactor.
 // Suppress dead_code warnings until the auth provider is wired.
@@ -36,16 +35,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   // Local UI State (Keep purely visual state local)
   bool _obscureText = true;
-  bool _rememberMe = false;
+  // bool _rememberMe = false;
 
   // Animation Controller
-  late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  late AnimationController _animationController;
 
   // Styles
-  static const Color sbBlue = Color(0xFF1E40AF);
-  static const Color sbOrange = Color(0xFFF97316);
-  static const Color sbBg = Color(0xFFF8FAFC);
+  static const Color sbBg = AppColors.sbBg;
+  static const Color sbBlue = AppColors.sbBlue;
+  static const Color sbOrange = AppColors.sbOrange;
 
   @override
   void initState() {
@@ -277,32 +276,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                value: _rememberMe,
-                activeColor: sbBlue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                side: const BorderSide(color: Colors.grey),
-                onChanged: (val) {
-                  setState(() {
-                    _rememberMe = val ?? false;
-                  });
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Ingat Saya',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-          ],
-        ),
+        // Row(
+        //   children: [
+        //     SizedBox(
+        //       height: 24,
+        //       width: 24,
+        //       child: Checkbox(
+        //         value: _rememberMe,
+        //         activeColor: sbBlue,
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(4),
+        //         ),
+        //         side: const BorderSide(color: Colors.grey),
+        //         onChanged: (val) {
+        //           setState(() {
+        //             _rememberMe = val ?? false;
+        //           });
+        //         },
+        //       ),
+        //     ),
+        //     const SizedBox(width: 8),
+        //     const Text(
+        //       'Ingat Saya',
+        //       style: TextStyle(color: Colors.grey, fontSize: 14),
+        //     ),
+        //   ],
+        // ),
         TextButton(
           onPressed: () {},
           style: TextButton.styleFrom(

@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 
 class TransactionCard extends StatelessWidget {
@@ -46,8 +46,10 @@ class TransactionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white, // DOMINAN PUTIH
           borderRadius: BorderRadius.circular(16),
-          border:
-              Border.all(color: AppColors.gray100, width: 1), // Border tipis
+          border: Border.all(
+            width: 1,
+            color: AppColors.gray100,
+          ), // Border tipis
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04), // Shadow lebih halus
@@ -66,10 +68,10 @@ class TransactionCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: iconColor
-                        .withOpacity(0.08), // Warna icon yang sangat muda
-                    borderRadius:
-                        BorderRadius.circular(10), // Bentuk kotak lebih modern
+                    // Warna icon yang sangat muda
+                    color: iconColor.withOpacity(0.08),
+                    // Bentuk kotak lebih modern
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     isQris ? Icons.qr_code_2 : Icons.credit_card,
@@ -202,9 +204,10 @@ class TransactionCard extends StatelessWidget {
                     Text(
                       'Lihat Detail',
                       style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.sbOrange), // Aksen Oranye
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.sbOrange,
+                      ), // Aksen Oranye
                     ),
                     Icon(
                       Icons.chevron_right,

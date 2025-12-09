@@ -8,11 +8,11 @@ Rumusnya: **`KataKerja` + `KataBenda`**
 
 | Operasi | Nama Class (`PascalCase`) | Nama File (`snake_case`) | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **Read (List)** | `GetWarehouses` | `get_warehouses.dart` | Gunakan **Jamak (s)** karena return List. |
-| **Read (Detail)**| `GetWarehouse` | `get_warehouse.dart` | Gunakan **Tunggal** karena return 1 object. |
-| **Create** | `CreateWarehouse` | `create_warehouse.dart` | Atau `AddWarehouse` / `add_warehouse.dart`. |
-| **Update** | `UpdateWarehouse` | `update_warehouse.dart` | Atau `EditWarehouse`. |
-| **Delete** | `DeleteWarehouse` | `delete_warehouse.dart` | Atau `RemoveWarehouse`. |
+| **Read (List)** | `GetWarehouses` | `get_warehouses.usecase.dart` | Gunakan **Jamak (s)** karena return List. |
+| **Read (Detail)**| `GetWarehouse` | `get_warehouse.usecase.dart` | Gunakan **Tunggal** karena return 1 object. |
+| **Create** | `CreateWarehouse` | `create_warehouse.usecase.dart` | Atau `AddWarehouse` / `add_warehouse.usecase.dart`. |
+| **Update** | `UpdateWarehouse` | `update_warehouse.usecase.dart` | Atau `EditWarehouse`. |
+| **Delete** | `DeleteWarehouse` | `delete_warehouse.usecase.dart` | Atau `RemoveWarehouse`. |
 
 -----
 
@@ -40,7 +40,7 @@ class GetWarehouses {
 }
 ```
 
-#### B. `get_warehouse.dart` (Ambil Satu Data)
+#### B. `get_warehouse.usecase.dart` (Ambil Satu Data)
 
 ```dart
 // Import sama...
@@ -57,7 +57,7 @@ class GetWarehouse {
 }
 ```
 
-#### C. `create_warehouse.dart` (Tambah Data)
+#### C. `create_warehouse.usecase.dart` (Tambah Data)
 
 ```dart
 // Import sama...
@@ -86,11 +86,11 @@ lib/
 │   ├── warehouse/
 │   │   ├── domain/
 │   │   │   ├── usecases/
-│   │   │   │   ├── get_warehouses.dart
-│   │   │   │   ├── get_warehouse.dart
-│   │   │   │   ├── create_warehouse.dart
-│   │   │   │   ├── update_warehouse.dart
-│   │   │   │   └── delete_warehouse.dart
+│   │   │   │   ├── get_warehouses.usecase.dart
+│   │   │   │   ├── get_warehouse.usecase.dart
+│   │   │   │   ├── create_warehouse.usecase.dart
+│   │   │   │   ├── update_warehouse.usecase.dart
+│   │   │   │   └── delete_warehouse.usecase.dart
 ```
 
 ### 4\. Pertanyaan Umum: Perlukah Suffix "UseCase"?
@@ -112,5 +112,5 @@ Anda mungkin sering melihat tutorial menamakan classnya `GetWarehousesUseCase`.
 Gunakan **Pilihan A** (Tanpa Suffix) agar kode lebih bersih seperti contoh di atas.
 
 1.  Class: `GetWarehouses`
-2.  File: `get_warehouses.dart`
+2.  File: `get_warehouses.usecase.dart`
 3.  Method: `execute()`

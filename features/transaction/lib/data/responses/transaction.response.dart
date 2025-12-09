@@ -1,5 +1,5 @@
 // Response wrapper for transaction
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 
 class TransactionResponse {
   final bool success;

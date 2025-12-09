@@ -1,6 +1,5 @@
-// Define your route names as constants
 class AppRoutes {
-  static const String mode = '/mode';
+  // static const String mode = '/mode';
   static const String login = '/login';
   static const String report = '/report';
   static const String settings = '/settings';
@@ -14,4 +13,13 @@ class AppRoutes {
   static const String transactionPos = '/transaction-pos';
   static const String productManagement = '/product-management';
   static const String transactionHistory = '/transaction_history';
+
+  // Tambahan route untuk screens di setting
+  static const String help = '/settings/help';
+  static const String store = '/settings/store';
+  static const String payment = '/settings/payment';
+  static const String printer = '/settings/printer';
+  static const String profile = '/settings/profile';
+  static const String security = '/settings/security';
+  static const String notificationSetting = '/settings/notification';
 }

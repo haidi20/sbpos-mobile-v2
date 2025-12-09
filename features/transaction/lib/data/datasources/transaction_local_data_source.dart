@@ -1,7 +1,7 @@
 // dart:typed_data not needed here
 import 'package:core/core.dart';
 import 'package:core/data/datasources/core_database.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 

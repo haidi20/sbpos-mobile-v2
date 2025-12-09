@@ -1,8 +1,9 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/components/order.card.dart';
-import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -63,7 +64,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     );
   }
 
-  Widget _buildHeader(TransactionPosState stateTransaction, dynamic viewModel) {
+  Widget _buildHeader(
+      TransactionPosState stateTransaction, TransactionPosViewModel viewModel) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       child: Column(
@@ -104,14 +106,14 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   }
 
   Widget _buildOrderList({
-    required dynamic viewModel,
+    required TransactionPosViewModel viewModel,
     required TransactionPosState stateTransaction,
   }) {
     final double cartTotal = _controller.cartTotal;
     final double finalTotal = _controller.finalTotal;
 
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.65,
+      height: MediaQuery.of(context).size.height * 0.70,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         itemCount: viewModel.filteredDetails.length + 1,
@@ -145,8 +147,11 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.notes,
-                              size: 16, color: Colors.yellow.shade700),
+                          Icon(
+                            Icons.notes,
+                            size: 16,
+                            color: Colors.yellow.shade700,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Catatan Pesanan',
@@ -239,8 +244,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                     ),
                     child: const Text(
                       'Bayar Sekarang',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

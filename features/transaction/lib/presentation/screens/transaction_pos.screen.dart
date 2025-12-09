@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import 'package:product/data/data/product_data.dart';
-import 'package:product/data/data/category_data.dart';
+import 'package:product/data/dummies/category.data.dart';
+import 'package:product/data/dummies/product.data.dart';
 import 'package:product/domain/entities/product_entity.dart';
 import 'package:product/domain/entities/category_entity.dart';
 import 'package:product/presentation/components/product_card.dart';

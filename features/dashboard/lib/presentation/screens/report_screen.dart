@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:dashboard/data/data/dashboard_data.dart';
-import 'package:product/data/data/category_data.dart';
+import 'package:product/data/dummies/category.data.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});

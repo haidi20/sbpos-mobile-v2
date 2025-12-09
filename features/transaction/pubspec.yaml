@@ -22,6 +22,8 @@ dependencies:
     path: ../product
   setting:
     path: ../setting
+  customer:
+    path: ../customer
 dev_dependencies:
   flutter_test:
     sdk: flutter

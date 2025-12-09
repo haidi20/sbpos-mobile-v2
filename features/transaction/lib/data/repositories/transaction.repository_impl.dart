@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
@@ -21,7 +21,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<List<TransactionEntity>> _getLocalEntities() async {
     final localResp = await local.getTransactions();
     return localResp
-        .map((model) => TransactionEntity.fromModel(model))
+        .map((model) => TransactionEntity.fromModel(model as TransactionModel))
         .toList();
   }
 

@@ -3,14 +3,24 @@ import 'package:core/core.dart';
 import 'package:core/presentation/screens/coming_soon.dart';
 import 'package:core/presentation/screens/login_screen.dart';
 import 'package:setting/presentation/screens/setting_screen.dart';
+// Import Screens Pengaturan yang Baru
+import 'package:setting/presentation/screens/help_screen.dart';
+import 'package:setting/presentation/screens/store_screen.dart';
+import 'package:setting/presentation/screens/payment_screen.dart';
+import 'package:setting/presentation/screens/printer_screen.dart';
+import 'package:setting/presentation/screens/profile_screen.dart';
+import 'package:setting/presentation/screens/security_screen.dart';
+import 'package:setting/presentation/screens/notification_setting_screen.dart';
+// Akhir Import Screens Pengaturan
+
 import 'package:dashboard/presentation/screens/report_screen.dart';
 import 'package:product/presentation/screens/inventory_screen.dart';
+import 'package:transaction/presentation/screens/transaction.screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/presentation/screens/product_management_screen.dart';
-import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
-import 'package:transaction/presentation/screens/transaction.screen.dart';
+import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 
 class AppRouter {
   static final AppRouter _instance = AppRouter._();
@@ -94,6 +104,7 @@ class AppRouter {
             return const MaterialPage(child: ProductManagementScreen());
           },
         ),
+        // Rute Pengaturan Utama (SettingScreen)
         GoRoute(
           path: AppRoutes.settings,
           name: AppRoutes.settings,
@@ -101,6 +112,62 @@ class AppRouter {
             return const MaterialPage(child: SettingsScreen());
           },
         ),
+
+        // --- Rute-rute Tambahan untuk Modul Setting ---
+
+        GoRoute(
+          path: AppRoutes.profile,
+          name: AppRoutes.profile,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: ProfileScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.store,
+          name: AppRoutes.store,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: StoreScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.security,
+          name: AppRoutes.security,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: SecurityScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.payment,
+          name: AppRoutes.payment,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: PaymentScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.printer,
+          name: AppRoutes.printer,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: PrinterScreen());
+          },
+        ),
+        // Gunakan alias jika nama AppRoutes.notificationConflicting dengan yang sudah ada
+        GoRoute(
+          path: AppRoutes.notificationSetting,
+          name: AppRoutes.notificationSetting,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: NotificationSettingScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.help,
+          name: AppRoutes.help,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: HelpScreen());
+          },
+        ),
+
+        // --- Akhir Rute-rute Modul Setting ---
+
         GoRoute(
           path: AppRoutes.comingSoonScreen,
           name: AppRoutes.comingSoonScreen,

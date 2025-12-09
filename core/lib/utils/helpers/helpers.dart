@@ -3,9 +3,8 @@ import 'dart:typed_data';
 
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
-
-final _helpersLogger = Logger('helpers');
+// import 'package:logging/logging.dart';
+// final _helpersLogger = Logger('helpers');
 
 IconData getIconData(String? iconName) {
   final name = (iconName ?? '').toLowerCase().trim();
@@ -58,8 +57,8 @@ String formatRupiah(double amount) {
 /// - Hapus key dengan nilai null agar tidak memasukkan `Null` ke sqflite
 Map<String, dynamic> sanitizeForDb(Map<String, dynamic> src) {
   final out = <String, dynamic>{};
-  // Keep a shallow copy for debug logging
-  final before = Map<String, dynamic>.from(src);
+  // Keep a shallow copy for debug logging (disabled to avoid unused warnings)
+  // final before = Map<String, dynamic>.from(src);
 
   src.forEach((key, value) {
     // drop nulls
@@ -89,14 +88,14 @@ Map<String, dynamic> sanitizeForDb(Map<String, dynamic> src) {
   });
 
   // debug logging of sanitization
-  _helpersLogger.fine('sanitizeForDb before: $before');
-  _helpersLogger.fine('sanitizeForDb after: $out');
+  // _helpersLogger.fine('sanitizeForDb before: $before');
+  // _helpersLogger.fine('sanitizeForDb after: $out');
   return out;
 }
 
 /// Extension untuk memformat DateTime ke string format "Hari, dd MMMM yyyy HH:mm" dalam bahasa Indonesia.
 extension DateTimeReadableId on DateTime {
-  String toReadableId() {
+  String dateTimeReadable() {
     // Format: "Hari, dd MMMM yyyy HH:mm" dalam bahasa Indonesia
     final formatter = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID');
     return formatter.format(this);

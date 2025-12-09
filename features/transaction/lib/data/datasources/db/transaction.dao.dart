@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 import 'transaction.table.dart';
 import 'transaction_detail.table.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 
 class TransactionDao {

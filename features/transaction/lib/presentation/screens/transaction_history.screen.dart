@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:transaction/data/dummy/transaction.dummy.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/transaction.card.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -57,8 +57,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     // Filter logic
     final filteredTransactions = transactionList.where((tx) {
       final query = _searchQuery.toLowerCase();
-      final seq = tx.sequenceNumber?.toString() ?? '';
-      final notes = tx.notes?.toLowerCase() ?? '';
+      final transaction = tx as TransactionModel;
+      final seq = transaction.sequenceNumber?.toString() ?? '';
+      final notes = transaction.notes?.toLowerCase() ?? '';
       return seq.contains(query) || notes.contains(query);
     }).toList();
 

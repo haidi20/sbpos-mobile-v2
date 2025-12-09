@@ -28,7 +28,10 @@ class TransactionDetailSheet extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black12, blurRadius: 10.0, spreadRadius: 1.0),
+                blurRadius: 10.0,
+                spreadRadius: 1.0,
+                color: Colors.black12,
+              ),
             ],
           ),
           child: TransactionDetailSheet(tx: tx),
@@ -39,64 +42,68 @@ class TransactionDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.sbBg,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Sheet Header (Sticky)
-          _buildStickyHeader(context),
+    return SafeArea(
+      top: false,
+      child: Container(
+        color: AppColors.sbBg,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Sheet Header (Sticky)
+            _buildStickyHeader(context),
 
-          // Konten Utama Sheet
-          Flexible(
-            child: SingleChildScrollView(
-              // Padding bawah ditambahkan di sini
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoGrid(),
-                  const SizedBox(height: 24),
-
-                  _buildItemDetails(),
-                  const SizedBox(height: 24),
-
-                  _buildPaymentSummary(),
-                  const SizedBox(height: 24),
-
-                  if (tx.notes != null && tx.notes!.isNotEmpty) ...[
-                    _buildNotesBox(),
+            // Konten Utama Sheet
+            Flexible(
+              child: SingleChildScrollView(
+                // Padding bawah ditambahkan di sini
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoGrid(),
                     const SizedBox(height: 24),
-                  ],
 
-                  // Cetak Struk Button (Full Width)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Logic Cetak Struk
-                        Navigator.of(context).pop();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        // Menggunakan AppColors.sbBlue untuk aksen CTA
-                        backgroundColor: AppColors.sbBlue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                        textStyle: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                    _buildItemDetails(),
+                    const SizedBox(height: 24),
+
+                    _buildPaymentSummary(),
+                    const SizedBox(height: 24),
+
+                    if (tx.notes != null && tx.notes!.isNotEmpty) ...[
+                      _buildNotesBox(),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Cetak Struk Button (Full Width)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Logic Cetak Struk
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          // Menggunakan AppColors.sbBlue untuk aksen CTA
+                          backgroundColor: AppColors.sbBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                          textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        child: const Text('Cetak Struk'),
                       ),
-                      child: const Text('Cetak Struk'),
                     ),
-                  ),
-                  const SizedBox(height: 10), // Padding ekstra di bawah
-                ],
+                    const SizedBox(height: 10), // Padding ekstra di bawah
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -213,13 +220,36 @@ class TransactionDetailSheet extends StatelessWidget {
       crossAxisSpacing: 16,
       children: [
         // Mengganti Lucide Icons dengan Icons bawaan Flutter
-        _buildGridItem(Icons.receipt, 'No. Order', '#${tx.sequenceNumber}'),
-        _buildGridItem(Icons.access_time, 'Tanggal', tx.date.toReadableId()),
-        _buildGridItem(Icons.person, 'Kasir (ID)', 'User #${tx.userId}'),
-        _buildGridItem(Icons.location_on, 'Warehouse', 'WH-${tx.warehouseId}'),
-        _buildGridItem(null, 'Tipe Order', tx.categoryOrder ?? '-'),
         _buildGridItem(
-            null, 'Metode Bayar', (tx.paymentMethod ?? '-').toUpperCase()),
+          Icons.receipt,
+          'No. Order',
+          '#${tx.sequenceNumber}',
+        ),
+        _buildGridItem(
+          Icons.access_time,
+          'Tanggal',
+          tx.date.dateTimeReadable(),
+        ),
+        _buildGridItem(
+          Icons.person,
+          'Kasir (ID)',
+          'User #${tx.userId}',
+        ),
+        _buildGridItem(
+          Icons.location_on,
+          'Warehouse',
+          'WH-${tx.warehouseId}',
+        ),
+        _buildGridItem(
+          null,
+          'Tipe Order',
+          tx.categoryOrder ?? '-',
+        ),
+        _buildGridItem(
+          null,
+          'Metode Bayar',
+          (tx.paymentMethod ?? '-').toUpperCase(),
+        ),
       ],
     );
   }

@@ -23,6 +23,9 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.0
   sqflite_common_ffi: ^2.3.3
+  integration_test:
+    sdk: flutter
+  network_image_mock: ^2.1.1
 flutter:
   uses-material-design: true
   assets:

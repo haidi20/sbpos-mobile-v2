@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/data/data/inventory_data.dart';
+import 'package:product/data/dummies/inventory.data.dart';
 import 'package:product/data/models/inventory_model.dart';
 
 class InventoryScreen extends StatefulWidget {

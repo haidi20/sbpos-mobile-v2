@@ -1,18 +1,11 @@
 import 'package:core/core.dart';
-import 'package:setting/presentation/screens/help_screen.dart';
-import 'package:setting/presentation/screens/store_screen.dart';
 import 'package:setting/presentation/component/setting_item.dart';
-import 'package:setting/presentation/screens/payment_screen.dart';
-import 'package:setting/presentation/screens/printer_screen.dart';
-import 'package:setting/presentation/screens/profile_screen.dart';
-import 'package:setting/presentation/screens/secutiry_screen.dart';
-import 'package:setting/presentation/screens/notification_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.sbBg,
       body: SafeArea(
@@ -25,7 +18,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => context.pop(),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -49,12 +42,7 @@ class SettingsScreen extends StatelessWidget {
                   label: 'Informasi Toko',
                   subLabel: 'SB Coffee - Samarinda Ulu',
                   iconColor: AppColors.sbBlue,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const StoreScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push(AppRoutes.store),
                 ),
                 const Divider(height: 1),
                 SettingItem(
@@ -62,12 +50,7 @@ class SettingsScreen extends StatelessWidget {
                   label: 'Printer & Struk',
                   subLabel: 'Epson TM-T82 (Connected)',
                   iconColor: AppColors.sbOrange,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PrinterScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push(AppRoutes.printer),
                 ),
                 const Divider(height: 1),
                 SettingItem(
@@ -75,12 +58,7 @@ class SettingsScreen extends StatelessWidget {
                   label: 'Metode Pembayaran',
                   subLabel: 'QRIS, Tunai, Kartu Debit',
                   iconColor: Colors.purple,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PaymentScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push(AppRoutes.payment),
                 ),
               ]),
               const SizedBox(height: 24),
@@ -90,35 +68,20 @@ class SettingsScreen extends StatelessWidget {
                 SettingItem(
                   icon: Icons.person_outline,
                   label: 'Ubah Profil',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ProfileScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push(AppRoutes.profile),
                 ),
                 const Divider(height: 1),
                 SettingItem(
                   icon: Icons.notifications_outlined,
                   label: 'Notifikasi',
                   subLabel: 'Bunyi & Getar Aktif',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push(AppRoutes.notificationSetting),
                 ),
                 const Divider(height: 1),
                 SettingItem(
                   icon: Icons.lock_outline,
                   label: 'Ubah PIN / Password',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SecurityScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push(AppRoutes.security),
                 ),
               ]),
 
@@ -130,13 +93,8 @@ class SettingsScreen extends StatelessWidget {
                 [
                   SettingItem(
                     icon: Icons.help_outline,
-                    label: 'Bantuan & Support',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const HelpScreen(),
-                      ),
-                    ),
+                    label: 'Bantuan Pengguna',
+                    onTap: () => context.push(AppRoutes.help),
                   ),
                   const Divider(height: 1),
                   InkWell(
@@ -153,8 +111,11 @@ class SettingsScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                                 color: Colors.red.shade50,
                                 shape: BoxShape.circle),
-                            child: Icon(Icons.logout,
-                                size: 20, color: Colors.red.shade400),
+                            child: Icon(
+                              Icons.logout,
+                              size: 20,
+                              color: Colors.red.shade400,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           const Expanded(
@@ -181,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
               Text(
-                'SB POS App v2',
+                'SBPOS App v2',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,

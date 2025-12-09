@@ -20,12 +20,8 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
   final Color sbOrange = AppColors.sbOrange;
 
   void _showTransactionDetail(BuildContext context, TransactionEntity tx) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Agar bisa full height / custom height
-      backgroundColor: Colors.transparent,
-      builder: (context) => TransactionDetailSheet(tx: tx),
-    );
+    // Use the sheet's own constrained presenter to avoid layout issues
+    TransactionDetailSheet.show(context, tx);
   }
 
   @override
@@ -143,17 +139,7 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
     );
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // when this route becomes current (e.g., after navigating back), schedule refresh
-    // delay the actual provider modification until after build/frame completes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final route = ModalRoute.of(context);
-      if (route != null && route.isCurrent) {
-        final vm = ref.read(transactionViewModelProvider.notifier);
-        vm.refresh();
-      }
-    });
-  }
+  // didChangeDependencies refresh removed to avoid rebuild loops when
+  // overlay routes (e.g. bottom sheets) are presented. Use manual refresh
+  // triggers (e.g. pull-to-refresh) or navigate-induced refreshs elsewhere.
 }

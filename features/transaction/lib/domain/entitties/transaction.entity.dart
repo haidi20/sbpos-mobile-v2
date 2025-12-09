@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'transaction_status.dart';
 export 'transaction_status.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionEntity {

@@ -55,7 +55,7 @@ class WarehouseScreen extends ConsumerWidget {
             // Search Bar
             Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 1),
+                border: Border.all(color: Colors.grey, width: 1,),
                 borderRadius: BorderRadius.circular(8),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

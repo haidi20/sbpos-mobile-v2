@@ -9,7 +9,7 @@ class HelpScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'Bantuan & Support',
+          'Bantuan Pengguna',
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -18,15 +18,12 @@ class HelpScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.white,
         elevation: 1,
-        leading: context.canPop()
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  // Aksi: Pop halaman saat ini dari tumpukan
-                  context.pop();
-                },
-              )
-            : null, // Jika tidak ada history, tombol leading tidak muncul
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.pop();
+          },
+        ),
         shadowColor: Colors.grey.shade50,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),

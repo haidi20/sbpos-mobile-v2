@@ -6,7 +6,7 @@ import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/repositories/transaction.repository_impl.dart';
 import 'package:transaction/data/datasources/transaction_remote_data_source.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';

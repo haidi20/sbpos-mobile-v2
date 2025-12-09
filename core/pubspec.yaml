@@ -48,6 +48,8 @@ dependencies:
     path: ../features/notification
   setting:
     path: ../features/setting
+  customer:
+    path: ../features/customer
 
 dev_dependencies:
   flutter_test:
