@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:sbpos_v2/main.dart';
+import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   try {

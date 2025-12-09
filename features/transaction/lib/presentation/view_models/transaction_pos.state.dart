@@ -1,3 +1,4 @@
+import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
@@ -9,6 +10,7 @@ class TransactionPosState {
   final String? searchQuery;
   final String activeCategory;
   final TransactionEntity? transaction;
+  final CustomerEntity? selectedCustomer;
   final List<TransactionDetailEntity> details;
 
   TransactionPosState({
@@ -17,6 +19,7 @@ class TransactionPosState {
     this.searchQuery,
     this.activeNoteId,
     this.orderNote = "",
+    this.selectedCustomer,
     this.isLoading = false,
     this.activeCategory = "All",
     List<TransactionDetailEntity>? details,
@@ -30,6 +33,7 @@ class TransactionPosState {
     String? searchQuery,
     String? activeCategory,
     TransactionEntity? transaction,
+    CustomerEntity? selectedCustomer,
     List<TransactionDetailEntity>? details,
   }) {
     return TransactionPosState(
@@ -41,6 +45,7 @@ class TransactionPosState {
       transaction: transaction ?? this.transaction,
       activeNoteId: activeNoteId ?? this.activeNoteId,
       activeCategory: activeCategory ?? this.activeCategory,
+      selectedCustomer: selectedCustomer ?? this.selectedCustomer,
     );
   }
 }

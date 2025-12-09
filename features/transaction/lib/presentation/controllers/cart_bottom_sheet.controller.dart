@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
@@ -33,6 +34,9 @@ class CartBottomSheetController {
 
   late final TransactionPosViewModel _viewModel;
   late final TransactionPosState _stateProductPos;
+  int? _lastRequestedActiveId;
+  DateTime? _lastActiveChangeAt;
+  int? _pendingFocusId;
   double get cartTotal =>
       ref.read(transactionPosViewModelProvider).details.fold(0, (sum, item) {
         final subtotal =
@@ -47,9 +51,66 @@ class CartBottomSheetController {
       _itemNoteControllers;
   Map<int, FocusNode> get itemFocusNodes => _itemFocusNodes;
 
-  void activateItemNote(int id) => _activateItemNote(id);
+  /// Set active item note id and manage focus consistently
+  void setActiveItemNoteId(int? id) {
+    // Prevent redundant calls that retrigger input restart
+    final currentActive =
+        ref.read(transactionPosViewModelProvider).activeNoteId;
+    if (id == currentActive) {
+      return;
+    }
+    // Lightweight debounce to avoid rapid toggles during rebuilds
+    final now = DateTime.now();
+    if (_lastRequestedActiveId == id &&
+        _lastActiveChangeAt != null &&
+        now.difference(_lastActiveChangeAt!).inMilliseconds < 100) {
+      return;
+    }
+    _lastRequestedActiveId = id;
+    _lastActiveChangeAt = now;
 
-  void unfocusAll() => _unfocusAll();
+    if (id == null) {
+      _logger.info('Set activeNoteId -> null, unfocus all');
+      _unfocusAll();
+      _viewModel.setActiveNoteId(null);
+      return;
+    }
+
+    _logger.info('Set activeNoteId -> $id, focus that item');
+    // Unfocus others first only when switching to a different field
+    _unfocusAll();
+    // Then focus the target node if available
+    final node = _itemFocusNodes[id];
+    node?.requestFocus();
+    _viewModel.setActiveNoteId(id);
+  }
+
+  /// Check if a tap is within any currently focused input
+  bool isTapInsideAnyFocused(Offset globalPosition) {
+    // Check focused order note
+    if (_orderFocusNode.hasFocus) {
+      final ctx = _orderFocusNode.context;
+      final render = ctx?.findRenderObject();
+      if (render is RenderBox) {
+        final local = render.globalToLocal(globalPosition);
+        final rect = Offset.zero & render.size;
+        if (rect.contains(local)) return true;
+      }
+    }
+    // Check focused item notes
+    for (final entry in _itemFocusNodes.entries) {
+      final node = entry.value;
+      if (!node.hasFocus) continue;
+      final ctx = node.context;
+      final render = ctx?.findRenderObject();
+      if (render is RenderBox) {
+        final local = render.globalToLocal(globalPosition);
+        final rect = Offset.zero & render.size;
+        if (rect.contains(local)) return true;
+      }
+    }
+    return false;
+  }
 
   void _initializeItemControllers(List<dynamic> details) {
     for (final item in details) {
@@ -66,52 +127,8 @@ class CartBottomSheetController {
   void startListening() {
     ref.listen<TransactionPosState>(transactionPosViewModelProvider,
         (previous, next) {
-      if (previous == null) return;
-
-      // A. Jika Order Note berubah dari luar
-      if (previous.orderNote != next.orderNote &&
-          _orderNoteController.text != next.orderNote) {
-        _orderNoteController.text = next.orderNote;
-      }
-
-      // B. Logic Sinkronisasi Item Controllers
-      if (previous.details.length != next.details.length) {
-        // 1. Hapus controller untuk item yang hilang
-        final nextIds =
-            next.details.map((e) => (e as dynamic).productId).toSet();
-        _itemNoteControllers.removeWhere((id, controller) {
-          if (!nextIds.contains(id)) {
-            controller.dispose();
-            _itemFocusNodes[id]?.dispose();
-            _itemFocusNodes.remove(id);
-            return true;
-          }
-          return false;
-        });
-
-        // 2. Tambah controller untuk item baru
-        for (final item in next.details) {
-          final id = (item as dynamic).productId ?? 0;
-          if (!_itemNoteControllers.containsKey(id)) {
-            final noteText = (item as dynamic).note ?? '';
-            _itemNoteControllers[id] = TextEditingController(text: noteText);
-            _itemFocusNodes[id] = FocusNode();
-          }
-        }
-      } else {
-        // Jika length sama, cek apakah text note berubah dari luar
-        for (final item in next.details) {
-          final id = (item as dynamic).productId ?? 0;
-          final controller = _itemNoteControllers[id];
-          final noteText = (item as dynamic).note ?? '';
-          if (controller != null && controller.text != noteText) {
-            final node = _itemFocusNodes[id];
-            if (node == null || !node.hasFocus) {
-              controller.text = noteText;
-            }
-          }
-        }
-      }
+      // Gunakan handler terpusat agar logika fokus/aktif konsisten
+      onStateChanged(previous, next);
     });
   }
 
@@ -130,6 +147,16 @@ class CartBottomSheetController {
     if (previous.details.length != next.details.length) {
       // 1. Hapus controller untuk item yang hilang
       final nextIds = next.details.map((e) => (e as dynamic).productId).toSet();
+      // If active item is being removed, clear active and unfocus before disposing controllers
+      if (previous.activeNoteId != null &&
+          !nextIds.contains(previous.activeNoteId)) {
+        _logger.info(
+            'Active item ${previous.activeNoteId} removed; clear active and unfocus before disposal');
+        // Jangan langsung unfocus untuk menghindari restart IME jika item akan segera muncul kembali.
+        // Tandai agar difokuskan kembali bila id yang sama ditambahkan di state berikutnya.
+        _pendingFocusId = previous.activeNoteId;
+        _viewModel.setActiveNoteId(null);
+      }
       _itemNoteControllers.removeWhere((id, controller) {
         if (!nextIds.contains(id)) {
           controller.dispose();
@@ -141,12 +168,19 @@ class CartBottomSheetController {
       });
 
       // 2. Tambah controller untuk item baru
-      for (final item in next.details) {
+      for (final TransactionDetailEntity item in next.details) {
         final id = (item as dynamic).productId ?? 0;
         if (!_itemNoteControllers.containsKey(id)) {
-          _itemNoteControllers[id] =
-              TextEditingController(text: (item as dynamic).note);
+          _itemNoteControllers[id] = TextEditingController(text: item.note);
           _itemFocusNodes[id] = FocusNode();
+          // Jika item yang dihapus sebelumnya adalah yang aktif dan muncul kembali, kembalikan fokus.
+          if (_pendingFocusId != null && id == _pendingFocusId) {
+            _logger.info('Restoring focus to re-added item $id');
+            final node = _itemFocusNodes[id];
+            node?.requestFocus();
+            _viewModel.setActiveNoteId(id);
+            _pendingFocusId = null;
+          }
         }
       }
     } else {
@@ -194,6 +228,11 @@ class CartBottomSheetController {
   }
 
   void dispose() {
+    // Avoid modifying providers during unmount; only unfocus nodes locally
+    for (final node in _itemFocusNodes.values) {
+      node.unfocus();
+    }
+    _orderFocusNode.unfocus();
     _orderNoteController.dispose();
     _orderFocusNode.dispose();
     for (final controller in _itemNoteControllers.values) {
@@ -205,7 +244,21 @@ class CartBottomSheetController {
   }
 
   void _unfocusAll() {
-    FocusScope.of(context).unfocus();
+    // Safely unfocus only when context is mounted and focus scope exists
+    if (context.mounted) {
+      FocusScopeNode? scope;
+      try {
+        scope = FocusScope.of(context);
+      } catch (_) {
+        scope = null;
+      }
+      scope?.unfocus();
+    }
+    // Also unfocus individual nodes to be thorough
+    for (final node in _itemFocusNodes.values) {
+      node.unfocus();
+    }
+    _orderFocusNode.unfocus();
   }
 
   void _activateItemNote(int id) {

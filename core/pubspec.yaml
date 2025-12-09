@@ -50,6 +50,7 @@ dependencies:
     path: ../features/setting
   customer:
     path: ../features/customer
+  dotted_border: ^2.1.0
 
 dev_dependencies:
   flutter_test:

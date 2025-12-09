@@ -1,36 +1,37 @@
 import 'package:core/core.dart';
 import 'package:product/presentation/widgets/qty_button.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class OrderCard extends StatelessWidget {
-  final int index;
-  final dynamic viewModel;
-  final TransactionPosState stateTransaction;
-  final dynamic controller;
+  final int id;
+  final String productName;
+  final double productPrice;
+  final int qty;
+  final String? note;
+  final int? activeNoteId;
+  final TextEditingController textController;
+  final FocusNode focusNode;
+  final void Function(int productId, int delta) onUpdateQuantity;
+  final void Function(int? productId) onSetActiveNoteId;
+  final void Function(int productId, String value) onSetItemNote;
 
   const OrderCard({
     super.key,
-    required this.index,
-    required this.viewModel,
-    required this.controller,
-    required this.stateTransaction,
+    required this.id,
+    required this.productName,
+    required this.productPrice,
+    required this.qty,
+    required this.textController,
+    required this.focusNode,
+    required this.onUpdateQuantity,
+    required this.onSetActiveNoteId,
+    required this.onSetItemNote,
+    this.note,
+    this.activeNoteId,
   });
-
   @override
   Widget build(BuildContext context) {
-    final item = stateTransaction.details[index];
-    final id = item.productId ?? 0;
-
-    // Safety check jika controller belum ready (karena async gap)
-    if (!controller.itemNoteControllers.containsKey(id)) {
-      controller.itemNoteControllers[id] =
-          TextEditingController(text: item.note);
-      controller.itemFocusNodes[id] = FocusNode();
-    }
-
-    final focusNode = controller.itemFocusNodes[id]!;
-    final textController = controller.itemNoteControllers[id]!;
-
+    final itemNote = note ?? '';
+    final _logger = Logger('OrderCard');
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -43,7 +44,7 @@ class OrderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.productName ?? '',
+                      productName,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -51,7 +52,7 @@ class OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      formatRupiah((item.productPrice ?? 0).toDouble()),
+                      formatRupiah(productPrice.toDouble()),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -72,12 +73,12 @@ class OrderCard extends StatelessWidget {
                     QtyButton(
                       icon: Icons.remove,
                       // ACTION: Update Qty -1
-                      onTap: () => controller.onUpdateQuantity(id, -1),
+                      onTap: () => onUpdateQuantity(id, -1),
                     ),
                     SizedBox(
                       width: 32,
                       child: Text(
-                        '${item.qty ?? 0}',
+                        '$qty',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
@@ -86,7 +87,7 @@ class OrderCard extends StatelessWidget {
                     QtyButton(
                       icon: Icons.add,
                       // ACTION: Update Qty +1
-                      onTap: () => controller.onUpdateQuantity(id, 1),
+                      onTap: () => onUpdateQuantity(id, 1),
                       isBlue: true,
                       color: AppColors.sbBlue,
                     ),
@@ -95,44 +96,111 @@ class OrderCard extends StatelessWidget {
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: TextField(
-              controller: textController,
-              focusNode: focusNode,
-              maxLines: 2,
-              keyboardType: TextInputType.multiline,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                hintText: 'Catatan item...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(
-                    color: AppColors.sbBlue,
+          Builder(
+            builder: (_) {
+              final isActive = (activeNoteId == id);
+              if (isActive) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: TextField(
+                    controller: textController,
+                    focusNode: focusNode,
+                    maxLines: 2,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      hintText: 'Catatan item...',
+                      hintStyle:
+                          TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: AppColors.sbBlue,
+                        ),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      onSetItemNote(id, value);
+                    },
+                    onSubmitted: (_) {
+                      FocusScope.of(context).unfocus();
+                      onSetActiveNoteId(null);
+                    },
+                    onTap: () {
+                      // Only set active id; controller will manage focus
+                      onSetActiveNoteId(id);
+                    },
+                    onTapOutside: (_) {
+                      //
+                    },
+                  ),
+                );
+              }
+
+              // Tidak aktif: tampilkan ikon pensil + teks preview catatan
+              return Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: InkWell(
+                  onTap: () {
+                    // Only set active id; controller handles focus internally
+                    onSetActiveNoteId(id);
+                    _logger.info('OrderCard: Activate note for productId=$id');
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: Colors.grey.shade200, width: 1),
+                        ),
+                        child: const Icon(
+                          Icons.edit,
+                          size: 16,
+                          color: AppColors.sbBlue,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: Colors.grey.shade200, width: 1),
+                          ),
+                          child: Text(
+                            (itemNote).isNotEmpty
+                                ? itemNote
+                                : 'Catatan item (opsional)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: (itemNote).isNotEmpty
+                                  ? Colors.black87
+                                  : Colors.grey.shade400,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              // ACTION: Update Item Note
-              onChanged: (value) {
-                viewModel.setItemNote(id, value);
-              },
-              onSubmitted: (_) {
-                FocusScope.of(context).unfocus();
-              },
-              onTap: () {
-                controller.activateItemNote(id);
-                // ACTION: Set Active ID
-                viewModel.setActiveNoteId(id);
-              },
-            ),
+              );
+            },
           ),
           const Padding(
             padding: EdgeInsets.only(top: 16),

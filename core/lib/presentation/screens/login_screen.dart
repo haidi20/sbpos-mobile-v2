@@ -40,6 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   // Animation Controller
   late Animation<double> _scaleAnimation;
   late AnimationController _animationController;
+  bool isActiveAnimation = false;
 
   // Styles
   static const Color sbBg = AppColors.sbBg;
@@ -58,7 +59,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     _animationController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
-    )..repeat(reverse: true);
+    );
+
+    if (isActiveAnimation) {
+      _animationController.repeat(reverse: true);
+    }
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
@@ -87,12 +92,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           Positioned(
             top: -50,
             left: -50,
-            child: _buildBlob(_scaleAnimation, sbBlue),
+            child: _buildBlob(
+              isActiveAnimation
+                  ? _scaleAnimation
+                  : const AlwaysStoppedAnimation(1.0),
+              sbBlue,
+            ),
           ),
           Positioned(
             bottom: -50,
             right: -50,
-            child: _buildBlob(_scaleAnimation, sbOrange),
+            child: _buildBlob(
+              isActiveAnimation
+                  ? _scaleAnimation
+                  : const AlwaysStoppedAnimation(1.0),
+              sbOrange,
+            ),
           ),
 
           // --- Main Content ---
@@ -227,6 +242,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       Icon(Icons.arrow_forward, size: 20),
                                     ],
                                   ),
+                            onHover: (hovering) {
+                              // Optional: pause/resume blob animation on hover to reduce distraction
+                              if (hovering != isActiveAnimation) {
+                                setState(() {
+                                  isActiveAnimation = hovering;
+                                  if (isActiveAnimation) {
+                                    _animationController.repeat(reverse: true);
+                                  } else {
+                                    _animationController.stop();
+                                  }
+                                });
+                              }
+                            },
                           ),
                         ),
                       ],

@@ -1,5 +1,7 @@
 import 'package:core/core.dart';
+import 'dart:async';
 import 'package:product/domain/entities/product_entity.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
@@ -14,6 +16,9 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final DeleteTransaction _deleteTransaction;
   final GetTransactionActive _getTransactionActive;
   final _logger = Logger('TransactionPosViewModel');
+  // Debounce timers for note updates
+  Timer? _orderNoteDebounce;
+  final Map<int, Timer> _itemNoteDebounces = {};
 
   TransactionPosViewModel(
     this._createTransaction,
@@ -106,10 +111,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
           }, (updated) {
             _logger.info(
                 "Updated transaction id=${updated.id}, detailsCount=${updated.details?.length ?? 0}");
+            // Avoid UI flicker when repository returns empty details temporarily
+            final safeDetails = (updated.details != null &&
+                    (updated.details?.isNotEmpty ?? false))
+                ? updated.details!
+                : updatedDetails;
             state = state.copyWith(
-                transaction: updated,
-                details: updated.details ?? updatedDetails,
-                isLoading: false);
+                transaction: updated, details: safeDetails, isLoading: false);
           });
         }
       }
@@ -186,22 +194,45 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     await _persistAndUpdateState(updated);
   }
 
-  // Update Item Note
+  // Update Item Note with debounce to avoid rapid DB writes
   Future<void> setItemNote(int productId, String note) async {
     final index = state.details.indexWhere((i) => i.productId == productId);
     if (index == -1) return;
-    final updated = List<TransactionDetailEntity>.from(state.details);
-    final old = updated[index];
-    updated[index] = old.copyWith(note: note);
-    // persist note update first
-    unawaited(_persistAndUpdateState(updated));
+
+    // Update local state immediately for responsive UI
+    final updatedLocal = List<TransactionDetailEntity>.from(state.details);
+    final old = updatedLocal[index];
+    updatedLocal[index] = old.copyWith(note: note);
+    state = state.copyWith(details: updatedLocal);
+
+    // Debounce persistence per item
+    _itemNoteDebounces[productId]?.cancel();
+    _itemNoteDebounces[productId] =
+        Timer(const Duration(milliseconds: 400), () {
+      unawaited(_persistAndUpdateState(
+          List<TransactionDetailEntity>.from(state.details)));
+    });
   }
 
-  // Set Order Note
+  // Set Order Note with debounce; avoid re-writing details on every keystroke
   Future<void> setOrderNote(String note) async {
-    // Persist order note change to DB then update state
-    final updatedDetails = List<TransactionDetailEntity>.from(state.details);
-    unawaited(_persistAndUpdateState(updatedDetails, orderNote: note));
+    // Update local state immediately for UI
+    state = state.copyWith(orderNote: note);
+
+    // Debounce persistence
+    _orderNoteDebounce?.cancel();
+    _orderNoteDebounce = Timer(const Duration(milliseconds: 500), () {
+      final updatedDetails = List<TransactionDetailEntity>.from(state.details);
+      unawaited(
+          _persistAndUpdateState(updatedDetails, orderNote: state.orderNote));
+    });
+  }
+
+  void setCustomer(CustomerEntity? customer) {
+    _logger.info('Setting selected customer: ${customer?.name}');
+    state = state.copyWith(
+      selectedCustomer: customer,
+    );
   }
 
   // Set active category
@@ -212,41 +243,6 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // Set search query
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
-  }
-
-  // Clear Cart — use DeleteTransaction usecase for existing local transaction
-  Future<void> onClearCart() async {
-    try {
-      state = state.copyWith(isLoading: true);
-
-      final txId = state.transaction?.id;
-      if (txId != null) {
-        final res = await _deleteTransaction.call(txId, isOffline: true);
-        res.fold((f) {
-          state = state.copyWith(error: f.toString(), isLoading: false);
-        }, (ok) {
-          state = state.copyWith(
-            details: [],
-            transaction: null,
-            orderNote: "",
-            activeNoteId: null,
-            isLoading: false,
-          );
-        });
-        return;
-      }
-
-      // No transaction to delete; just clear local state
-      state = state.copyWith(
-        details: [],
-        transaction: null,
-        orderNote: "",
-        activeNoteId: null,
-        isLoading: false,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
   }
 
   // Set Active Note ID
@@ -289,5 +285,44 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     // onStoreLocal: perform DB-first persistence using current state.details
     await _persistAndUpdateState(
         List<TransactionDetailEntity>.from(state.details));
+  }
+
+  Future<void> onShowMethodPayment() async {
+    // Placeholder for showing method payment
+  }
+
+  // Clear Cart — use DeleteTransaction usecase for existing local transaction
+  Future<void> onClearCart() async {
+    try {
+      state = state.copyWith(isLoading: true);
+
+      final txId = state.transaction?.id;
+      if (txId != null) {
+        final res = await _deleteTransaction.call(txId, isOffline: true);
+        res.fold((f) {
+          state = state.copyWith(error: f.toString(), isLoading: false);
+        }, (ok) {
+          state = state.copyWith(
+            details: [],
+            transaction: null,
+            orderNote: "",
+            activeNoteId: null,
+            isLoading: false,
+          );
+        });
+        return;
+      }
+
+      // No transaction to delete; just clear local state
+      state = state.copyWith(
+        details: [],
+        transaction: null,
+        orderNote: "",
+        activeNoteId: null,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
   }
 }

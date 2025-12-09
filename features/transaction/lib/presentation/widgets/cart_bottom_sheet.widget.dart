@@ -1,0 +1,422 @@
+import 'package:core/core.dart';
+import 'package:transaction/presentation/components/order.card.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:customer/presentation/widgets/open_customer_picker_widget.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
+
+Widget buildHeader({
+  required VoidCallback onClearCart,
+  required TransactionPosViewModel viewModel,
+  required TransactionPosState stateTransaction,
+}) {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+    child: Column(
+      children: [
+        Container(
+          width: 48,
+          height: 6,
+          decoration: BoxDecoration(
+            color: AppColors.gray500,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Pesanan (${viewModel.cartCount} items)',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextButton(
+              // ACTION: Clear Cart
+              onPressed: () {
+                // Clear active item note to collapse any open input
+                viewModel.setActiveNoteId(null);
+                onClearCart();
+              },
+              child: const Text(
+                'Hapus Semua',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget buildCustomerCard({
+  required BuildContext context,
+  required TransactionPosState state,
+  required TransactionPosViewModel viewModel,
+}) {
+  const sbBlue = Color(0xFF3B82F6);
+  final customer = state.selectedCustomer;
+
+  // Level/points display removed; customer entity no longer has those fields.
+
+  return InkWell(
+    onTap: () {
+      // Collapse any active note input before opening picker
+      viewModel.setActiveNoteId(null);
+      OpenCustomerPickerWidget.openCustomerPicker(
+        context,
+        (customer) => viewModel.setCustomer(customer),
+      );
+    },
+    borderRadius: BorderRadius.circular(16.0),
+    child: DottedBorder(
+      borderType: BorderType.RRect,
+      padding: const EdgeInsets.all(6),
+      radius: const Radius.circular(16),
+      color: customer != null ? sbBlue : AppColors.gray300,
+      strokeWidth: 1,
+      dashPattern: const [8, 4],
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: customer != null ? Colors.blue[50] : Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+          // thin border for better visual separation
+          border: Border.all(
+            width: 1,
+            color: AppColors.gray200,
+          ),
+          boxShadow: [
+            if (customer != null)
+              BoxShadow(
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.03),
+              ),
+          ],
+        ),
+        child: customer != null
+            ? Stack(
+                children: [
+                  Row(
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blueAccent,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 3,
+                              color: Colors.black.withOpacity(0.1),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            (customer.name != null && customer.name!.isNotEmpty
+                                ? customer.name!.substring(0, 1)
+                                : ''),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              customer.name ?? '',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF111827),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Text(
+                                  '• ${customer.phone}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.gray500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Remove Button
+                      InkWell(
+                        onTap: () {
+                          // Also clear active note when removing customer
+                          viewModel.setActiveNoteId(null);
+                          viewModel.setCustomer(null);
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(
+                            size: 18,
+                            LucideIcons.x,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  // Notes if available
+                  if (customer.note != null && customer.note!.isNotEmpty)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IgnorePointer(
+                        ignoring: true,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 4.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow[100],
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(
+                                8.0,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Catatan: ${customer.note}',
+                            style: TextStyle(
+                                color: Colors.yellow[800],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(LucideIcons.user, size: 20, color: AppColors.gray500),
+                  SizedBox(width: 8),
+                  Text(
+                    'Pilih Pelanggan / Member',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.gray500,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    ),
+  );
+}
+
+Widget buildOrderList({
+  required double cartTotal,
+  required double finalTotal,
+  required VoidCallback onPay,
+  required FocusNode orderFocusNode,
+  required TransactionPosViewModel viewModel,
+  required TransactionPosState stateTransaction,
+  required CartBottomSheetController controller,
+  required TextEditingController orderNoteController,
+}) {
+  return ListView.builder(
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    itemCount: viewModel.filteredDetails.length + 1,
+    itemBuilder: (context, index) {
+      if (index < viewModel.filteredDetails.length) {
+        final item = viewModel.filteredDetails[index];
+        final id = item.productId ?? 0;
+
+        controller.itemNoteControllers[id] ??=
+            TextEditingController(text: item.note);
+        controller.itemFocusNodes[id] ??= FocusNode();
+
+        return OrderCard(
+          id: id,
+          productName: item.productName ?? '',
+          productPrice: (item.productPrice ?? 0).toDouble(),
+          qty: item.qty ?? 0,
+          note: item.note,
+          activeNoteId: stateTransaction.activeNoteId,
+          textController: controller.itemNoteControllers[id]!,
+          focusNode: controller.itemFocusNodes[id]!,
+          onUpdateQuantity: (pid, delta) =>
+              controller.onUpdateQuantity(pid, delta),
+          onSetActiveNoteId: (pid) => controller.setActiveItemNoteId(pid),
+          onSetItemNote: (pid, value) => viewModel.setItemNote(pid, value),
+        );
+      }
+
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 24 : 48,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Order General Note
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.yellow.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.yellow.shade100),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.notes,
+                        size: 16,
+                        color: Colors.yellow.shade700,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Catatan Pesanan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.yellow.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: orderNoteController,
+                    focusNode: orderFocusNode,
+                    maxLines: 3,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      hintText: "Contoh: Bungkus dipisah, Meja nomor 5...",
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade300,
+                        fontSize: 13,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.yellow.shade400),
+                      ),
+                    ),
+                    onTap: () {
+                      // Clear any active item note while focusing order note
+                      viewModel.setActiveNoteId(null);
+                    },
+                    onSubmitted: (_) {
+                      FocusScope.of(context).unfocus();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Summary
+            ...[
+              buildSummaryRow(
+                'Subtotal',
+                formatRupiah(cartTotal),
+              ),
+              // buildSummaryRow(
+              //     'Pajak (10%)', formatRupiah(cartTotal * 0.1,),),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  color: Color(0xFFE5E7EB),
+                ),
+              ),
+              buildSummaryRow(
+                'Total',
+                formatRupiah(finalTotal),
+                isTotal: true,
+              ),
+            ],
+            const SizedBox(height: 24),
+            // Pay Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Ensure any item note input is closed before proceeding
+                  viewModel.setActiveNoteId(null);
+                  onPay();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.sbOrange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Bayar Sekarang',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget buildSummaryRow(String label, String value, {bool isTotal = false}) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          color: isTotal ? Colors.black : Colors.grey.shade600,
+          fontSize: isTotal ? 20 : 14,
+          fontWeight: isTotal ? FontWeight.bold : null,
+        ),
+      ),
+      Text(
+        value,
+        style: TextStyle(
+          color: isTotal ? Colors.black : Colors.grey.shade600,
+          fontSize: isTotal ? 20 : 14,
+          fontWeight: isTotal ? FontWeight.bold : null,
+        ),
+      ),
+    ],
+  );
+}
