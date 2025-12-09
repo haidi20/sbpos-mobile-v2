@@ -71,18 +71,20 @@ class CartBottomSheetController {
 
     if (id == null) {
       _logger.info('Set activeNoteId -> null, unfocus all');
-      _unfocusAll();
+      // Update provider first so UI rebuild reflects null immediately
       _viewModel.setActiveNoteId(null);
+      // Then unfocus to avoid IME restart causing stale reads
+      _unfocusAll();
       return;
     }
 
     _logger.info('Set activeNoteId -> $id, focus that item');
-    // Unfocus others first only when switching to a different field
+    // Update provider first so dependent widgets see the new active id
+    _viewModel.setActiveNoteId(id);
+    // Unfocus others then focus target node
     _unfocusAll();
-    // Then focus the target node if available
     final node = _itemFocusNodes[id];
     node?.requestFocus();
-    _viewModel.setActiveNoteId(id);
   }
 
   /// Check if a tap is within any currently focused input

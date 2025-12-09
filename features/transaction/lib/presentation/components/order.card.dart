@@ -6,6 +6,7 @@ class OrderCard extends StatelessWidget {
   final String productName;
   final double productPrice;
   final int qty;
+  final bool isActive;
   final String? note;
   final int? activeNoteId;
   final TextEditingController textController;
@@ -17,6 +18,7 @@ class OrderCard extends StatelessWidget {
   const OrderCard({
     super.key,
     required this.id,
+    required this.isActive,
     required this.productName,
     required this.productPrice,
     required this.qty,
@@ -31,7 +33,7 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final itemNote = note ?? '';
-    final _logger = Logger('OrderCard');
+    final logger = Logger('OrderCard');
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -98,7 +100,6 @@ class OrderCard extends StatelessWidget {
           ),
           Builder(
             builder: (_) {
-              final isActive = (activeNoteId == id);
               if (isActive) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -151,7 +152,7 @@ class OrderCard extends StatelessWidget {
                   onTap: () {
                     // Only set active id; controller handles focus internally
                     onSetActiveNoteId(id);
-                    _logger.info('OrderCard: Activate note for productId=$id');
+                    logger.info('OrderCard: Activate note for productId=$id');
                   },
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,

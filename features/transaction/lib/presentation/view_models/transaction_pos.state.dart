@@ -48,4 +48,46 @@ class TransactionPosState {
       selectedCustomer: selectedCustomer ?? this.selectedCustomer,
     );
   }
+
+  // Clear all state back to initial defaults
+  factory TransactionPosState.cleared() {
+    return TransactionPosState(
+      error: null,
+      transaction: null,
+      searchQuery: null,
+      activeNoteId: null,
+      orderNote: "",
+      selectedCustomer: null,
+      isLoading: false,
+      activeCategory: "All",
+      details: const [],
+    );
+  }
+}
+
+// Utilitas opsional: null-kan field tertentu secara dinamis tanpa copyWith
+extension TransactionPosStateClearX on TransactionPosState {
+  TransactionPosState clear({
+    bool clearError = false,
+    bool clearTransaction = false,
+    bool clearSearchQuery = false,
+    bool clearActiveNoteId = false,
+    bool clearOrderNote = false,
+    bool clearSelectedCustomer = false,
+    bool clearDetails = false,
+    bool resetIsLoading = false,
+    bool resetActiveCategory = false,
+  }) {
+    return TransactionPosState(
+      error: clearError ? null : error,
+      transaction: clearTransaction ? null : transaction,
+      searchQuery: clearSearchQuery ? null : searchQuery,
+      activeNoteId: clearActiveNoteId ? null : activeNoteId,
+      orderNote: clearOrderNote ? "" : orderNote,
+      selectedCustomer: clearSelectedCustomer ? null : selectedCustomer,
+      isLoading: resetIsLoading ? false : isLoading,
+      activeCategory: resetActiveCategory ? "All" : activeCategory,
+      details: clearDetails ? const [] : details,
+    );
+  }
 }

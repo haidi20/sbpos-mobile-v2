@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'dart:async';
 import 'package:product/domain/entities/product_entity.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
@@ -229,10 +228,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   void setCustomer(CustomerEntity? customer) {
-    _logger.info('Setting selected customer: ${customer?.name}');
-    state = state.copyWith(
-      selectedCustomer: customer,
-    );
+    if (customer == null) {
+      // Use factory that preserves all other fields and clears customer only
+      state = state.clear(clearSelectedCustomer: true);
+      return;
+    } else {
+      state = state.copyWith(selectedCustomer: customer);
+    }
   }
 
   // Set active category
@@ -247,6 +249,11 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
   // Set Active Note ID
   void setActiveNoteId(int? id) {
+    if (id == null) {
+      state = state.clear(clearActiveNoteId: true);
+
+      return;
+    }
     state = state.copyWith(activeNoteId: id);
   }
 
@@ -302,25 +309,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
         res.fold((f) {
           state = state.copyWith(error: f.toString(), isLoading: false);
         }, (ok) {
-          state = state.copyWith(
-            details: [],
-            transaction: null,
-            orderNote: "",
-            activeNoteId: null,
-            isLoading: false,
-          );
+          state = TransactionPosState.cleared();
         });
         return;
       }
 
       // No transaction to delete; just clear local state
-      state = state.copyWith(
-        details: [],
-        transaction: null,
-        orderNote: "",
-        activeNoteId: null,
-        isLoading: false,
-      );
+      state = TransactionPosState.cleared();
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }

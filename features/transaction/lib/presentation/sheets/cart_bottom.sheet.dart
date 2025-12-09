@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/components/order.card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/widgets/cart_bottom_sheet.widget.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
@@ -48,6 +49,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         // No-op: use onTapDown to decide if outside tap
+        _controller.setActiveItemNoteId(null);
       },
       // Removed global onTapDown clearing to prevent accidental unfocus while typing.
       // Do not clear on pan; avoid unfocus during scroll
@@ -92,165 +94,16 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      for (int i = 0; i < viewModel.filteredDetails.length; i++)
-                        Builder(builder: (context) {
-                          final item = viewModel.filteredDetails[i];
-                          final id = item.productId ?? 0;
-
-                          // Ensure controllers exist for this item
-                          _controller.itemNoteControllers[id] ??=
-                              TextEditingController(text: item.note);
-                          _controller.itemFocusNodes[id] ??= FocusNode();
-
-                          return OrderCard(
-                            id: id,
-                            productName: item.productName ?? '',
-                            productPrice: (item.productPrice ?? 0).toDouble(),
-                            qty: item.qty ?? 0,
-                            note: item.note,
-                            activeNoteId: stateTransaction.activeNoteId,
-                            textController:
-                                _controller.itemNoteControllers[id]!,
-                            focusNode: _controller.itemFocusNodes[id]!,
-                            onUpdateQuantity: (pid, delta) {
-                              // Clear any active note when changing qty
-                              _controller.setActiveItemNoteId(null);
-                              _controller.onUpdateQuantity(pid, delta);
-                            },
-                            onSetActiveNoteId: (pid) =>
-                                _controller.setActiveItemNoteId(pid),
-                            onSetItemNote: (pid, value) =>
-                                viewModel.setItemNote(pid, value),
-                          );
-                        }),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                              ? 24
-                              : 48,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Order General Note
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.yellow.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: Colors.yellow.shade100),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.notes,
-                                        size: 16,
-                                        color: Colors.yellow.shade700,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Catatan Pesanan',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.yellow.shade700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextField(
-                                    controller: _controller.orderNoteController,
-                                    focusNode: _controller.orderFocusNode,
-                                    maxLines: 3,
-                                    keyboardType: TextInputType.multiline,
-                                    textInputAction: TextInputAction.done,
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          "Contoh: Bungkus dipisah, Meja nomor 5...",
-                                      hintStyle: TextStyle(
-                                        color: Colors.grey.shade300,
-                                        fontSize: 13,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      contentPadding: const EdgeInsets.all(8),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                            color: Colors.grey.shade200),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                            color: Colors.yellow.shade400),
-                                      ),
-                                    ),
-                                    onSubmitted: (_) {
-                                      FocusScope.of(context).unfocus();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Summary
-                            ...[
-                              buildSummaryRow(
-                                'Subtotal',
-                                formatRupiah(_controller.cartTotal),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Divider(
-                                  color: Color(0xFFE5E7EB),
-                                ),
-                              ),
-                              buildSummaryRow(
-                                'Total',
-                                formatRupiah(_controller.finalTotal),
-                                isTotal: true,
-                              ),
-                            ],
-                            const SizedBox(height: 24),
-                            // Pay Button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'Transaksi Berhasil!\nTotal: ${formatRupiah(_controller.finalTotal)}'),
-                                    ),
-                                  );
-                                  viewModel.onShowMethodPayment();
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.sbOrange,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Bayar Sekarang',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      buildOrderList(
+                        viewModel: viewModel,
+                        stateTransaction: stateTransaction,
+                        controller: _controller,
+                        orderNoteController: _controller.orderNoteController,
+                      ),
+                      buildSummaryBottom(
+                        context: context,
+                        viewModel: viewModel,
+                        controller: _controller,
                       ),
                     ],
                   ),
