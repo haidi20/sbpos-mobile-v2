@@ -6,7 +6,8 @@ class GetCustomer {
   final CustomerRepository repository;
   GetCustomer(this.repository);
 
-  Future<Either<Failure, CustomerEntity>> execute(int id) {
-    return repository.getCustomer(id);
+  Future<Either<Failure, CustomerEntity>> call(int id,
+      {bool? isOffline}) async {
+    return await repository.getCustomer(id, isOffline: isOffline);
   }
 }

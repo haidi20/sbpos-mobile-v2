@@ -92,20 +92,7 @@ class FakeTransactionRepository implements TransactionRepository {
       const Right(true);
 }
 
-// Minimal fake controller used by OrderCard
-class _FakePosController {
-  final Map<int, TextEditingController> itemNoteControllers = {};
-  final Map<int, FocusNode> itemFocusNodes = {};
-
-  void onUpdateQuantity(int id, int delta) {}
-  void activateItemNote(int id) {}
-}
-
-// Minimal fake viewmodel for order interactions
-class _FakePosViewModel {
-  void setItemNote(int id, String note) {}
-  void setActiveNoteId(int id) {}
-}
+// (No fakes required for current OrderCard constructor)
 
 void main() {
   late FakeTransactionRepository fakeRepo;
@@ -127,8 +114,7 @@ void main() {
         totalQty: 2,
       );
 
-      final fakeController = _FakePosController();
-      final fakeViewModel = _FakePosViewModel();
+      // Removed unused fakes since OrderCard no longer needs them
       final state = TransactionPosState(details: [
         const TransactionDetailEntity(
           productId: 1,
@@ -145,10 +131,17 @@ void main() {
             SummaryRow(tx: tx),
             const SummaryRowCard(label: 'Card', value: 'Value'),
             OrderCard(
-                index: 0,
-                viewModel: fakeViewModel,
-                controller: fakeController,
-                stateTransaction: state),
+              id: 1,
+              productName: 'Product A',
+              productPrice: 10000.0,
+              qty: 1,
+              isActive: true,
+              textController: TextEditingController(text: ''),
+              focusNode: FocusNode(),
+              onUpdateQuantity: (id, delta) {},
+              onSetActiveNoteId: (id) {},
+              onSetItemNote: (id, value) {},
+            ),
             DetailInfo(tx: tx.copyWith(details: state.details)),
             const DetailInfoCard(
                 icon: Icons.info, label: 'Card', value: 'Value'),

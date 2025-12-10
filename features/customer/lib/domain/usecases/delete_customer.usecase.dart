@@ -5,7 +5,7 @@ class DeleteCustomer {
   final CustomerRepository repository;
   DeleteCustomer(this.repository);
 
-  Future<Either<Failure, bool>> execute(int id) {
-    return repository.deleteCustomer(id);
+  Future<Either<Failure, bool>> call(int id, {bool? isOffline}) async {
+    return await repository.deleteCustomer(id, isOffline: isOffline);
   }
 }

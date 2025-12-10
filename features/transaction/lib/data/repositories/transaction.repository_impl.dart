@@ -21,7 +21,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<List<TransactionEntity>> _getLocalEntities() async {
     final localResp = await local.getTransactions();
     return localResp
-        .map((model) => TransactionEntity.fromModel(model as TransactionModel))
+        .map((model) => TransactionEntity.fromModel(model))
         .toList();
   }
 
@@ -381,8 +381,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
         }
       }
 
-      // if offline requested, return local
+      // if offline requested, return local and mark as unsynced
       if (isOffline == true) {
+        if (txModel.id != null) {
+          await local.clearSyncedAt(txModel.id!);
+        }
         final localTx = await local.getTransactionById(txModel.id ?? 0);
         if (localTx == null) {
           _logger.warning(
@@ -395,6 +398,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
       final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
       if (!isConnected) {
+        if (txModel.id != null) {
+          await local.clearSyncedAt(txModel.id!);
+        }
         final localTx = await local.getTransactionById(txModel.id ?? 0);
         if (localTx == null) {
           return const Left(NetworkFailure());
@@ -412,6 +418,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
       try {
         final resp = await remote.updateTransaction(idServer, txModel.toJson());
         if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
+          if (txModel.id != null) {
+            await local.clearSyncedAt(txModel.id!);
+          }
           final localTx = await local.getTransactionById(txModel.id ?? 0);
           if (localTx == null) {
             return const Left(ServerFailure());
@@ -433,12 +442,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
         }
         return Right(TransactionEntity.fromModel(updatedLocal));
       } on ServerException {
+        if (txModel.id != null) {
+          await local.clearSyncedAt(txModel.id!);
+        }
         final localTx = await local.getTransactionById(txModel.id ?? 0);
         if (localTx == null) {
           return const Left(ServerFailure());
         }
         return Right(TransactionEntity.fromModel(localTx));
       } on NetworkException {
+        if (txModel.id != null) {
+          await local.clearSyncedAt(txModel.id!);
+        }
         final localTx = await local.getTransactionById(txModel.id ?? 0);
         if (localTx == null) {
           return const Left(NetworkFailure());

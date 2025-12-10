@@ -57,9 +57,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     // Filter logic
     final filteredTransactions = transactionList.where((tx) {
       final query = _searchQuery.toLowerCase();
-      final transaction = tx as TransactionModel;
-      final seq = transaction.sequenceNumber?.toString() ?? '';
-      final notes = transaction.notes?.toLowerCase() ?? '';
+      final seq = tx.sequenceNumber?.toString() ?? '';
+      final notes = tx.notes?.toLowerCase() ?? '';
       return seq.contains(query) || notes.contains(query);
     }).toList();
 

@@ -234,6 +234,23 @@ class TransactionLocalDataSource with BaseErrorHelper {
     }
   }
 
+  Future<int> clearSyncedAt(int id) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database gagal dibuka/null');
+        return 0;
+      }
+      final query = createDao(db);
+      final res = await query.clearSyncedAt(id);
+      _logInfo('clearSyncedAt: success id=$id rows=$res');
+      return res;
+    } catch (e, st) {
+      _logSevere('Error clearSyncedAt', e, st);
+      rethrow;
+    }
+  }
+
   /// Overridable factory for DAO to support testing (e.g. injecting flaky DAO).
   @visibleForTesting
   TransactionDao createDao(Database db) => TransactionDao(db);

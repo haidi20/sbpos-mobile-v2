@@ -51,7 +51,7 @@ class CustomerModel {
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) => CustomerModel(
         id: _toInt(json['id']),
-        idServer: _toInt(json['id_server']),
+        idServer: _toInt(json['id']),
         name: json['name'] as String?,
         phone: json['phone'] as String?,
         note: json['note'] as String?,
@@ -71,7 +71,7 @@ class CustomerModel {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
+        'id': idServer,
         'id_server': idServer,
         'name': name,
         'phone': phone,

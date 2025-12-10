@@ -207,6 +207,20 @@ class TransactionDao {
     }
   }
 
+  Future<int> clearSyncedAt(int id) async {
+    try {
+      final res = await database.rawUpdate(
+        'UPDATE ${TransactionTable.tableName} SET ${TransactionTable.colSyncedAt} = NULL WHERE ${TransactionTable.colId} = ?',
+        [id],
+      );
+      _logInfo('clearSyncedAt: success id=$id rows=$res');
+      return res;
+    } catch (e, s) {
+      _logSevere('Error clearSyncedAt: $e', e, s);
+      rethrow;
+    }
+  }
+
   Future<int> updateTransaction(Map<String, dynamic> tx) async {
     try {
       final id = tx['id'];

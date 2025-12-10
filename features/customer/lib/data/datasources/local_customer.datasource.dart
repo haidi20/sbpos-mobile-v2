@@ -142,4 +142,21 @@ class LocalCustomerDataSource with BaseErrorHelper {
       rethrow;
     }
   }
+
+  Future<int> clearSyncedAt(int id) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat clearSyncedAt');
+        return 0;
+      }
+      final dao = createDao(db);
+      final count = await dao.clearSyncedAt(id);
+      _logInfo('clearSyncedAt: rows=$count');
+      return count;
+    } catch (e, st) {
+      _logSevere('Error clearSyncedAt', e, st);
+      rethrow;
+    }
+  }
 }

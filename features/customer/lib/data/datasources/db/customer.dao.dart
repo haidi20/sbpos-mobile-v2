@@ -114,4 +114,18 @@ class CustomerDao {
       rethrow;
     }
   }
+
+  Future<int> clearSyncedAt(int id) async {
+    try {
+      final count = await database.rawUpdate(
+        'UPDATE ${CustomerTable.tableName} SET ${CustomerTable.colSyncedAt} = NULL WHERE ${CustomerTable.colId} = ?',
+        [id],
+      );
+      _logInfo('clearSyncedAt: success id=$id rows=$count');
+      return count;
+    } catch (e, s) { 
+      _logSevere('Error clearSyncedAt: $e', e, s);
+      rethrow;
+    }
+  }
 }

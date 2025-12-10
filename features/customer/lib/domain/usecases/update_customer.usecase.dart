@@ -6,7 +6,8 @@ class UpdateCustomer {
   final CustomerRepository repository;
   UpdateCustomer(this.repository);
 
-  Future<Either<Failure, CustomerEntity>> execute(CustomerEntity customer) {
-    return repository.updateCustomer(customer);
+  Future<Either<Failure, CustomerEntity>> call(CustomerEntity customer,
+      {bool? isOffline}) async {
+    return await repository.updateCustomer(customer, isOffline: isOffline);
   }
 }

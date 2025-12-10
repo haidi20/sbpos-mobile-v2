@@ -20,7 +20,7 @@ Rumusnya: **`KataKerja` + `KataBenda`**
 
 Berikut adalah isi file yang bersih dan standar. Biasanya kita menggunakan method `execute` atau `call`.
 
-#### A. `get_warehouses.dart` (Ambil Banyak Data)
+#### A. `get_warehouses.usecase.dart` (Ambil Banyak Data)
 
 ```dart
 import 'package:dartz/dartz.dart'; // Untuk Either
@@ -34,8 +34,8 @@ class GetWarehouses {
   GetWarehouses(this.repository);
 
   // Return List<WarehouseEntity>
-  Future<Either<Failure, List<WarehouseEntity>>> execute() {
-    return repository.getWarehouses();
+  Future<Either<Failure, List<WarehouseEntity>>> execute({bool isOffline = false}) {
+    return repository.getWarehouses(isOffline: isOffline);
   }
 }
 ```
@@ -51,8 +51,8 @@ class GetWarehouse {
   GetWarehouse(this.repository);
 
   // Butuh parameter ID
-  Future<Either<Failure, WarehouseEntity>> execute(int id) {
-    return repository.getWarehouseById(id);
+  Future<Either<Failure, WarehouseEntity>> execute(int id, {bool isOffline = false}) {
+    return repository.getWarehouseById(id, isOffline: isOffline);
   }
 }
 ```
@@ -68,8 +68,8 @@ class CreateWarehouse {
   CreateWarehouse(this.repository);
 
   // Parameter berupa Entity
-  Future<Either<Failure, void>> execute(WarehouseEntity warehouse) {
-    return repository.insertWarehouse(warehouse);
+  Future<Either<Failure, void>> execute(WarehouseEntity warehouse, {bool isOffline = false}) {
+    return repository.insertWarehouse(warehouse, isOffline: isOffline);
   }
 }
 ```
