@@ -1,32 +1,35 @@
 import 'package:core/core.dart';
+import 'package:customer/presentation/controllers/customer_form.controller.dart';
 
-class CustomerFormScreen extends StatelessWidget {
+class CustomerFormScreen extends HookConsumerWidget {
   const CustomerFormScreen({
     super.key,
-    required this.viewModel,
   });
-
-  // Gunakan dynamic agar tidak mengikat ke tipe tertentu
-  final dynamic viewModel;
 
   static const Color _sbBlue = AppColors.sbLightBlue;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller =
+        useMemoized(() => CustomerFormController(ref, context), [ref, context]);
+    useEffect(() {
+      controller.init();
+      return controller.dispose;
+    }, [controller]);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: _buildAddCustomerForm(context, viewModel, _sbBlue),
+      child: _buildAddCustomerForm(context, controller, _sbBlue),
     );
   }
 
   // --------------------------------------------------------------------------
   // FROM SPEC: _buildAddCustomerForm + _buildNotesField
   Widget _buildAddCustomerForm(
-      BuildContext context, dynamic viewModel, Color sbBlue) {
+      BuildContext context, CustomerFormController controller, Color sbBlue) {
     // Implementasi Form Pelanggan Baru
     return Column(
       children: [
-        const SizedBox(height: 16),
         DottedBorder(
           color: sbBlue,
           strokeWidth: 2,
@@ -51,42 +54,34 @@ class CustomerFormScreen extends StatelessWidget {
           label: 'Nama Pelanggan *',
           icon: LucideIcons.user,
           placeholder: 'Nama lengkap',
-          value: (viewModel?.draftCustomer?.name ?? '').toString(),
-          onChanged: (v) => viewModel?.updateDraft?.call('name', v),
+          controller: controller.nameController,
         ),
         _buildInputField(
           label: 'Nomor Telepon *',
           icon: LucideIcons.phone,
           placeholder: '08xxxxxxxx',
-          value: (viewModel?.draftCustomer?.phone ?? '').toString(),
-          onChanged: (v) => viewModel?.updateDraft?.call('phone', v),
+          controller: controller.phoneController,
           keyboardType: TextInputType.phone,
         ),
         _buildInputField(
           label: 'Email (Opsional)',
           icon: LucideIcons.mail,
           placeholder: 'email@example.com',
-          value: (viewModel?.draftCustomer?.email ?? '').toString(),
-          onChanged: (v) => viewModel?.updateDraft?.call('email', v),
+          controller: controller.emailController,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 8),
         _buildNotesField(
           label: 'Catatan Khusus',
           placeholder: 'Contoh: Alergi kacang...',
-          value: (viewModel?.draftCustomer?.note ?? '').toString(),
-          onChanged: (v) => viewModel?.updateDraft?.call('note', v),
+          controller: controller.noteController,
         ),
         const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () async {
-              await viewModel?.handleSaveNewCustomer?.call();
-              // Tutup sheet setelah simpan, pastikan widget masih mounted
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
+              await controller.saveAndClose();
             },
             icon: const Icon(LucideIcons.save, size: 18, color: Colors.white),
             label: const Text(
@@ -116,8 +111,7 @@ class CustomerFormScreen extends StatelessWidget {
   Widget _buildNotesField({
     required String label,
     required String placeholder,
-    required String value,
-    required ValueChanged<String> onChanged,
+    required TextEditingController controller,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,8 +126,7 @@ class CustomerFormScreen extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         TextFormField(
-          initialValue: value,
-          onChanged: onChanged,
+          controller: controller,
           maxLines: 4,
           minLines: 3,
           decoration: InputDecoration(
@@ -168,8 +161,7 @@ class CustomerFormScreen extends StatelessWidget {
     required String label,
     required IconData icon,
     required String placeholder,
-    required String value,
-    required ValueChanged<String> onChanged,
+    required TextEditingController controller,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Padding(
@@ -187,8 +179,7 @@ class CustomerFormScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           TextFormField(
-            initialValue: value,
-            onChanged: onChanged,
+            controller: controller,
             keyboardType: keyboardType,
             decoration: InputDecoration(
               hintText: placeholder,

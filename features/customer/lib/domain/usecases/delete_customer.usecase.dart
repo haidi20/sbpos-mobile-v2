@@ -1,0 +1,11 @@
+import 'package:core/core.dart';
+import 'package:customer/domain/repositories/customer.repository.dart';
+
+class DeleteCustomer {
+  final CustomerRepository repository;
+  DeleteCustomer(this.repository);
+
+  Future<Either<Failure, bool>> execute(int id) {
+    return repository.deleteCustomer(id);
+  }
+}

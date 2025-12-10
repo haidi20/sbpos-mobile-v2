@@ -2,11 +2,11 @@ import 'package:core/core.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/domain/repositories/customer.repository.dart';
 
-class GetCustomers {
+class UpdateCustomer {
   final CustomerRepository repository;
-  GetCustomers(this.repository);
+  UpdateCustomer(this.repository);
 
-  Future<Either<Failure, List<CustomerEntity>>> execute() {
-    return repository.getCustomers();
+  Future<Either<Failure, CustomerEntity>> execute(CustomerEntity customer) {
+    return repository.updateCustomer(customer);
   }
 }

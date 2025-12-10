@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:customer/presentation/controllers/customer_list.controller.dart';
 import 'package:customer/presentation/providers/customer.providers.dart';
 
 class CustomerListScreen extends HookConsumerWidget {
@@ -16,21 +17,16 @@ class CustomerListScreen extends HookConsumerWidget {
     final state = ref.watch(customerViewModelProvider);
     final vm = ref.read(customerViewModelProvider.notifier);
 
-    // Stable controller that preserves focus while typing
-    final searchController = useTextEditingController(text: state.searchQuery);
+    // Controller manages search TextEditingController lifecycle and sync
+    final listController = useMemoized(
+      () => CustomerListController(ref),
+      [ref],
+    );
 
-    // Keep controller text in sync if state changes externally
     useEffect(() {
-      if (searchController.text != state.searchQuery) {
-        searchController.value = TextEditingValue(
-          text: state.searchQuery,
-          selection: TextSelection.collapsed(
-            offset: state.searchQuery.length,
-          ),
-        );
-      }
-      return null;
-    }, [state.searchQuery]);
+      listController.init();
+      return listController.dispose;
+    }, [listController]);
 
     if (!state.loading && state.customers.isEmpty) {
       Future.microtask(vm.load);
@@ -74,7 +70,7 @@ class CustomerListScreen extends HookConsumerWidget {
           ),
           const SizedBox(height: 12),
           TextField(
-            controller: searchController,
+            controller: listController.searchController,
             decoration: InputDecoration(
               hintText: 'Ketik Nama atau Nomor HP...',
               prefixIcon: const Icon(Icons.search),
@@ -93,7 +89,6 @@ class CustomerListScreen extends HookConsumerWidget {
                 ),
               ),
             ),
-            onChanged: vm.setSearchQuery,
           ),
           const SizedBox(height: 12),
           const Text(
@@ -118,12 +113,12 @@ class CustomerListScreen extends HookConsumerWidget {
                       if (vm.filteredCustomers.isEmpty) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 6),
+                            vertical: 6,
+                            horizontal: 8,
+                          ),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () => ref
-                                .read(customerViewModelProvider.notifier)
-                                .startAdd(),
+                            onTap: () => vm.startAdd(),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,

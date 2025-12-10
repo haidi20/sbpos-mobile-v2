@@ -18,7 +18,7 @@ Widget buildHeader({
           width: 48,
           height: 6,
           decoration: BoxDecoration(
-            color: AppColors.gray500,
+            color: AppColors.gray300,
             borderRadius: BorderRadius.circular(3),
           ),
         ),

@@ -70,13 +70,6 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
             // Buat header dan customer card tetap, lalu bagian order + summary yang bisa scroll sendiri
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(
-                    height: 1,
-                    color: Colors.grey.shade300,
-                  ),
-                ),
                 buildHeader(
                   onClearCart: _controller.onClearCart,
                   viewModel: viewModel,

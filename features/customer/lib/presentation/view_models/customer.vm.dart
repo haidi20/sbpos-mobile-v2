@@ -1,11 +1,12 @@
 import 'package:core/core.dart';
+import 'package:customer/data/dummies/customer.data.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/presentation/view_models/customer.state.dart';
 
 class CustomerViewModel extends StateNotifier<CustomerState> {
   CustomerViewModel() : super(const CustomerState());
 
-  String get searchQuery => state.searchQuery;
+  String? get searchQuery => state.searchQuery;
 
   // Draft entity for add-new-customer form
   CustomerEntity _draftCustomer = const CustomerEntity();
@@ -22,8 +23,8 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
 
   List<CustomerEntity> get filteredCustomers {
     final list = state.customers;
-    if (state.searchQuery.isEmpty) return list;
-    final q = state.searchQuery.toLowerCase();
+    if (state.searchQuery == null || state.searchQuery!.isEmpty) return list;
+    final q = state.searchQuery!.toLowerCase();
     return list
         .where((c) =>
             (c.name ?? '').toLowerCase().contains(q) ||
@@ -38,14 +39,8 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
       // TODO: replace with repository fetch
       await Future.delayed(const Duration(milliseconds: 200));
       // Fallback dummy data to avoid cross-package import issues
-      final entities = <CustomerEntity>[
-        const CustomerEntity(name: 'Andi Wijaya', phone: '081234567890'),
-        const CustomerEntity(name: 'Budi Santoso', phone: '081987654321'),
-        const CustomerEntity(name: 'Citra Lestari', phone: '081345678901'),
-        const CustomerEntity(name: 'Dewi Putri', phone: '081299887766'),
-        const CustomerEntity(name: 'Eko Prasetyo', phone: '085712345678'),
-      ];
-      state = state.copyWith(loading: false, customers: entities);
+
+      state = state.copyWith(loading: false, customers: initialCustomers);
     } catch (e) {
       state = state.copyWith(loading: false, error: e.toString());
     }

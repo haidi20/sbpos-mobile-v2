@@ -28,13 +28,26 @@ class CustomerSheet {
               builder: (context, ref, __) {
                 final state = ref.watch(customerViewModelProvider);
                 final vm = ref.read(customerViewModelProvider.notifier);
+
                 if (state.isAdding) {
                   // Show form with a back button to return to list
                   return Column(
                     children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 48,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AppColors.gray300,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 8),
+                          vertical: 8,
+                          horizontal: 8,
+                        ),
                         child: Row(
                           children: [
                             IconButton(
@@ -57,7 +70,7 @@ class CustomerSheet {
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
-                          child: CustomerFormScreen(viewModel: vm),
+                          child: const CustomerFormScreen(),
                         ),
                       ),
                     ],

@@ -1,17 +1,20 @@
 import 'package:core/core.dart';
-import 'package:customer/presentation/view_models/customer.vm.dart';
 import 'package:customer/presentation/providers/customer.providers.dart';
+import 'package:customer/presentation/view_models/customer.state.dart';
+import 'package:customer/presentation/view_models/customer.vm.dart';
 
 /// Controller to manage TextEditingControllers for the customer module
 /// - Form draft (name, phone, email, note)
 /// - Optional search field for the list
 class CustomerFormController {
   CustomerFormController(this.ref, this.context)
-      : _vm = ref.read(customerViewModelProvider.notifier);
+      : _vm = ref.read(customerViewModelProvider.notifier),
+        _state = ref.read(customerViewModelProvider);
 
   final WidgetRef ref;
   final BuildContext context;
   final CustomerViewModel _vm;
+  final CustomerState _state;
 
   // Text controllers for Add/Edit form
   late final TextEditingController nameController;
@@ -44,8 +47,8 @@ class CustomerFormController {
     });
 
     // Initialize and hook up search controller if used by caller
-    final currentSearch = ref.read(customerViewModelProvider).searchQuery;
-    if (currentSearch.isNotEmpty) {
+    final currentSearch = _state.searchQuery;
+    if (currentSearch != null && currentSearch.isNotEmpty) {
       searchController.text = currentSearch;
     }
     searchController.addListener(() {
