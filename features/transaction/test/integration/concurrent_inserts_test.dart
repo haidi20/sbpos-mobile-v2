@@ -4,7 +4,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:transaction/data/datasources/transaction_local_data_source.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
-import 'package:transaction/data/models/transaction_model.dart';
+import 'package:transaction/data/models/transaction.model.dart';
 
 void main() {
   sqfliteFfiInit();

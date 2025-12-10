@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
+import 'package:customer/presentation/screens/customer.sheet.dart';
 import 'package:transaction/presentation/components/order.card.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
-import 'package:customer/presentation/widgets/open_customer_picker_widget.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
 
@@ -71,7 +71,7 @@ Widget buildCustomerCard({
       onTap: () {
         // Collapse any active note input before opening picker
         viewModel.setActiveNoteId(null);
-        OpenCustomerPickerWidget.openCustomerPicker(
+        CustomerSheet.openCustomerPicker(
           context,
           (customer) => viewModel.setCustomer(customer),
         );
@@ -79,13 +79,13 @@ Widget buildCustomerCard({
       borderRadius: BorderRadius.circular(16.0),
       child: DottedBorder(
         borderType: BorderType.RRect,
-        padding: const EdgeInsets.all(6),
+        // padding: const EdgeInsets.all(6),
         radius: const Radius.circular(16),
         color: customer != null ? sbBlue : AppColors.gray300,
         strokeWidth: 1,
         dashPattern: const [8, 4],
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
             color: customer != null ? Colors.blue[50] : Colors.white,
             borderRadius: BorderRadius.circular(16.0),
@@ -245,7 +245,7 @@ Widget buildOrderList({
   final logger = Logger('CartBottomSheetWidget.buildOrderList');
 
   return ListView.builder(
-    padding: const EdgeInsets.symmetric(horizontal: 24),
+    // padding: const EdgeInsets.symmetric(horizontal: 24),
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     itemCount: viewModel.filteredDetails.length + 1,

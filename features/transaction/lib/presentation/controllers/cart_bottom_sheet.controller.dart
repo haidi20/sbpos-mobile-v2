@@ -263,18 +263,6 @@ class CartBottomSheetController {
     _orderFocusNode.unfocus();
   }
 
-  void _activateItemNote(int id) {
-    // Unfocus yang lain
-    for (final nodeId in _itemFocusNodes.keys) {
-      if (nodeId != id) {
-        _itemFocusNodes[nodeId]?.unfocus();
-      }
-    }
-    _orderFocusNode.unfocus();
-    // Fokus ke item yang dipilih agar keyboard muncul segera
-    _itemFocusNodes[id]?.requestFocus();
-  }
-
   void onActivateItemNote(int id) {
     // Unfocus yang lain
     for (final nodeId in _itemFocusNodes.keys) {

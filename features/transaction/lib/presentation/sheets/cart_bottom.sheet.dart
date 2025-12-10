@@ -1,7 +1,5 @@
 import 'package:core/core.dart';
-import 'package:transaction/presentation/components/order.card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/widgets/cart_bottom_sheet.widget.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
@@ -55,9 +53,12 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       // Do not clear on pan; avoid unfocus during scroll
       child: DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.6,
+        // Buka hampir penuh saat diakses
+        initialChildSize: 0.95,
         minChildSize: 0.4,
-        maxChildSize: 1.0,
+        // Izinkan penuh saat di-drag
+        // maxChildSize: 1.0,
+        maxChildSize: 0.95,
         builder: (context, scrollController) {
           return Container(
             decoration: const BoxDecoration(
@@ -66,10 +67,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 top: Radius.circular(24),
               ),
             ),
-            child: ListView(
-              controller: scrollController,
-              physics: const ClampingScrollPhysics(),
-              padding: EdgeInsets.zero,
+            // Buat header dan customer card tetap, lalu bagian order + summary yang bisa scroll sendiri
+            child: Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -89,23 +88,28 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                   state: stateTransaction,
                 ),
                 const SizedBox(height: 24),
-                // Inline order list in the parent scroll to enable full drag-to-expand
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      buildOrderList(
-                        viewModel: viewModel,
-                        stateTransaction: stateTransaction,
-                        controller: _controller,
-                        orderNoteController: _controller.orderNoteController,
-                      ),
-                      buildSummaryBottom(
-                        context: context,
-                        viewModel: viewModel,
-                        controller: _controller,
-                      ),
-                    ],
+                // Bagian ini saja yang scroll saat data banyak
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ListView(
+                      controller: scrollController,
+                      physics: const ClampingScrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      children: [
+                        buildOrderList(
+                          viewModel: viewModel,
+                          stateTransaction: stateTransaction,
+                          controller: _controller,
+                          orderNoteController: _controller.orderNoteController,
+                        ),
+                        buildSummaryBottom(
+                          context: context,
+                          viewModel: viewModel,
+                          controller: _controller,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
