@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import '../entities/outlet_entity.dart';
-import '../repositories/outlet_repository.dart';
+import '../entities/outlet.entity.dart';
+import '../repositories/outlet.repository.dart';
 
 class GetOutlets {
   final OutletRepository repository;

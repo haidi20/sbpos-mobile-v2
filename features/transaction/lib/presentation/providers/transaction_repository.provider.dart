@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
-import 'package:transaction/data/datasources/transaction_local_data_source.dart';
-import 'package:transaction/data/datasources/transaction_remote_data_source.dart';
+import 'package:transaction/data/datasources/transaction_local.data_source.dart';
+import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
 import 'package:transaction/data/repositories/transaction.repository_impl.dart';
 
 final transactionRemoteDataSourceProvider =

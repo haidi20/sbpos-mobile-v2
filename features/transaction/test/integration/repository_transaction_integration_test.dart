@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 // sqlite_api re-exported by sqflite_common_ffi
-import 'package:transaction/data/datasources/transaction_local_data_source.dart';
+import 'package:transaction/data/datasources/transaction_local.data_source.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/repositories/transaction.repository_impl.dart';
-import 'package:transaction/data/datasources/transaction_remote_data_source.dart';
+import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';

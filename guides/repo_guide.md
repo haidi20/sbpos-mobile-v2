@@ -1,3 +1,53 @@
+## Repository Guide
+
+Panduan ini mencontoh implementasi repository pada
+`features/customer`. Ikuti pola berikut saat membuat repository baru
+di fitur lain.
+
+**Konvensi nama file**:
+- `your_entity.repository.dart` untuk abstrak (interface) repository.
+- `your_entity.repository.impl.dart` untuk implementasi repository.
+
+**Struktur umum**:
+- Abstrak repository mendefinisikan method yang mengembalikan
+  `Future<Either<Failure, T>>` atau varian yang sesuai.
+- Implementasi repository melakukan orkestrasi antara data source
+  (`remote` dan `local`), `NetworkInfo`, dan mengubah model ↔ entity.
+- Tangani exception spesifik (`ServerException`, `NetworkException`),
+  lakukan fallback ke data lokal bila memungkinkan.
+
+---
+
+## Contoh: `CustomerRepository` (abstrak)
+
+File: `features/customer/lib/domain/repositories/customer.repository.dart`
+
+```dart
+import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+
+abstract class CustomerRepository {
+  Future<Either<Failure, List<CustomerEntity>>> getCustomers(
+      {String? query, bool? isOffline});
+  Future<Either<Failure, CustomerEntity>> getCustomer(int id,
+      {bool? isOffline});
+  Future<Either<Failure, CustomerEntity>> createCustomer(
+      CustomerEntity customer,
+      {bool? isOffline});
+  Future<Either<Failure, CustomerEntity>> updateCustomer(
+      CustomerEntity customer,
+      {bool? isOffline});
+  Future<Either<Failure, bool>> deleteCustomer(int id, {bool? isOffline});
+}
+```
+
+---
+
+## Contoh: `CustomerRepositoryImpl` (implementasi)
+
+File: `features/customer/lib/data/repositories/customer.repository.impl.dart`
+
+```dart
 import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:customer/data/models/customer.model.dart';
@@ -32,7 +82,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
           final ins = await local.insertCustomer(c);
           if (ins != null) inserted.add(ins);
         } catch (e, st) {
-          _logger.warning('Gagal insert customer local: $e', e, st);
+          _logger.warning('Gagal insert customer lokal: $e', e, st);
         }
       }
 
@@ -354,3 +404,14 @@ class CustomerRepositoryImpl implements CustomerRepository {
     }
   }
 }
+```
+
+---
+
+## Praktik terbaik singkat
+- Gunakan `NetworkInfo` untuk memutuskan memakai remote atau fallback ke local.
+- Tangani exception secara spesifik dan catat (`Logger`) untuk debugging.
+- Simpan model hasil remote ke local untuk sinkronisasi offline-first.
+- Biarkan repository mengembalikan `Either<Failure, T>` agar usecase mudah
+  menangani error.
+- isOffline merupakan proses IO hanya ke local tanpa remote.

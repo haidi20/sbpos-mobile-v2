@@ -1,4 +1,4 @@
-import '../models/outlet_model.dart';
+import '../models/outlet.model.dart';
 
 final List<OutletModel> outlets = [
   OutletModel(

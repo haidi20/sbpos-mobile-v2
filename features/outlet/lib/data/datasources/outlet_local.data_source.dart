@@ -1,6 +1,6 @@
 ﻿import 'package:core/core.dart';
 import 'package:core/data/datasources/core_database.dart';
-import '../models/outlet_model.dart';
+import '../models/outlet.model.dart';
 import 'db/outlet.dao.dart';
 
 class OutletLocalDataSource with BaseErrorHelper {

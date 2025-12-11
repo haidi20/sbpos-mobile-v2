@@ -1,9 +1,9 @@
 import 'package:core/core.dart';
-import '../models/outlet_model.dart';
-import '../../domain/entities/outlet_entity.dart';
-import '../../domain/repositories/outlet_repository.dart';
-import '../datasources/outlet_local_data_source.dart';
-import '../datasources/outlet_remote_data_source.dart';
+import '../models/outlet.model.dart';
+import '../../domain/entities/outlet.entity.dart';
+import '../../domain/repositories/outlet.repository.dart';
+import '../datasources/outlet_local.data_source.dart';
+import '../datasources/outlet_remote.data_source.dart';
 
 class OutletRepositoryImpl implements OutletRepository {
   final OutletRemoteDataSource remote;

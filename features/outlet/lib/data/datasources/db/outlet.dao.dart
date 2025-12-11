@@ -1,6 +1,6 @@
 import 'outlet.table.dart';
 import 'package:core/core.dart';
-import '../../models/outlet_model.dart';
+import '../../models/outlet.model.dart';
 
 class OutletDao {
   final Database database;

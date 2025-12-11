@@ -4,8 +4,8 @@ import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
-import 'package:transaction/data/datasources/transaction_local_data_source.dart';
-import 'package:transaction/data/datasources/transaction_remote_data_source.dart';
+import 'package:transaction/data/datasources/transaction_local.data_source.dart';
+import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final TransactionRemoteDataSource remote;

@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import '../responses/outlet_response.dart';
+import '../responses/outlet.response.dart';
 
 class OutletRemoteDataSource with BaseErrorHelper {
   final String host;

@@ -1,9 +1,9 @@
 import 'package:core/core.dart';
+import 'package:outlet/data/datasources/db/outlet.table.dart';
 import 'package:core/data/datasources/db/auth_user.table.dart';
-import 'db/outlet_table.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
-import 'package:customer/data/datasources/db/customer.table.dart';
 
 class CoreDatabase {
   static CoreDatabase? _databaseHelper;

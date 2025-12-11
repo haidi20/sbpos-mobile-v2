@@ -1,4 +1,4 @@
-import '../models/outlet_model.dart';
+import '../models/outlet.model.dart';
 
 class OutletResponse {
   final bool success;

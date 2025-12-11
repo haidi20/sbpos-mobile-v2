@@ -1,116 +1,137 @@
-Berikut adalah panduan lengkap dan **baku** untuk penamaan file dan class Use Case dalam Flutter Clean Architecture.
+## Usecase Guide
 
-Prinsip utamanya adalah: **Satu File = Satu Use Case = Satu Tindakan Bisnis**.
+Panduan ini berpatokan pada implementasi usecase di
+`features/customer/lib/domain/usecases`. Ikuti konvensi penamaan dan
+struktur kode berikut saat menambahkan usecase baru.
 
-Rumusnya: **`KataKerja` + `KataBenda`**
+**Konvensi nama file**:
+- `<action>_<entity>.usecase.dart` contoh: `create_customer.usecase.dart`
 
-### 1\. Tabel Standar Penamaan (CRUD Outlet)
+**Struktur umum**:
+- Import `package:core/core.dart` untuk `Failure`/`Either` dan helper lain.
+- Import `entity` dan `repository` terkait.
+- Kelas bernama PascalCase (mis. `CreateCustomer`) dengan konstruktor
+  menerima `Repository`.
+- Method `call(...)` mengembalikan `Future<Either<Failure, T>>`.
 
-| Operasi | Nama Class (`PascalCase`) | Nama File (`snake_case`) | Keterangan |
-| :--- | :--- | :--- | :--- |
-| **Read (List)** | `GetOutlets` | `get_outlets.usecase.dart` | Gunakan **Jamak (s)** karena return List. |
-| **Read (Detail)**| `GetOutlet` | `get_outlet.usecase.dart` | Gunakan **Tunggal** karena return 1 object. |
-| **Create** | `CreateOutlet` | `create_outlet.usecase.dart` | Atau `AddOutlet` / `add_outlet.usecase.dart`. |
-| **Update** | `UpdateOutlet` | `update_outlet.usecase.dart` | Atau `EditOutlet`. |
-| **Delete** | `DeleteOutlet` | `delete_outlet.usecase.dart` | Atau `RemoveOutlet`. |
+---
 
------
-
-### 2\. Contoh Implementasi Code
-
-Berikut adalah isi file yang bersih dan standar. Biasanya kita menggunakan method `execute` atau `call`.
-
-#### A. `get_outlets.usecase.dart` (Ambil Banyak Data)
+## Template usecase
 
 ```dart
-import 'package:dartz/dartz.dart'; // Untuk Either
-import '../repositories/outlet_repository.dart';
-import '../entities/outlet_entity.dart';
-import '../../../../core/error/failures.dart'; // Sesuaikan path core
+import 'package:core/core.dart';
+import 'package:your_feature/domain/entities/your_entity.dart';
+import 'package:your_feature/domain/repositories/your.repository.dart';
 
-class GetOutlets {
-  final OutletRepository repository;
+class YourUsecase {
+  final YourRepository repository;
+  YourUsecase(this.repository);
 
-  GetOutlets(this.repository);
-
-  // Return List<OutletEntity>
-  Future<Either<Failure, List<OutletEntity>>> execute({bool isOffline = false}) {
-    return repository.getDataOutlets();
+  Future<Either<Failure, YourReturnType>> call(// params) async {
+    return await repository.yourRepositoryMethod(// pass params);
   }
 }
 ```
 
-#### B. `get_outlet.usecase.dart` (Ambil Satu Data)
+---
+
+## Contoh dari `features/customer` (copy-paste ready)
+
+1) `create_customer.usecase.dart`
 
 ```dart
-// Import sama...
+import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:customer/domain/repositories/customer.repository.dart';
 
-class GetOutlet {
-  final OutletRepository repository;
+class CreateCustomer {
+  final CustomerRepository repository;
+  CreateCustomer(this.repository);
 
-  GetOutlet(this.repository);
-
-  // Butuh parameter ID
-  Future<Either<Failure, OutletEntity>> execute(int id, {bool isOffline = false}) {
-    return repository.getDataOutlets();
+  Future<Either<Failure, CustomerEntity>> call(CustomerEntity customer,
+      {bool? isOffline}) async {
+    return await repository.createCustomer(customer, isOffline: isOffline);
   }
 }
 ```
 
-#### C. `create_outlet.usecase.dart` (Tambah Data)
+2) `delete_customer.usecase.dart`
 
 ```dart
-// Import sama...
+import 'package:core/core.dart';
+import 'package:customer/domain/repositories/customer.repository.dart';
 
-class CreateOutlet {
-  final OutletRepository repository;
+class DeleteCustomer {
+  final CustomerRepository repository;
+  DeleteCustomer(this.repository);
 
-  CreateOutlet(this.repository);
-
-  // Parameter berupa Entity
-  Future<Either<Failure, void>> execute(OutletEntity outlet, {bool isOffline = false}) {
-    return repository.insertOutlet(outlet, isOffline: isOffline);
+  Future<Either<Failure, bool>> call(int id, {bool? isOffline}) async {
+    return await repository.deleteCustomer(id, isOffline: isOffline);
   }
 }
 ```
 
------
+3) `get_customer.usecase.dart`
 
-### 3\. Struktur Folder yang Rapi
+```dart
+import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:customer/domain/repositories/customer.repository.dart';
 
-Di dalam folder `domain/usecases/`, sebaiknya file-file tersebut **tidak dibungkus folder lagi** kecuali usecase-nya sudah sangat banyak (misal \> 10).
+class GetCustomer {
+  final CustomerRepository repository;
+  GetCustomer(this.repository);
 
+  Future<Either<Failure, CustomerEntity>> call(int id,
+      {bool? isOffline}) async {
+    return await repository.getCustomer(id, isOffline: isOffline);
+  }
+}
 ```
-lib/
-├── features/
-│   ├── outlet/
-│   │   ├── domain/
-│   │   │   ├── usecases/
-│   │   │   │   ├── get_outlets.usecase.dart
-│   │   │   │   ├── get_outlet.usecase.dart
-│   │   │   │   ├── create_outlet.usecase.dart
-│   │   │   │   ├── update_outlet.usecase.dart
-│   │   │   │   └── delete_outlet.usecase.dart
+
+4) `get_customers.usecase.dart`
+
+```dart
+import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:customer/domain/repositories/customer.repository.dart';
+
+class GetCustomers {
+  final CustomerRepository repository;
+  GetCustomers(this.repository);
+
+  Future<Either<Failure, List<CustomerEntity>>> call({
+    String? query,
+    bool? isOffline,
+  }) async {
+    return await repository.getCustomers(query: query, isOffline: isOffline);
+  }
+}
 ```
 
-### 4\. Pertanyaan Umum: Perlukah Suffix "UseCase"?
+5) `update_customer.usecase.dart`
 
-Anda mungkin sering melihat tutorial menamakan classnya `GetOutletsUseCase`.
+```dart
+import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:customer/domain/repositories/customer.repository.dart';
 
-  * **Pilihan A: Tanpa Suffix (`GetOutlets`)** -\> **Direkomendasikan.**
+class UpdateCustomer {
+  final CustomerRepository repository;
+  UpdateCustomer(this.repository);
 
-      * Lebih singkat.
-      * Karena sudah ada di folder `usecases`, suffix itu jadi redundan (pemborosan kata).
-      * Contoh panggil di VM: `getOutlets.execute()`.
+  Future<Either<Failure, CustomerEntity>> call(CustomerEntity customer,
+      {bool? isOffline}) async {
+    return await repository.updateCustomer(customer, isOffline: isOffline);
+  }
+}
+```
 
-  * **Pilihan B: Dengan Suffix (`GetOutletUseCase`)**
+---
 
-      * Boleh dipakai jika Anda khawatir nama class bentrok dengan nama method lain.
-      * Tapi di Dart, nama file import bisa di-alias (`as`), jadi bentrok nama jarang terjadi.
+## Catatan praktik terbaik
+- Letakkan logika domain murni di usecase; panggil repository untuk I/O.
+- Selalu kembalikan `Either<Failure, T>` untuk memudahkan penanganan error.
+- Gunakan parameter opsional `isOffline` bila repository mendukung mode offline.
 
-**Kesimpulan untuk Project Anda:**
-Gunakan **Pilihan A** (Tanpa Suffix) agar kode lebih bersih seperti contoh di atas.
-
-1.  Class: `GetOutlets`
-2.  File: `get_outlets.usecase.dart`
-3.  Method: `execute()`
+Jika ingin, saya bisa juga menambahkan contoh unit test untuk satu usecase.

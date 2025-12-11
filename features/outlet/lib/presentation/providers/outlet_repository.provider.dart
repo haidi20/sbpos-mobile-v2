@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/outlet_remote_data_source.dart';
-import '../../data/datasources/outlet_local_data_source.dart';
-import '../../data/repositories/outlet_repository_impl.dart';
-import '../../domain/repositories/outlet_repository.dart';
+import '../../data/datasources/outlet_remote.data_source.dart';
+import '../../data/datasources/outlet_local.data_source.dart';
+import '../../data/repositories/outlet.repository_impl.dart';
+import '../../domain/repositories/outlet.repository.dart';
 
 final outletRemoteDataSourceProvider = Provider<OutletRemoteDataSource>(
   (ref) => OutletRemoteDataSource(),
