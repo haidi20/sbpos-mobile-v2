@@ -54,9 +54,21 @@ final getCustomers = Provider((ref) {
 });
 
 // ViewModel provider
+final getCustomersProvider = Provider((ref) {
+  final repo = ref.watch(customerRepositoryProvider);
+  return GetCustomers(repo!);
+});
+
 final customerViewModelProvider =
     StateNotifierProvider<CustomerViewModel, CustomerState>((ref) {
-  // Currently CustomerViewModel has a parameterless constructor
-  // If later it accepts usecases, wire them here similar to transaction VM.
-  return CustomerViewModel();
+  final del = ref.read(deleteCustomer);
+  final create = ref.read(createCustomer);
+  final update = ref.read(updateCustomer);
+  final getCustomers = ref.read(getCustomersProvider);
+  return CustomerViewModel(
+    deleteCustomerUsecase: del,
+    createCustomerUsecase: create,
+    updateCustomerUsecase: update,
+    getCustomersUsecase: getCustomers,
+  );
 });

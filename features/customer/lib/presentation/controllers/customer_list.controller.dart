@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/presentation/view_models/customer.state.dart';
 import 'package:customer/presentation/view_models/customer.vm.dart';
 import 'package:customer/presentation/providers/customer.providers.dart';
@@ -44,5 +45,89 @@ class CustomerListController {
   void dispose() {
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
+  }
+
+  Future<void> handleDeleteCustomer(
+    BuildContext context,
+    CustomerEntity customer,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Hapus'),
+          content: Text(
+            'Hapus pelanggan\n\n${customer.name ?? '-'}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+              },
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogCtx).pop();
+                final ok = await _vm.onDeleteCustomerById(customer.id);
+                if (!context.mounted) return;
+                if (ok) {
+                  showSuccessSnackBar(
+                    context,
+                    'Pelanggan berhasil dihapus',
+                  );
+                } else {
+                  showErrorSnackBar(
+                    context,
+                    'Gagal menghapus pelanggan',
+                  );
+                }
+              },
+              child: const Text(
+                'Hapus',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static Future<void> confirmAndDelete({
+    required BuildContext context,
+    required CustomerViewModel vm,
+    required CustomerEntity customer,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Hapus'),
+          content: Text('Hapus pelanggan\n\n${customer.name ?? '-'}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+              },
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogCtx).pop();
+                final ok = await vm.onDeleteCustomerById(customer.id);
+                if (!context.mounted) return;
+                if (ok) {
+                  showSuccessSnackBar(context, 'Pelanggan berhasil dihapus');
+                } else {
+                  showErrorSnackBar(context, 'Gagal menghapus pelanggan');
+                }
+              },
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

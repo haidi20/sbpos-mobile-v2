@@ -113,6 +113,37 @@ class CustomerEntity {
 
   @override
   String toString() {
-    return 'CustomerEntity(id: $id, idServer: $idServer, name: $name, phone: $phone, note: $note, email: $email, syncedAt: $syncedAt, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return '''CustomerEntity(
+      id: $id,
+      idServer: $idServer,
+      name: $name,
+      phone: $phone,
+      note: $note,
+      email: $email,
+      syncedAt: $syncedAt,
+      createdAt: $createdAt,
+      updatedAt: $updatedAt,
+      deletedAt: $deletedAt,
+    )''';
   }
+
+  // =======================================================
+  // ⭐️ GETTER BARU: Mengambil Inisial Nama (getFirstName)
+  // =======================================================
+  String get getFirstName {
+    // Ambil nilai properti name
+    final customerName = name;
+
+    // Periksa apakah customerName tidak null dan tidak kosong,
+    // lalu ambil karakter pertama. Jika tidak, kembalikan string kosong.
+    if (customerName != null && customerName.isNotEmpty) {
+      return customerName.substring(0, 1);
+    }
+
+    return '';
+
+    // Atau menggunakan sintaks yang lebih ringkas seperti yang Anda berikan:
+    // return (customerName?.isNotEmpty == true) ? customerName!.substring(0, 1) : '';
+  }
+  // =======================================================
 }

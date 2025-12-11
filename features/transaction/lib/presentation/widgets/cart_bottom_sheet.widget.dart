@@ -73,7 +73,6 @@ Widget buildCustomerCard({
         viewModel.setActiveNoteId(null);
         CustomerSheet.openCustomerPicker(
           context,
-          (customer) => viewModel.setCustomer(customer),
         );
       },
       borderRadius: BorderRadius.circular(16.0),

@@ -32,18 +32,18 @@ class CustomerFormController {
     emailController = TextEditingController(text: draft.email ?? '');
     noteController = TextEditingController(text: draft.note ?? '');
 
-    // Bind changes back into the ViewModel draft
+    // Bind changes back into the ViewModel draft (set* naming)
     nameController.addListener(() {
-      _vm.updateDraft('name', nameController.text);
+      _vm.setDraftField('name', nameController.text);
     });
     phoneController.addListener(() {
-      _vm.updateDraft('phone', phoneController.text);
+      _vm.setDraftField('phone', phoneController.text);
     });
     emailController.addListener(() {
-      _vm.updateDraft('email', emailController.text);
+      _vm.setDraftField('email', emailController.text);
     });
     noteController.addListener(() {
-      _vm.updateDraft('note', noteController.text);
+      _vm.setDraftField('note', noteController.text);
     });
 
     // Initialize and hook up search controller if used by caller
@@ -57,12 +57,12 @@ class CustomerFormController {
   }
 
   Future<void> saveAndClose() async {
-    await _vm.handleSaveNewCustomer();
+    await _vm.onSaveOrUpdate();
     if (context.mounted) Navigator.of(context).pop();
   }
 
   void cancel() {
-    _vm.cancelAdd();
+    _vm.setIsAdding(false);
   }
 
   void dispose() {

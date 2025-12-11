@@ -1,21 +1,24 @@
 import 'package:core/core.dart';
-import 'package:customer/presentation/controllers/customer_list.controller.dart';
+import 'package:customer/presentation/screens/action.sheet.dart';
+import 'package:customer/presentation/view_models/customer.vm.dart';
 import 'package:customer/presentation/providers/customer.providers.dart';
+import 'package:customer/presentation/widgets/customer_list_tile.card.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:customer/presentation/controllers/customer_list.controller.dart';
 
 class CustomerListScreen extends HookConsumerWidget {
   const CustomerListScreen({
     super.key,
     required this.scrollController,
-    required this.setCustomer,
   });
 
   final ScrollController scrollController;
-  final void Function(dynamic customerEntity) setCustomer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerViewModelProvider);
     final vm = ref.read(customerViewModelProvider.notifier);
+    final transactionPosVm = ref.read(transactionPosViewModelProvider.notifier);
 
     // Controller manages search TextEditingController lifecycle and sync
     final listController = useMemoized(
@@ -29,7 +32,7 @@ class CustomerListScreen extends HookConsumerWidget {
     }, [listController]);
 
     if (!state.loading && state.customers.isEmpty) {
-      Future.microtask(vm.load);
+      Future.microtask(vm.getCustomers);
     }
 
     return Padding(
@@ -64,7 +67,7 @@ class CustomerListScreen extends HookConsumerWidget {
                   color: AppColors.sbLightBlue,
                 ),
                 tooltip: 'Tambah Pelanggan Baru',
-                onPressed: () => vm.startAdd(),
+                onPressed: () => vm.setIsAdding(true),
               ),
             ],
           ),
@@ -111,69 +114,69 @@ class CustomerListScreen extends HookConsumerWidget {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (_, index) {
                       if (vm.filteredCustomers.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 6,
-                            horizontal: 8,
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => vm.startAdd(),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: AppColors.sbLightBlue,
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 14),
-                              child: const Row(
-                                children: [
-                                  Icon(
-                                    Icons.person_add_alt_1,
-                                    color: Color(0xFF3B82F6),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'Tambah Pelanggan Baru',
-                                    style: TextStyle(
-                                      color: Color(0xFF1D4ED8),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                        return _buildButtonAddCustomer(
+                          vm: vm,
                         );
                       }
-                      final c = vm.filteredCustomers[index];
-                      return ListTile(
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blueAccent,
-                          child: Text(
-                            ((c.name ?? '').isNotEmpty
-                                ? c.name!.substring(0, 1)
-                                : ''),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text(c.name ?? ''),
-                        subtitle: Text(c.phone ?? ''),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          setCustomer(c);
-                          Navigator.of(context).pop();
+
+                      final filteredCustomer = vm.filteredCustomers[index];
+                      return CustomerListTileCard(
+                        customer: filteredCustomer,
+                        onTapCallback: (customer) {
+                          transactionPosVm.setCustomer(customer);
+                        },
+                        onLongPressCallback: (customer) {
+                          showCustomerActionSheet(context, vm, customer);
                         },
                       );
                     },
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildButtonAddCustomer({
+    required CustomerViewModel vm,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 6,
+        horizontal: 8,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => vm.setIsAdding(true),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.sbLightBlue,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(
+            vertical: 14,
+            horizontal: 12,
+          ),
+          child: const Row(
+            children: [
+              Icon(
+                Icons.person_add_alt_1,
+                color: Color(0xFF3B82F6),
+              ),
+              SizedBox(width: 10),
+              Text(
+                'Tambah Pelanggan Baru',
+                style: TextStyle(
+                  color: Color(0xFF1D4ED8),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

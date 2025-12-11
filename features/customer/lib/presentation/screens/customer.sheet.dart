@@ -6,7 +6,6 @@ import 'package:customer/presentation/screens/customer_form.screen.dart';
 class CustomerSheet {
   static void openCustomerPicker(
     BuildContext context,
-    void Function(dynamic customerEntity) setCustomer,
   ) {
     showModalBottomSheet(
       context: context,
@@ -52,7 +51,7 @@ class CustomerSheet {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.arrow_back),
-                              onPressed: vm.cancelAdd,
+                              onPressed: () => vm.setIsAdding(false),
                               tooltip: 'Kembali',
                             ),
                             const SizedBox(width: 4),
@@ -79,7 +78,6 @@ class CustomerSheet {
                 // Default: show list
                 return CustomerListScreen(
                   scrollController: scrollController,
-                  setCustomer: setCustomer,
                 );
               },
             );
