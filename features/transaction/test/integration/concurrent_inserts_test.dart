@@ -28,7 +28,7 @@ void main() {
     test('many parallel insertSyncTransaction calls succeed', () async {
       final tasks = List.generate(50, (_) async {
         final model = TransactionModel(
-          warehouseId: 1,
+          outletId: 1,
           sequenceNumber: 1,
           orderTypeId: 1,
           date: DateTime.now(),

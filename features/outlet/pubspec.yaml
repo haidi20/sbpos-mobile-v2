@@ -1,0 +1,22 @@
+name: outlet
+description: A new Flutter module project.
+version: 1.0.0+1
+publish_to: none
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+dependencies:
+  core:
+    path: ../../core
+  dashboard:
+    path: ../dashboard
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  landing_page_menu:
+    path: ../landing_page_menu
+  mode:
+    path: ../mode
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0

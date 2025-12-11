@@ -17,7 +17,7 @@ class FakeRepo implements TransactionRepository {
       {bool? isOffline}) async {
     final created = TransactionEntity(
       id: 1,
-      warehouseId: transaction.warehouseId,
+      outletId: transaction.outletId,
       sequenceNumber: transaction.sequenceNumber,
       orderTypeId: transaction.orderTypeId,
       date: transaction.date,
@@ -84,7 +84,7 @@ class _FakeRepoWithLocalTransaction extends FakeRepo {
     if (id == 1) {
       final tx = TransactionEntity(
         id: 1,
-        warehouseId: 8,
+        outletId: 8,
         sequenceNumber: 0,
         orderTypeId: 1,
         date: DateTime.now(),

@@ -70,7 +70,7 @@ void main() {
     // Arrange - prepare local transaction
     final tx = TransactionEntity(
       id: 1,
-      warehouseId: 8,
+      outletId: 8,
       sequenceNumber: 1,
       orderTypeId: 1,
       date: DateTime.now(),

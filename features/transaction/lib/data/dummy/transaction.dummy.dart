@@ -6,7 +6,7 @@ final List<TransactionModel> transactionList = [
   TransactionModel(
     id: 1,
     shiftId: 101,
-    warehouseId: 1,
+    outletId: 1,
     sequenceNumber: 202310240001,
     orderTypeId: 1,
     categoryOrder: 'Dine In',
@@ -43,7 +43,7 @@ final List<TransactionModel> transactionList = [
   TransactionModel(
     id: 2,
     shiftId: 101,
-    warehouseId: 1,
+    outletId: 1,
     sequenceNumber: 202310240002,
     orderTypeId: 2,
     categoryOrder: 'Take Away',
@@ -71,7 +71,7 @@ final List<TransactionModel> transactionList = [
   TransactionModel(
     id: 3,
     shiftId: 102,
-    warehouseId: 2,
+    outletId: 2,
     sequenceNumber: 202310230998,
     orderTypeId: 1,
     categoryOrder: 'Delivery',

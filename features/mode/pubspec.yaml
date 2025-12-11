@@ -13,8 +13,8 @@ dependencies:
     sdk: flutter
   landing_page_menu:
     path: ../landing_page_menu
-  warehouse:
-    path: ../warehouse
+  outlet:
+    path: ../outlet
 dev_dependencies:
   flutter_test:
     sdk: flutter

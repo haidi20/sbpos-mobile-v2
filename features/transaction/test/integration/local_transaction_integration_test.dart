@@ -28,7 +28,7 @@ void main() {
 
     test('insertTransaction and insertDetails', () async {
       final model = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -55,7 +55,7 @@ void main() {
 
     test('insertSyncTransaction stores transaction and details', () async {
       final model = TransactionModel(
-        warehouseId: 2,
+        outletId: 2,
         sequenceNumber: 2,
         orderTypeId: 1,
         date: DateTime.now(),

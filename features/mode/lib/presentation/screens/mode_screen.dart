@@ -46,7 +46,7 @@ class _ModeScreenState extends ConsumerState<ModeScreen> {
             color: Colors.white,
           ),
           onPressed: () {
-            context.goNamed(AppRoutes.warehouse);
+            context.goNamed(AppRoutes.outlet);
           },
         ),
         backgroundColor: AppSetting.primaryColor,

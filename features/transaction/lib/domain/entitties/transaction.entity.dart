@@ -8,7 +8,7 @@ import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 class TransactionEntity {
   final int? id;
   final int? shiftId;
-  final int warehouseId;
+  final int outletId;
   final int sequenceNumber;
   final int orderTypeId;
   final String? categoryOrder;
@@ -31,7 +31,7 @@ class TransactionEntity {
   const TransactionEntity({
     this.id,
     this.shiftId,
-    required this.warehouseId,
+    required this.outletId,
     required this.sequenceNumber,
     required this.orderTypeId,
     this.categoryOrder,
@@ -55,7 +55,7 @@ class TransactionEntity {
   TransactionEntity copyWith({
     int? id,
     int? shiftId,
-    int? warehouseId,
+    int? outletId,
     int? sequenceNumber,
     int? orderTypeId,
     String? categoryOrder,
@@ -78,7 +78,7 @@ class TransactionEntity {
     return TransactionEntity(
       id: id ?? this.id,
       shiftId: shiftId ?? this.shiftId,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       sequenceNumber: sequenceNumber ?? this.sequenceNumber,
       orderTypeId: orderTypeId ?? this.orderTypeId,
       categoryOrder: categoryOrder ?? this.categoryOrder,
@@ -104,7 +104,7 @@ class TransactionEntity {
     return TransactionEntity(
       id: model.id,
       shiftId: model.shiftId,
-      warehouseId: model.warehouseId!,
+      outletId: model.outletId!,
       sequenceNumber: model.sequenceNumber!,
       orderTypeId: model.orderTypeId!,
       categoryOrder: model.categoryOrder,
@@ -132,7 +132,7 @@ class TransactionEntity {
     return TransactionModel(
       id: id,
       shiftId: shiftId,
-      warehouseId: warehouseId,
+      outletId: outletId,
       sequenceNumber: sequenceNumber,
       orderTypeId: orderTypeId,
       categoryOrder: categoryOrder,
@@ -163,7 +163,7 @@ class TransactionEntity {
     return other is TransactionEntity &&
         other.id == id &&
         other.shiftId == shiftId &&
-        other.warehouseId == warehouseId &&
+        other.outletId == outletId &&
         other.sequenceNumber == sequenceNumber &&
         other.orderTypeId == orderTypeId &&
         other.categoryOrder == categoryOrder &&
@@ -187,7 +187,7 @@ class TransactionEntity {
   int get hashCode => Object.hash(
         id,
         shiftId,
-        warehouseId,
+        outletId,
         sequenceNumber,
         orderTypeId,
         categoryOrder,
@@ -209,7 +209,7 @@ class TransactionEntity {
 
   @override
   String toString() {
-    return 'TransactionEntity(id: $id, shiftId: $shiftId, warehouseId: $warehouseId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, details: $details)';
+    return 'TransactionEntity(id: $id, shiftId: $shiftId, outletId: $outletId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, details: $details)';
   }
 
   Color get statusColor => status.color;

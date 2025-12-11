@@ -45,7 +45,7 @@ void main() {
 
     test('createTransaction with isOffline true stores locally', () async {
       final txEntity = TransactionEntity(
-        warehouseId: 5,
+        outletId: 5,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -64,7 +64,7 @@ void main() {
 
     test('updateTransaction with isOffline true updates local row', () async {
       final txEntity = TransactionEntity(
-        warehouseId: 5,
+        outletId: 5,
         sequenceNumber: 2,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -91,7 +91,7 @@ void main() {
 
     test('deleteTransaction with isOffline true removes local row', () async {
       final txEntity = TransactionEntity(
-        warehouseId: 6,
+        outletId: 6,
         sequenceNumber: 3,
         orderTypeId: 1,
         date: DateTime.now(),

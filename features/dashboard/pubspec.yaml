@@ -14,15 +14,15 @@ dependencies:
     path: ../landing_page_menu
   mode:
     path: ../mode
-  warehouse:
-    path: ../warehouse
+  outlet:
+    path: ../outlet
   transaction:
     path: ../transaction
   product:
     path: ../product
   notification:
     path: ../notification
-    
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -238,7 +238,7 @@ class TransactionDetailSheet extends StatelessWidget {
         _buildGridItem(
           Icons.location_on,
           'Warehouse',
-          'WH-${tx.warehouseId}',
+          'WH-${tx.outletId}',
         ),
         _buildGridItem(
           null,

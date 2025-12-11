@@ -27,7 +27,7 @@ void main() {
 
     test('insertSyncTransaction and getTransactions', () async {
       final txMap = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -54,7 +54,7 @@ void main() {
 
     test('updateTransaction and delete', () async {
       final txMap = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 2,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -73,7 +73,7 @@ void main() {
     test('insertDetails upserts by transaction_id + product_id', () async {
       // create empty transaction
       final txMap = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 3,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -114,7 +114,7 @@ void main() {
 
     test('insertDetails sanitizes null values before DB write', () async {
       final txMap = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 4,
         orderTypeId: 1,
         date: DateTime.now(),

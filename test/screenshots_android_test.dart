@@ -42,7 +42,7 @@ void main() {
         AppRoutes.report,
         AppRoutes.settings,
         AppRoutes.dashboard,
-        AppRoutes.warehouse,
+        AppRoutes.outlet,
         AppRoutes.inventory,
         AppRoutes.transaction,
         AppRoutes.landingPageMenu,

@@ -60,7 +60,7 @@ void main() {
       final flaky = FlakyLocal(testDb: db, failCount: 2);
 
       final model = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -82,7 +82,7 @@ void main() {
       // Create flaky that will always fail (failCount > retry attempts in source)
       final alwaysFail = FlakyLocal(testDb: db, failCount: 10);
       final model = TransactionModel(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),

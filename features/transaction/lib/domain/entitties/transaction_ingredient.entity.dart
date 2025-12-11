@@ -2,7 +2,7 @@ import 'package:transaction/data/models/transaction_ingredient.model.dart';
 
 class TransactionIngredientEntity {
   final int? id;
-  final int? warehouseId;
+  final int? outletId;
   final int? transactionId;
   final int? ingredientId;
   final int? productId;
@@ -14,7 +14,7 @@ class TransactionIngredientEntity {
 
   const TransactionIngredientEntity({
     this.id,
-    this.warehouseId,
+    this.outletId,
     this.transactionId,
     this.ingredientId,
     this.productId,
@@ -27,7 +27,7 @@ class TransactionIngredientEntity {
 
   TransactionIngredientEntity copyWith({
     int? id,
-    int? warehouseId,
+    int? outletId,
     int? transactionId,
     int? ingredientId,
     int? productId,
@@ -39,7 +39,7 @@ class TransactionIngredientEntity {
   }) {
     return TransactionIngredientEntity(
       id: id ?? this.id,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       transactionId: transactionId ?? this.transactionId,
       ingredientId: ingredientId ?? this.ingredientId,
       productId: productId ?? this.productId,
@@ -55,7 +55,7 @@ class TransactionIngredientEntity {
       TransactionIngredientModel model) {
     return TransactionIngredientEntity(
       id: model.id,
-      warehouseId: model.warehouseId,
+      outletId: model.outletId,
       transactionId: model.transactionId,
       ingredientId: model.ingredientId,
       productId: model.productId,
@@ -70,7 +70,7 @@ class TransactionIngredientEntity {
   TransactionIngredientModel toModel() {
     return TransactionIngredientModel(
       id: id,
-      warehouseId: warehouseId,
+      outletId: outletId,
       transactionId: transactionId,
       ingredientId: ingredientId,
       productId: productId,
@@ -87,7 +87,7 @@ class TransactionIngredientEntity {
     if (identical(this, other)) return true;
     return other is TransactionIngredientEntity &&
         other.id == id &&
-        other.warehouseId == warehouseId &&
+        other.outletId == outletId &&
         other.transactionId == transactionId &&
         other.ingredientId == ingredientId &&
         other.productId == productId &&
@@ -101,7 +101,7 @@ class TransactionIngredientEntity {
   @override
   int get hashCode => Object.hash(
         id,
-        warehouseId,
+        outletId,
         transactionId,
         ingredientId,
         productId,

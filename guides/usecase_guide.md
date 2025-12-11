@@ -4,15 +4,15 @@ Prinsip utamanya adalah: **Satu File = Satu Use Case = Satu Tindakan Bisnis**.
 
 Rumusnya: **`KataKerja` + `KataBenda`**
 
-### 1\. Tabel Standar Penamaan (CRUD Warehouse)
+### 1\. Tabel Standar Penamaan (CRUD Outlet)
 
 | Operasi | Nama Class (`PascalCase`) | Nama File (`snake_case`) | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **Read (List)** | `GetWarehouses` | `get_warehouses.usecase.dart` | Gunakan **Jamak (s)** karena return List. |
-| **Read (Detail)**| `GetWarehouse` | `get_warehouse.usecase.dart` | Gunakan **Tunggal** karena return 1 object. |
-| **Create** | `CreateWarehouse` | `create_warehouse.usecase.dart` | Atau `AddWarehouse` / `add_warehouse.usecase.dart`. |
-| **Update** | `UpdateWarehouse` | `update_warehouse.usecase.dart` | Atau `EditWarehouse`. |
-| **Delete** | `DeleteWarehouse` | `delete_warehouse.usecase.dart` | Atau `RemoveWarehouse`. |
+| **Read (List)** | `GetOutlets` | `get_outlets.usecase.dart` | Gunakan **Jamak (s)** karena return List. |
+| **Read (Detail)**| `GetOutlet` | `get_outlet.usecase.dart` | Gunakan **Tunggal** karena return 1 object. |
+| **Create** | `CreateOutlet` | `create_outlet.usecase.dart` | Atau `AddOutlet` / `add_outlet.usecase.dart`. |
+| **Update** | `UpdateOutlet` | `update_outlet.usecase.dart` | Atau `EditOutlet`. |
+| **Delete** | `DeleteOutlet` | `delete_outlet.usecase.dart` | Atau `RemoveOutlet`. |
 
 -----
 
@@ -20,56 +20,56 @@ Rumusnya: **`KataKerja` + `KataBenda`**
 
 Berikut adalah isi file yang bersih dan standar. Biasanya kita menggunakan method `execute` atau `call`.
 
-#### A. `get_warehouses.usecase.dart` (Ambil Banyak Data)
+#### A. `get_outlets.usecase.dart` (Ambil Banyak Data)
 
 ```dart
 import 'package:dartz/dartz.dart'; // Untuk Either
-import '../repositories/warehouse_repository.dart';
-import '../entities/warehouse_entity.dart';
+import '../repositories/outlet_repository.dart';
+import '../entities/outlet_entity.dart';
 import '../../../../core/error/failures.dart'; // Sesuaikan path core
 
-class GetWarehouses {
-  final WarehouseRepository repository;
+class GetOutlets {
+  final OutletRepository repository;
 
-  GetWarehouses(this.repository);
+  GetOutlets(this.repository);
 
-  // Return List<WarehouseEntity>
-  Future<Either<Failure, List<WarehouseEntity>>> execute({bool isOffline = false}) {
-    return repository.getWarehouses(isOffline: isOffline);
+  // Return List<OutletEntity>
+  Future<Either<Failure, List<OutletEntity>>> execute({bool isOffline = false}) {
+    return repository.getDataOutlets();
   }
 }
 ```
 
-#### B. `get_warehouse.usecase.dart` (Ambil Satu Data)
+#### B. `get_outlet.usecase.dart` (Ambil Satu Data)
 
 ```dart
 // Import sama...
 
-class GetWarehouse {
-  final WarehouseRepository repository;
+class GetOutlet {
+  final OutletRepository repository;
 
-  GetWarehouse(this.repository);
+  GetOutlet(this.repository);
 
   // Butuh parameter ID
-  Future<Either<Failure, WarehouseEntity>> execute(int id, {bool isOffline = false}) {
-    return repository.getWarehouseById(id, isOffline: isOffline);
+  Future<Either<Failure, OutletEntity>> execute(int id, {bool isOffline = false}) {
+    return repository.getDataOutlets();
   }
 }
 ```
 
-#### C. `create_warehouse.usecase.dart` (Tambah Data)
+#### C. `create_outlet.usecase.dart` (Tambah Data)
 
 ```dart
 // Import sama...
 
-class CreateWarehouse {
-  final WarehouseRepository repository;
+class CreateOutlet {
+  final OutletRepository repository;
 
-  CreateWarehouse(this.repository);
+  CreateOutlet(this.repository);
 
   // Parameter berupa Entity
-  Future<Either<Failure, void>> execute(WarehouseEntity warehouse, {bool isOffline = false}) {
-    return repository.insertWarehouse(warehouse, isOffline: isOffline);
+  Future<Either<Failure, void>> execute(OutletEntity outlet, {bool isOffline = false}) {
+    return repository.insertOutlet(outlet, isOffline: isOffline);
   }
 }
 ```
@@ -83,27 +83,27 @@ Di dalam folder `domain/usecases/`, sebaiknya file-file tersebut **tidak dibungk
 ```
 lib/
 ├── features/
-│   ├── warehouse/
+│   ├── outlet/
 │   │   ├── domain/
 │   │   │   ├── usecases/
-│   │   │   │   ├── get_warehouses.usecase.dart
-│   │   │   │   ├── get_warehouse.usecase.dart
-│   │   │   │   ├── create_warehouse.usecase.dart
-│   │   │   │   ├── update_warehouse.usecase.dart
-│   │   │   │   └── delete_warehouse.usecase.dart
+│   │   │   │   ├── get_outlets.usecase.dart
+│   │   │   │   ├── get_outlet.usecase.dart
+│   │   │   │   ├── create_outlet.usecase.dart
+│   │   │   │   ├── update_outlet.usecase.dart
+│   │   │   │   └── delete_outlet.usecase.dart
 ```
 
 ### 4\. Pertanyaan Umum: Perlukah Suffix "UseCase"?
 
-Anda mungkin sering melihat tutorial menamakan classnya `GetWarehousesUseCase`.
+Anda mungkin sering melihat tutorial menamakan classnya `GetOutletsUseCase`.
 
-  * **Pilihan A: Tanpa Suffix (`GetWarehouses`)** -\> **Direkomendasikan.**
+  * **Pilihan A: Tanpa Suffix (`GetOutlets`)** -\> **Direkomendasikan.**
 
       * Lebih singkat.
       * Karena sudah ada di folder `usecases`, suffix itu jadi redundan (pemborosan kata).
-      * Contoh panggil di VM: `getWarehouses.execute()`.
+      * Contoh panggil di VM: `getOutlets.execute()`.
 
-  * **Pilihan B: Dengan Suffix (`GetWarehousesUseCase`)**
+  * **Pilihan B: Dengan Suffix (`GetOutletUseCase`)**
 
       * Boleh dipakai jika Anda khawatir nama class bentrok dengan nama method lain.
       * Tapi di Dart, nama file import bisa di-alias (`as`), jadi bentrok nama jarang terjadi.
@@ -111,6 +111,6 @@ Anda mungkin sering melihat tutorial menamakan classnya `GetWarehousesUseCase`.
 **Kesimpulan untuk Project Anda:**
 Gunakan **Pilihan A** (Tanpa Suffix) agar kode lebih bersih seperti contoh di atas.
 
-1.  Class: `GetWarehouses`
-2.  File: `get_warehouses.usecase.dart`
+1.  Class: `GetOutlets`
+2.  File: `get_outlets.usecase.dart`
 3.  Method: `execute()`

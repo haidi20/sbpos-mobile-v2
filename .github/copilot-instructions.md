@@ -20,7 +20,7 @@ architecture, developer workflows, and project-specific conventions.
   exports (widgets, utils, helpers, and most third-party packages).
 - Features live in `features/<name>/` and are referenced as path
   dependencies from the root `pubspec.yaml` (e.g. `dashboard`,
-  `landing_page_menu`, `mode`, `warehouse`, ...). Keep features decoupled and
+  `landing_page_menu`, `mode`, `outlet`, ...). Keep features decoupled and
   rely on `core` for shared code.
 
 ## Important files & patterns (quick refs)

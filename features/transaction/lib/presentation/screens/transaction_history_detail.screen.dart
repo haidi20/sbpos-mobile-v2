@@ -146,7 +146,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
                       DetailInfoCard(
                         icon: Icons.store_outlined,
                         label: 'Warehouse',
-                        value: 'WH-${tx.warehouseId}',
+                        value: 'WH-${tx.outletId}',
                       ),
                       DetailInfoCard(
                         icon: Icons.category_outlined,

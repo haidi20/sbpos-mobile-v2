@@ -5,7 +5,7 @@ class TransactionModel {
   final int? id;
   final int? idServer;
   final int? shiftId;
-  final int? warehouseId;
+  final int? outletId;
   final int? sequenceNumber;
   final int? orderTypeId;
   final String? categoryOrder;
@@ -30,7 +30,7 @@ class TransactionModel {
     this.id,
     this.idServer,
     this.shiftId,
-    this.warehouseId,
+    this.outletId,
     this.sequenceNumber,
     this.orderTypeId,
     this.categoryOrder,
@@ -56,7 +56,7 @@ class TransactionModel {
     int? id,
     int? idServer,
     int? shiftId,
-    int? warehouseId,
+    int? outletId,
     int? sequenceNumber,
     int? orderTypeId,
     String? categoryOrder,
@@ -81,7 +81,7 @@ class TransactionModel {
       id: id ?? this.id,
       idServer: idServer ?? this.idServer,
       shiftId: shiftId ?? this.shiftId,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       sequenceNumber: sequenceNumber ?? this.sequenceNumber,
       orderTypeId: orderTypeId ?? this.orderTypeId,
       categoryOrder: categoryOrder ?? this.categoryOrder,
@@ -108,7 +108,7 @@ class TransactionModel {
       TransactionModel(
         idServer: _toInt(json['id']),
         shiftId: _toInt(json['shift_id']),
-        warehouseId: _toInt(json['warehouse_id']),
+        outletId: _toInt(json['warehouse_id']),
         sequenceNumber: _toInt(json['sequence_number']),
         orderTypeId: _toInt(json['order_type_id']),
         categoryOrder: json['category_order'],
@@ -145,7 +145,7 @@ class TransactionModel {
         'id': id,
         'id_server': idServer,
         'shift_id': shiftId,
-        'warehouse_id': warehouseId,
+        'warehouse_id': outletId,
         'sequence_number': sequenceNumber,
         'order_type_id': orderTypeId,
         'category_order': categoryOrder,
@@ -173,7 +173,7 @@ class TransactionModel {
         'id': null,
         'id_server': idServer,
         'shift_id': shiftId,
-        'warehouse_id': warehouseId,
+        'outlet_id': outletId,
         'sequence_number': sequenceNumber,
         'order_type_id': orderTypeId,
         'category_order': categoryOrder,
@@ -204,7 +204,7 @@ class TransactionModel {
       id: _toInt(map['id']),
       idServer: _toInt(map['id_server']),
       shiftId: _toInt(map['shift_id']),
-      warehouseId: _toInt(map['warehouse_id']),
+      outletId: _toInt(map['outlet_id']),
       sequenceNumber: _toInt(map['sequence_number']),
       orderTypeId: _toInt(map['order_type_id']),
       categoryOrder: map['category_order'] as String?,

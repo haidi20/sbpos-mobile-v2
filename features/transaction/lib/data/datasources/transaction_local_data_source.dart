@@ -5,8 +5,6 @@ import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 
-/// Data source lokal untuk operasi DB transaksi.
-/// Mengikuti pola `WarehouseLocalDataSource`.
 class TransactionLocalDataSource with BaseErrorHelper {
   final CoreDatabase databaseHelper = CoreDatabase();
   final Database? _testDb;

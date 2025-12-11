@@ -15,8 +15,8 @@ dependencies:
     path: features/landing_page_menu
   mode:
     path: features/mode
-  warehouse:
-    path: features/warehouse
+  outlet:
+    path: features/outlet
   product:
     path: features/product
   setting:

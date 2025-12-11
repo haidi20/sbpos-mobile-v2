@@ -1,8 +1,6 @@
 import 'package:core/core.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 
-/// Data source untuk mengambil data transaksi dari API remote.
-/// Struktur dan perilaku mengikuti pola pada `warehouse_remote_data_source.dart`.
 class TransactionRemoteDataSource with BaseErrorHelper {
   final String host;
   final String api;

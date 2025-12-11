@@ -4,7 +4,7 @@ class TransactionTable {
   static const String colId = 'id';
   static const String colIdServer = 'id_server';
   static const String colShiftId = 'shift_id';
-  static const String colWarehouseId = 'warehouse_id';
+  static const String colOutletId = 'outlet_id';
   static const String colSequenceNumber = 'sequence_number';
   static const String colOrderTypeId = 'order_type_id';
   static const String colCategoryOrder = 'category_order';
@@ -29,7 +29,7 @@ class TransactionTable {
       $colId INTEGER PRIMARY KEY,
       $colIdServer INTEGER,
       $colShiftId INTEGER,
-      $colWarehouseId INTEGER,
+      $colOutletId INTEGER,
       $colSequenceNumber INTEGER,
       $colOrderTypeId INTEGER,
       $colCategoryOrder TEXT,

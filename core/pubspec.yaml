@@ -38,8 +38,8 @@ dependencies:
     path: ../features/landing_page_menu
   mode:
     path: ../features/mode
-  warehouse:
-    path: ../features/warehouse
+  outlet:
+    path: ../features/outlet
   transaction:
     path: ../features/transaction
   product:

@@ -18,7 +18,8 @@ class TransactionResponse {
       message: json['message'] ?? '',
       data: (json['data'] as List<dynamic>?)
           ?.map(
-              (item) => TransactionModel.fromJson(item as Map<String, dynamic>))
+            (item) => TransactionModel.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
     );
   }

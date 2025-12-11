@@ -15,7 +15,7 @@ class FakeTransactionRepository implements TransactionRepository {
 
   TransactionEntity _sampleEntity() => TransactionEntity(
         id: 1,
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -101,7 +101,7 @@ void main() {
     test('CreateTransaction returns entity on success', () async {
       final usecase = CreateTransaction(repo);
       final tx = TransactionEntity(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -134,7 +134,7 @@ void main() {
       final usecase = UpdateTransaction(repo);
       final tx = TransactionEntity(
         id: 1,
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 1,
         orderTypeId: 1,
         date: DateTime.now(),

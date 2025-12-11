@@ -1,6 +1,6 @@
 class TransactionIngredientModel {
   final int? id;
-  final int? warehouseId;
+  final int? outletId;
   final int? transactionId;
   final int? ingredientId;
   final int? productId;
@@ -12,7 +12,7 @@ class TransactionIngredientModel {
 
   TransactionIngredientModel({
     this.id,
-    this.warehouseId,
+    this.outletId,
     this.transactionId,
     this.ingredientId,
     this.productId,
@@ -25,7 +25,7 @@ class TransactionIngredientModel {
 
   TransactionIngredientModel copyWith({
     int? id,
-    int? warehouseId,
+    int? outletId,
     int? transactionId,
     int? ingredientId,
     int? productId,
@@ -37,7 +37,7 @@ class TransactionIngredientModel {
   }) {
     return TransactionIngredientModel(
       id: id ?? this.id,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       transactionId: transactionId ?? this.transactionId,
       ingredientId: ingredientId ?? this.ingredientId,
       productId: productId ?? this.productId,
@@ -66,7 +66,7 @@ class TransactionIngredientModel {
 
     return TransactionIngredientModel(
       id: toInt(json['id']),
-      warehouseId: toInt(json['warehouse_id']),
+      outletId: toInt(json['outlet_id']),
       transactionId: toInt(json['transaction_id']),
       ingredientId: toInt(json['ingredient_id']),
       productId: toInt(json['product_id']),
@@ -80,7 +80,7 @@ class TransactionIngredientModel {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'warehouse_id': warehouseId,
+        'outlet_id': outletId,
         'transaction_id': transactionId,
         'ingredient_id': ingredientId,
         'product_id': productId,
@@ -93,7 +93,7 @@ class TransactionIngredientModel {
 
   Map<String, dynamic> toInsertDbLocal() => {
         'id': null,
-        'warehouse_id': warehouseId,
+        'outlet_id': outletId,
         'transaction_id': transactionId,
         'ingredient_id': ingredientId,
         'product_id': productId,
@@ -121,7 +121,7 @@ class TransactionIngredientModel {
 
     return TransactionIngredientModel(
       id: toInt(map['id']),
-      warehouseId: toInt(map['warehouse_id']),
+      outletId: toInt(map['outlet_id']),
       transactionId: toInt(map['transaction_id']),
       ingredientId: toInt(map['ingredient_id']),
       productId: toInt(map['product_id']),

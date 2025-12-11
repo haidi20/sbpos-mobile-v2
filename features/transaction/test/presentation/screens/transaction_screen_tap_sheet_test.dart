@@ -56,7 +56,7 @@ class RepoWithOneTransaction implements TransactionRepository {
 
   TransactionEntity _sampleTx(int seq) {
     return TransactionEntity(
-      warehouseId: 1,
+      outletId: 1,
       sequenceNumber: seq,
       orderTypeId: 1,
       date: DateTime(2025, 1, 1, 12, 0),

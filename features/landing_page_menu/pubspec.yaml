@@ -14,8 +14,8 @@ dependencies:
     path: ../dashboard
   mode:
     path: ../mode
-  warehouse:
-    path: ../warehouse
+  outlet:
+    path: ../outlet
   product:
     path: ../product
   setting:

@@ -10,7 +10,7 @@ class ShiftEntity {
   final int? openingBalance;
   final int? closingBalance;
   final int? totalTransaction;
-  final int? warehouseId;
+  final int? outletId;
   final int? userId;
   final bool? isClosed;
   final DateTime? createdAt;
@@ -28,7 +28,7 @@ class ShiftEntity {
     this.openingBalance,
     this.closingBalance,
     this.totalTransaction,
-    this.warehouseId,
+    this.outletId,
     this.userId,
     this.isClosed,
     this.createdAt,
@@ -47,7 +47,7 @@ class ShiftEntity {
     int? openingBalance,
     int? closingBalance,
     int? totalTransaction,
-    int? warehouseId,
+    int? outletId,
     int? userId,
     bool? isClosed,
     DateTime? createdAt,
@@ -65,7 +65,7 @@ class ShiftEntity {
       openingBalance: openingBalance ?? this.openingBalance,
       closingBalance: closingBalance ?? this.closingBalance,
       totalTransaction: totalTransaction ?? this.totalTransaction,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       userId: userId ?? this.userId,
       isClosed: isClosed ?? this.isClosed,
       createdAt: createdAt ?? this.createdAt,
@@ -86,7 +86,7 @@ class ShiftEntity {
       openingBalance: model.openingBalance,
       closingBalance: model.closingBalance,
       totalTransaction: model.totalTransaction,
-      warehouseId: model.warehouseId,
+      outletId: model.outletId,
       userId: model.userId,
       isClosed: model.isClosed,
       createdAt: model.createdAt,
@@ -107,7 +107,7 @@ class ShiftEntity {
       openingBalance: openingBalance,
       closingBalance: closingBalance,
       totalTransaction: totalTransaction,
-      warehouseId: warehouseId,
+      outletId: outletId,
       userId: userId,
       isClosed: isClosed,
       createdAt: createdAt,
@@ -130,7 +130,7 @@ class ShiftEntity {
         other.openingBalance == openingBalance &&
         other.closingBalance == closingBalance &&
         other.totalTransaction == totalTransaction &&
-        other.warehouseId == warehouseId &&
+        other.outletId == outletId &&
         other.userId == userId &&
         other.isClosed == isClosed &&
         other.createdAt == createdAt &&
@@ -150,7 +150,7 @@ class ShiftEntity {
         openingBalance,
         closingBalance,
         totalTransaction,
-        warehouseId,
+        outletId,
         userId,
         isClosed,
         createdAt,
@@ -161,6 +161,6 @@ class ShiftEntity {
 
   @override
   String toString() {
-    return 'ShiftEntity(id: $id, idServer: $idServer, shiftNumber: $shiftNumber, date: $date, startTime: $startTime, endTime: $endTime, openingBalance: $openingBalance, closingBalance: $closingBalance, totalTransaction: $totalTransaction, warehouseId: $warehouseId, userId: $userId, isClosed: $isClosed, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, syncedAt: $syncedAt)';
+    return 'ShiftEntity(id: $id, idServer: $idServer, shiftNumber: $shiftNumber, date: $date, startTime: $startTime, endTime: $endTime, openingBalance: $openingBalance, closingBalance: $closingBalance, totalTransaction: $totalTransaction, outletId: $outletId, userId: $userId, isClosed: $isClosed, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, syncedAt: $syncedAt)';
   }
 }

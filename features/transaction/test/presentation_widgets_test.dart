@@ -56,7 +56,7 @@ class FakeTransactionRepository implements TransactionRepository {
   Future<Either<Failure, TransactionEntity>> getLatestTransaction(
       {bool? isOffline}) async {
     final tx = TransactionEntity(
-      warehouseId: 1,
+      outletId: 1,
       sequenceNumber: 1,
       orderTypeId: 1,
       date: DateTime.utc(2023, 1, 1),
@@ -70,7 +70,7 @@ class FakeTransactionRepository implements TransactionRepository {
   Future<Either<Failure, TransactionEntity>> getTransaction(int id,
       {bool? isOffline}) async {
     final tx = TransactionEntity(
-      warehouseId: 1,
+      outletId: 1,
       sequenceNumber: id,
       orderTypeId: 1,
       date: DateTime.now(),
@@ -106,7 +106,7 @@ void main() {
       await initializeDateFormatting();
 
       final tx = TransactionEntity(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 123,
         orderTypeId: 1,
         date: DateTime.now(),
@@ -215,7 +215,7 @@ void main() {
       await initializeDateFormatting();
 
       final tx = TransactionEntity(
-        warehouseId: 1,
+        outletId: 1,
         sequenceNumber: 999,
         orderTypeId: 1,
         date: DateTime.now(),

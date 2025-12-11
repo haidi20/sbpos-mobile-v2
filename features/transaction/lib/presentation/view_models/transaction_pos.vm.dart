@@ -48,7 +48,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       // bikin transaksi baru
       if (state.transaction == null) {
         final txEntity = TransactionEntity(
-          warehouseId: state.transaction?.warehouseId ?? 8,
+          outletId: state.transaction?.outletId ?? 8,
           sequenceNumber: state.transaction?.sequenceNumber ?? 1,
           orderTypeId: state.transaction?.orderTypeId ?? 1,
           date: DateTime.now(),

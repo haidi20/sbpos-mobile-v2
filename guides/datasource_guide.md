@@ -13,7 +13,7 @@ Dokumen ini fokus pada: skema tabel lokal, perilaku DAO, kontrak Local/Remote Da
 Tabel utama dan detail, sesuai file definisi:
 
 - `db/transaction.table.dart` (tabel: `transactions`) *tergantung model yang ingin dibuat
-	- Kolom: `id`, `id_server`, `shift_id`, `warehouse_id`, `sequence_number`, `order_type_id`, `category_order`, `user_id`, `payment_method`, `date`, `notes`, `total_amount`, `total_qty`, `paid_amount`, `change_money`, `status`, `cancelation_otp`, `cancelation_reason`, `created_at`, `updated_at`, `deleted_at`, `synced_at`.
+	- Kolom: `id`, `id_server`, `shift_id`, `outlet_id`, `sequence_number`, `order_type_id`, `category_order`, `user_id`, `payment_method`, `date`, `notes`, `total_amount`, `total_qty`, `paid_amount`, `change_money`, `status`, `cancelation_otp`, `cancelation_reason`, `created_at`, `updated_at`, `deleted_at`, `synced_at`.
 - `db/transaction_detail.table.dart` (tabel: `transaction_details`)
 	- Kolom: `id`, `id_server`, `transaction_id`, `product_id`, `product_name`, `product_price`, `qty`, `subtotal`, `created_at`, `updated_at`, `deleted_at`, `synced_at`, `note`.
 

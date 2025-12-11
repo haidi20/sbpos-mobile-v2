@@ -14,8 +14,8 @@ dependencies:
     path: ../landing_page_menu
   mode:
     path: ../mode
-  warehouse:
-    path: ../warehouse
+  outlet:
+    path: ../outlet
   dashboard:
     path: ../dashboard
   product:

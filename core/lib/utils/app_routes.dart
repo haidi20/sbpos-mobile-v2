@@ -4,7 +4,7 @@ class AppRoutes {
   static const String report = '/report';
   static const String settings = '/settings';
   static const String dashboard = '/dashboard';
-  static const String warehouse = '/warehouse';
+  static const String outlet = '/outlet';
   static const String inventory = '/inventory';
   static const String transaction = '/transaction';
   static const String landingPageMenu = '/landing';

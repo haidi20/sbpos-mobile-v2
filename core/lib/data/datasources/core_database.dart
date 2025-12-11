@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:core/data/datasources/db/auth_user.table.dart';
-import 'package:warehouse/data/datasources/db/warehouse.table.dart';
+import 'db/outlet_table.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:customer/data/datasources/db/customer.table.dart';
@@ -62,7 +62,7 @@ class CoreDatabase {
   void _onCreate(Database db, int version) async {
     try {
       await db.execute(AuthUserTable.createTableQuery);
-      await db.execute(WarehouseTable.createTableQuery);
+      await db.execute(OutletTable.createTableQuery);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
       await db.execute(CustomerTable.createTableQuery);
@@ -76,7 +76,7 @@ class CoreDatabase {
     // Execute CREATE TABLE IF NOT EXISTS for all known tables to avoid 'no such table' errors
     final queries = [
       AuthUserTable.createTableQuery,
-      WarehouseTable.createTableQuery,
+      OutletTable.createTableQuery,
       TransactionTable.createTableQuery,
       TransactionDetailTable.createTableQuery,
       CustomerTable.createTableQuery,

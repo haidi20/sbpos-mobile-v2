@@ -8,7 +8,7 @@ class ShiftModel {
   final int? openingBalance;
   final int? closingBalance;
   final int? totalTransaction;
-  final int? warehouseId;
+  final int? outletId;
   final int? userId;
   final bool? isClosed;
   final DateTime? createdAt;
@@ -26,7 +26,7 @@ class ShiftModel {
     this.openingBalance,
     this.closingBalance,
     this.totalTransaction,
-    this.warehouseId,
+    this.outletId,
     this.userId,
     this.isClosed,
     this.createdAt,
@@ -45,7 +45,7 @@ class ShiftModel {
     int? openingBalance,
     int? closingBalance,
     int? totalTransaction,
-    int? warehouseId,
+    int? outletId,
     int? userId,
     bool? isClosed,
     DateTime? createdAt,
@@ -63,7 +63,7 @@ class ShiftModel {
       openingBalance: openingBalance ?? this.openingBalance,
       closingBalance: closingBalance ?? this.closingBalance,
       totalTransaction: totalTransaction ?? this.totalTransaction,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       userId: userId ?? this.userId,
       isClosed: isClosed ?? this.isClosed,
       createdAt: createdAt ?? this.createdAt,
@@ -86,7 +86,7 @@ class ShiftModel {
         openingBalance: _toInt(json['opening_balance']),
         closingBalance: _toInt(json['closing_balance']),
         totalTransaction: _toInt(json['total_transaction']),
-        warehouseId: _toInt(json['warehouse_id']),
+        outletId: _toInt(json['outlet_id']),
         userId: _toInt(json['user_id']),
         isClosed: _toBool(json['is_closed']),
         createdAt: json['created_at'] != null
@@ -113,7 +113,7 @@ class ShiftModel {
         'opening_balance': openingBalance,
         'closing_balance': closingBalance,
         'total_transaction': totalTransaction,
-        'warehouse_id': warehouseId,
+        'outlet_id': outletId,
         'user_id': userId,
         'is_closed': isClosed == null ? null : (isClosed! ? 1 : 0),
         'created_at': createdAt?.toIso8601String(),
@@ -132,7 +132,7 @@ class ShiftModel {
         'opening_balance': openingBalance,
         'closing_balance': closingBalance,
         'total_transaction': totalTransaction,
-        'warehouse_id': warehouseId,
+        'outlet_id': outletId,
         'user_id': userId,
         'is_closed': isClosed == null ? null : (isClosed! ? 1 : 0),
         'created_at': createdAt?.toIso8601String(),
@@ -151,7 +151,7 @@ class ShiftModel {
         openingBalance: _toInt(map['opening_balance']) ?? 0,
         closingBalance: _toInt(map['closing_balance']) ?? 0,
         totalTransaction: _toInt(map['total_transaction']) ?? 0,
-        warehouseId: _toInt(map['warehouse_id']),
+        outletId: _toInt(map['outlet_id']),
         userId: _toInt(map['user_id']),
         isClosed: _toBool(map['is_closed']),
         createdAt: _toDate(map['created_at']),
