@@ -2,6 +2,7 @@ import 'package:core/core.dart';
 import 'package:outlet/data/datasources/db/outlet.table.dart';
 import 'package:core/data/datasources/db/auth_user.table.dart';
 import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 
@@ -61,11 +62,12 @@ class CoreDatabase {
 
   void _onCreate(Database db, int version) async {
     try {
-      await db.execute(AuthUserTable.createTableQuery);
       await db.execute(OutletTable.createTableQuery);
+      await db.execute(ProductTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(AuthUserTable.createTableQuery);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
-      await db.execute(CustomerTable.createTableQuery);
     } catch (e, stack) {
       _logger.severe('Failed to create tables', e, stack);
       rethrow;

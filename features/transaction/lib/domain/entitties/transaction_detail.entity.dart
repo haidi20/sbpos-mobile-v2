@@ -1,6 +1,6 @@
 // Domain entity for transaction detail
 
-import 'package:product/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 
 class TransactionDetailEntity {

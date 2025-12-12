@@ -1,5 +1,5 @@
 // Model for category from API
-import 'package:product/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/category.entity.dart';
 
 class CategoryModel {
   final int? id;

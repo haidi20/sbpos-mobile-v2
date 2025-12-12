@@ -13,7 +13,7 @@ Aturan ringkas (WAJIB diikuti):
 2) Setter state: `set*`
 - Semua fungsi yang hanya mengubah state lokal (tidak melakukan I/O jaringan atau DB) harus dinamai dengan prefix `set`.
 - Gunakan `state = state.copyWith(...)` di dalam fungsi `set*`.
-- Contoh: `setIsAdding(bool)`, `setDraftCustomer(CustomerEntity)`, `setSearchQuery(String)`.
+	- Contoh: `setIsForm(bool)`, `setDraftCustomer(CustomerEntity)`, `setSearchQuery(String)`.
 
 3) Event / aksi (I/O atau perubahan yang membutuhkan usecase): `on*`
 - Semua aksi yang memicu usecase, melakukan operasi asynchronous (create/update/delete/get dengan I/O) harus dinamai dengan prefix `on`.
@@ -36,19 +36,19 @@ Aturan ringkas (WAJIB diikuti):
 		- Jika hasil kosong, buat seeding dengan `_createCustomerUsecase(..., isOffline: true)` untuk tiap `initialCustomers`
 		- Setelah seeding, panggil kembali `_getCustomersUsecase(isOffline: true)` dan set state
 
-	- `setIsAdding(bool value)`
-		- `state = state.copyWith(isAdding: value);`
+	- `setIsForm(bool value)`
+		- `state = state.copyWith(isForm: value);`
 
 	- `onCreateCustomer()`
 		- Validasi draft
 		- Panggil `_createCustomerUsecase(entity, isOffline: true)`
-		- Pada success: update `state.customers` dan set `isAdding: false`
+		- Pada success: update `state.customers` dan set `isForm: false`
 		- Pada failure: set `state.error`
 
 7) Rules untuk caller (screen/controller)
 - Selalu panggil metode yang sudah dinamai ulang (`get*`, `set*`, `on*`).
 - Contoh: jika sebelumnya memanggil `vm.load()` → ganti dengan `vm.getCustomers()`.
-- Jika sebelumnya memanggil `vm.startAdd()` → ganti dengan `vm.setIsAdding(true)`.
+- Jika sebelumnya memanggil `vm.startAdd()` → ganti dengan `vm.setIsForm(true)`.
 
 8) Verifikasi
 - Setelah mengganti nama, jalankan `flutter analyze` dan perbaiki semua pemanggilan yang tersisa sampai analisis bersih.

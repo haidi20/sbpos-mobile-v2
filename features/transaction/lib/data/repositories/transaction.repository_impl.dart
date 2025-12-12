@@ -48,6 +48,36 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return null;
   }
 
+  Future<Either<Failure, TransactionEntity>> _localOrFailureById(
+      int id, Failure failure) async {
+    final localModel = await local.getTransactionById(id);
+    if (localModel != null) {
+      return Right(TransactionEntity.fromModel(localModel));
+    }
+    return Left(failure);
+  }
+
+  Future<Either<Failure, TransactionEntity>> _localAfterClearOrFailure(
+      int? id, Failure failure) async {
+    if (id != null) {
+      await local.clearSyncedAt(id);
+    }
+    final localModel = await local.getTransactionById(id ?? 0);
+    if (localModel != null) {
+      return Right(TransactionEntity.fromModel(localModel));
+    }
+    return Left(failure);
+  }
+
+  Future<Either<Failure, TransactionEntity>> _localLatestOrFailure(
+      Failure failure) async {
+    final localModel = await local.getLatestTransaction();
+    if (localModel != null) {
+      return Right(TransactionEntity.fromModel(localModel));
+    }
+    return Left(failure);
+  }
+
   Future<Either<Failure, List<TransactionEntity>>> _fallbackToLocal({
     Failure fallbackFailure = const NetworkFailure(),
   }) async {
@@ -220,38 +250,22 @@ class TransactionRepositoryImpl implements TransactionRepository {
     final bool isConnected = await networkInfo.isConnected;
 
     if (!isConnected) {
-      final localModel = await local.getTransactionById(id);
-      if (localModel != null) {
-        return Right(TransactionEntity.fromModel(localModel));
-      }
-      return const Left(NetworkFailure());
+      return await _localOrFailureById(id, const NetworkFailure());
     }
 
     try {
       final resp = await remote.getTransaction(id);
       if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
-        final localModel = await local.getTransactionById(id);
-        if (localModel != null) {
-          return Right(TransactionEntity.fromModel(localModel));
-        }
-        return const Left(ServerFailure());
+        return await _localOrFailureById(id, const ServerFailure());
       }
       final model = resp.data!.first;
       // save to local (replace existing)
       await local.insertSyncTransaction(model);
       return Right(TransactionEntity.fromModel(model));
     } on ServerException {
-      final localModel = await local.getTransactionById(id);
-      if (localModel != null) {
-        return Right(TransactionEntity.fromModel(localModel));
-      }
-      return const Left(ServerFailure());
+      return await _localOrFailureById(id, const ServerFailure());
     } on NetworkException {
-      final localModel = await local.getTransactionById(id);
-      if (localModel != null) {
-        return Right(TransactionEntity.fromModel(localModel));
-      }
-      return const Left(NetworkFailure());
+      return await _localOrFailureById(id, const NetworkFailure());
     } catch (e, st) {
       _logger.severe('Error getTransaction:', e, st);
       return const Left(UnknownFailure());
@@ -274,22 +288,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
     final bool isConnected = await networkInfo.isConnected;
 
     if (!isConnected) {
-      final localModel = await local.getLatestTransaction();
-      if (localModel != null) {
-        return Right(TransactionEntity.fromModel(localModel));
-      }
-      return const Left(NetworkFailure());
+      return await _localLatestOrFailure(const NetworkFailure());
     }
 
     try {
       final TransactionResponse resp = await remote.fetchTransactions();
 
       if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
-        final localModel = await local.getLatestTransaction();
-        if (localModel != null) {
-          return Right(TransactionEntity.fromModel(localModel));
-        }
-        return const Left(ServerFailure());
+        return await _localLatestOrFailure(const ServerFailure());
       }
 
       final List<TransactionModel> txModels = resp.data!;
@@ -314,17 +320,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
       return Right(TransactionEntity.fromModel(latest));
     } on ServerException {
-      final localModel = await local.getLatestTransaction();
-      if (localModel != null) {
-        return Right(TransactionEntity.fromModel(localModel));
-      }
-      return const Left(ServerFailure());
+      return await _localLatestOrFailure(const ServerFailure());
     } on NetworkException {
-      final localModel = await local.getLatestTransaction();
-      if (localModel != null) {
-        return Right(TransactionEntity.fromModel(localModel));
-      }
-      return const Left(NetworkFailure());
+      return await _localLatestOrFailure(const NetworkFailure());
     } catch (e, st) {
       _logger.severe('Error getLatestTransaction:', e, st);
       return const Left(UnknownFailure());
@@ -398,14 +396,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
       if (!isConnected) {
-        if (txModel.id != null) {
-          await local.clearSyncedAt(txModel.id!);
-        }
-        final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) {
-          return const Left(NetworkFailure());
-        }
-        return Right(TransactionEntity.fromModel(localTx));
+        return await _localAfterClearOrFailure(
+            txModel.id, const NetworkFailure());
       }
 
       // determine server id
@@ -418,14 +410,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       try {
         final resp = await remote.updateTransaction(idServer, txModel.toJson());
         if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
-          if (txModel.id != null) {
-            await local.clearSyncedAt(txModel.id!);
-          }
-          final localTx = await local.getTransactionById(txModel.id ?? 0);
-          if (localTx == null) {
-            return const Left(ServerFailure());
-          }
-          return Right(TransactionEntity.fromModel(localTx));
+          return await _localAfterClearOrFailure(
+              txModel.id, const ServerFailure());
         }
 
         final created = resp.data!.first;
@@ -442,23 +428,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
         }
         return Right(TransactionEntity.fromModel(updatedLocal));
       } on ServerException {
-        if (txModel.id != null) {
-          await local.clearSyncedAt(txModel.id!);
-        }
-        final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) {
-          return const Left(ServerFailure());
-        }
-        return Right(TransactionEntity.fromModel(localTx));
+        return await _localAfterClearOrFailure(
+            txModel.id, const ServerFailure());
       } on NetworkException {
-        if (txModel.id != null) {
-          await local.clearSyncedAt(txModel.id!);
-        }
-        final localTx = await local.getTransactionById(txModel.id ?? 0);
-        if (localTx == null) {
-          return const Left(NetworkFailure());
-        }
-        return Right(TransactionEntity.fromModel(localTx));
+        return await _localAfterClearOrFailure(
+            txModel.id, const NetworkFailure());
       }
     } catch (e, st) {
       _logger.severe('Error updateTransaction:', e, st);

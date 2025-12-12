@@ -4,12 +4,13 @@ import 'package:customer/data/models/customer.model.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/data/responses/customer.response.dart';
 import 'package:customer/domain/repositories/customer.repository.dart';
-import 'package:customer/data/datasources/local_customer.datasource.dart';
-import 'package:customer/data/datasources/remote_customer.datasource.dart';
+import 'package:customer/data/datasources/customer_local.datasource.dart';
+import 'package:customer/data/datasources/customer_remote.datasource.dart';
+import 'package:customer/data/dummies/customer.data.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
   final CustomerRemoteDataSource remote;
-  final LocalCustomerDataSource local;
+  final CustomerLocalDataSource local;
 
   static final Logger _logger = Logger('CustomerRepositoryImpl');
 
@@ -21,6 +22,24 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<List<CustomerEntity>> _getLocalEntities() async {
     final localResp = await local.getCustomers();
     return localResp.map((model) => CustomerEntity.fromModel(model)).toList();
+  }
+
+  /// Ensure local DB seeded with `initialCustomers` (only if local empty).
+  Future<void> _ensureSeededLocal() async {
+    try {
+      final localResp = await local.getCustomers();
+      if (localResp.isEmpty) {
+        for (final e in initialCustomers) {
+          try {
+            await local.insertCustomer(e.toModel());
+          } catch (e, st) {
+            _logger.warning('Gagal insert seed customer: $e', e, st);
+          }
+        }
+      }
+    } catch (e, st) {
+      _logger.warning('Gagal cek/seed customer lokal: $e', e, st);
+    }
   }
 
   Future<List<CustomerModel>?> _saveToLocal(
@@ -63,6 +82,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
     bool? isOffline,
   }) async {
     if (isOffline == true) {
+      // ensure seeding handled at repository level
+      await _ensureSeededLocal();
       final localEntities = await _getLocalEntities();
       return Right(localEntities);
     }

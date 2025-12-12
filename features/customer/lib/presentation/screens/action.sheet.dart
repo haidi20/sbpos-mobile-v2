@@ -44,11 +44,7 @@ Future<void> showCustomerActionSheet(
               ListTile(
                 leading: const Icon(Icons.edit, color: AppColors.sbLightBlue),
                 title: const Text('Ubah'),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  vm.setDraftCustomer(customer);
-                  vm.setIsAdding(true);
-                },
+                onTap: () => vm.onEditCustomer(ctx, customer),
               ),
               const Divider(height: 1),
               ListTile(

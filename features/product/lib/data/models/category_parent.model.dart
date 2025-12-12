@@ -1,4 +1,4 @@
-import 'package:product/domain/entities/category_parent_entity.dart';
+import 'package:product/domain/entities/category_parent.entity.dart';
 
 class CategoryParentModel {
   final int? id;

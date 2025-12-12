@@ -62,7 +62,7 @@ class CustomerFormController {
   }
 
   void cancel() {
-    _vm.setIsAdding(false);
+    _vm.setIsForm(false);
   }
 
   void dispose() {

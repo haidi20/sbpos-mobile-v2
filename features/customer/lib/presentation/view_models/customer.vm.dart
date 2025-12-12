@@ -1,18 +1,17 @@
 import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:customer/domain/usecases/get_customers.usecase.dart';
 import 'package:customer/domain/usecases/delete_customer.usecase.dart';
 import 'package:customer/domain/usecases/create_customer.usecase.dart';
-import 'package:customer/domain/usecases/get_customers.usecase.dart';
 import 'package:customer/domain/usecases/update_customer.usecase.dart';
-import 'package:customer/data/dummies/customer.data.dart';
-import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/presentation/view_models/customer.state.dart';
 
 class CustomerViewModel extends StateNotifier<CustomerState> {
   CustomerViewModel({
+    required GetCustomers getCustomersUsecase,
     required DeleteCustomer deleteCustomerUsecase,
     required CreateCustomer createCustomerUsecase,
     required UpdateCustomer updateCustomerUsecase,
-    required GetCustomers getCustomersUsecase,
   })  : _deleteCustomerUsecase = deleteCustomerUsecase,
         _createCustomerUsecase = createCustomerUsecase,
         _updateCustomerUsecase = updateCustomerUsecase,
@@ -32,20 +31,27 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
 
   // UI mode: list vs form
   // State setters (use `set*` naming)
-  void setIsAdding(bool value) {
-    state = state.copyWith(isAdding: value);
+  void setIsForm(bool value) {
+    state = state.copyWith(isForm: value);
   }
 
   void setDraftCustomer(CustomerEntity customer) {
     _draftCustomer = customer;
   }
 
-  // (startAdd/cancelAdd removed — use `setIsAdding` directly)
+  // (startAdd/cancelAdd removed — use `setIsForm` directly)
 
   // Mulai mode edit: set draft ke customer terpilih dan buka form
   void startEdit(CustomerEntity customer) {
     setDraftCustomer(customer);
-    setIsAdding(true);
+    setIsForm(true);
+  }
+
+  /// UI event handler for tapping "edit" from a sheet/list.
+  /// Moves draft selection into viewmodel and closes the sheet.
+  void onEditCustomer(BuildContext context, CustomerEntity customer) {
+    startEdit(customer);
+    Navigator.of(context).pop();
   }
 
   List<CustomerEntity> get filteredCustomers {
@@ -71,24 +77,8 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
           state = state.copyWith(loading: false, error: failure.message);
         },
         (customers) async {
-          if (customers.isEmpty) {
-            // Seed initialCustomers into local DB
-            for (final c in initialCustomers) {
-              await _createCustomerUsecase(c, isOffline: true);
-            }
-            // Re-fetch after seeding
-            final seeded = await _getCustomersUsecase(isOffline: true);
-            seeded.fold(
-              (failure) {
-                state = state.copyWith(loading: false, error: failure.message);
-              },
-              (seededList) {
-                state = state.copyWith(loading: false, customers: seededList);
-              },
-            );
-          } else {
-            state = state.copyWith(loading: false, customers: customers);
-          }
+          // Repository is responsible for seeding local data; just apply result
+          state = state.copyWith(loading: false, customers: customers);
         },
       );
     } catch (e) {
@@ -143,7 +133,7 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
       },
       (created) {
         final updated = [...state.customers, created];
-        state = state.copyWith(customers: updated, isAdding: false);
+        state = state.copyWith(customers: updated, isForm: false);
         _draftCustomer = const CustomerEntity();
       },
     );
@@ -171,7 +161,7 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
         final updatedList = state.customers
             .map((c) => c.id == updatedEntity.id ? updatedEntity : c)
             .toList();
-        state = state.copyWith(customers: updatedList, isAdding: false);
+        state = state.copyWith(customers: updatedList, isForm: false);
         _draftCustomer = const CustomerEntity();
       },
     );

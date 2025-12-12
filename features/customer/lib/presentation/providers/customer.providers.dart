@@ -7,13 +7,13 @@ import 'package:customer/domain/repositories/customer.repository.dart';
 import 'package:customer/domain/usecases/create_customer.usecase.dart';
 import 'package:customer/domain/usecases/update_customer.usecase.dart';
 import 'package:customer/domain/usecases/delete_customer.usecase.dart';
+import 'package:customer/data/datasources/customer_local.datasource.dart';
 import 'package:customer/data/repositories/customer.repository.impl.dart';
-import 'package:customer/data/datasources/local_customer.datasource.dart';
-import 'package:customer/data/datasources/remote_customer.datasource.dart';
+import 'package:customer/data/datasources/customer_remote.datasource.dart';
 
 // Data source & repository providers (mirror transaction provider style)
-final customerLocalDataSourceProvider = Provider<LocalCustomerDataSource>(
-  (ref) => LocalCustomerDataSource(),
+final customerLocalDataSourceProvider = Provider<CustomerLocalDataSource>(
+  (ref) => CustomerLocalDataSource(),
 );
 
 final customerRemoteDataSourceProvider = Provider<CustomerRemoteDataSource>(

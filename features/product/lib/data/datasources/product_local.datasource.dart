@@ -1,15 +1,15 @@
 import 'package:core/core.dart';
+import 'package:product/data/models/product.model.dart';
 import 'package:core/data/datasources/core_database.dart';
-import 'package:customer/data/models/customer.model.dart';
-import 'package:customer/data/datasources/db/customer.dao.dart';
+import 'package:product/data/datasources/db/product.dao.dart';
 
-class LocalCustomerDataSource with BaseErrorHelper {
+class ProductLocalDataSource with BaseErrorHelper {
   final CoreDatabase databaseHelper = CoreDatabase();
   final Database? _testDb;
-  final _logger = Logger('LocalCustomerDataSource');
+  final _logger = Logger('ProductLocalDataSource');
   final bool isShowLog = false;
 
-  LocalCustomerDataSource({Database? testDb}) : _testDb = testDb;
+  ProductLocalDataSource({Database? testDb}) : _testDb = testDb;
 
   void _logInfo(String msg) {
     if (isShowLog) _logger.info(msg);
@@ -39,106 +39,106 @@ class LocalCustomerDataSource with BaseErrorHelper {
   }
 
   @visibleForTesting
-  CustomerDao createDao(Database db) => CustomerDao(db);
+  ProductDao createDao(Database db) => ProductDao(db);
 
-  Future<List<CustomerModel>> getCustomers() async {
+  Future<List<ProductModel>> getProducts({int? limit, int? offset}) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat getCustomers');
+        _logWarning('Database null saat getProducts');
         return [];
       }
       final dao = createDao(db);
-      final result = await dao.getCustomers();
-      _logInfo('getCustomers: count=${result.length}');
+      final result = await dao.getProducts(limit: limit, offset: offset);
+      _logInfo('getProducts: count=${result.length}');
       return result;
     } catch (e, st) {
-      _logSevere('Error getCustomers', e, st);
+      _logSevere('Error getProducts', e, st);
       rethrow;
     }
   }
 
-  Future<CustomerModel?> getCustomerById(int id) async {
+  Future<ProductModel?> getProductById(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat getCustomerById');
+        _logWarning('Database null saat getProductById');
         return null;
       }
       final dao = createDao(db);
-      return await dao.getCustomerById(id);
+      return await dao.getProductById(id);
     } catch (e, st) {
-      _logSevere('Error getCustomerById', e, st);
+      _logSevere('Error getProductById', e, st);
       rethrow;
     }
   }
 
-  Future<CustomerModel?> insertCustomer(CustomerModel customer) async {
+  Future<ProductModel?> insertProduct(ProductModel model) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat insertCustomer');
+        _logWarning('Database null saat insertProduct');
         return null;
       }
       final dao = createDao(db);
-      final map = sanitizeForDb(customer.toInsertDbLocal());
+      final map = sanitizeForDb(model.toInsertDbLocal());
       final inserted =
-          await _withRetry(() async => await dao.insertCustomer(map));
-      _logInfo('insertCustomer: id=${inserted.id}');
+          await _withRetry(() async => await dao.insertProduct(map));
+      _logInfo('insertProduct: id=${inserted.id}');
       return inserted;
     } catch (e, st) {
-      _logSevere('Error insertCustomer', e, st);
+      _logSevere('Error insertProduct', e, st);
       rethrow;
     }
   }
 
-  Future<int> updateCustomer(Map<String, dynamic> data) async {
+  Future<int> updateProduct(Map<String, dynamic> data) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat updateCustomer');
+        _logWarning('Database null saat updateProduct');
         return 0;
       }
       final dao = createDao(db);
       final map = sanitizeForDb(Map<String, dynamic>.from(data));
       if (data.containsKey('id')) map['id'] = data['id'];
-      final updated = await dao.updateCustomer(map);
-      _logInfo('updateCustomer: rows=$updated');
+      final updated = await dao.updateProduct(map);
+      _logInfo('updateProduct: rows=$updated');
       return updated;
     } catch (e, st) {
-      _logSevere('Error updateCustomer', e, st);
+      _logSevere('Error updateProduct', e, st);
       rethrow;
     }
   }
 
-  Future<int> deleteCustomer(int id) async {
+  Future<int> deleteProduct(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat deleteCustomer');
+        _logWarning('Database null saat deleteProduct');
         return 0;
       }
       final dao = createDao(db);
-      final count = await dao.deleteCustomer(id);
-      _logInfo('deleteCustomer: rows=$count');
+      final count = await dao.deleteProduct(id);
+      _logInfo('deleteProduct: rows=$count');
       return count;
     } catch (e, st) {
-      _logSevere('Error deleteCustomer', e, st);
+      _logSevere('Error deleteProduct', e, st);
       rethrow;
     }
   }
 
-  Future<int> clearCustomers() async {
+  Future<int> clearProducts() async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat clearCustomers');
+        _logWarning('Database null saat clearProducts');
         return 0;
       }
       final dao = createDao(db);
-      return await dao.clearCustomers();
+      return await dao.clearProducts();
     } catch (e, st) {
-      _logSevere('Error clearCustomers', e, st);
+      _logSevere('Error clearProducts', e, st);
       rethrow;
     }
   }

@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/category.entity.dart';
 
 const List<CategoryEntity> categories = [
   CategoryEntity(

@@ -1,5 +1,6 @@
-import 'category_entity.dart';
-import 'package:product/data/models/product_model.dart';
+import 'package:product/data/models/product.model.dart';
+
+import 'category.entity.dart';
 
 class ProductEntity {
   final int? id;

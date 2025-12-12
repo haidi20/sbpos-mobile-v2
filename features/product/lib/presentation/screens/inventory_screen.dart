@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:product/data/dummies/inventory.data.dart';
-import 'package:product/data/models/inventory_model.dart';
+import 'package:product/data/models/inventory.model.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});

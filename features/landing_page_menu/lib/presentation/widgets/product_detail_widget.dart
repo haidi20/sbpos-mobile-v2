@@ -1,6 +1,6 @@
 // Contoh model sederhana
 import 'package:core/core.dart';
-import 'package:product/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:landing_page_menu/presentation/controllers/landing_page_menu_controller.dart';
 
 class ProductDetailWidget extends ConsumerStatefulWidget {

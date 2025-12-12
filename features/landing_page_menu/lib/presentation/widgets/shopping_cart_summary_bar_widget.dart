@@ -1,6 +1,5 @@
 import 'package:core/core.dart';
-import 'package:landing_page_menu/landing_page_menu.dart';
-// import 'package:landing_page_menu/presentation/controllers/landing_page_menu_controller.dart';
+import 'package:landing_page_menu/presentation/providers/landing_page_menu_provider.dart';
 
 class ShoppingCartSummaryBarWidget extends ConsumerStatefulWidget {
   const ShoppingCartSummaryBarWidget({

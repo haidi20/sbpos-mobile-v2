@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 
 class ProductManagementCard extends StatelessWidget {
   final bool isActive;

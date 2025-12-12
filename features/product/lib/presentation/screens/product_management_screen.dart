@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 import 'package:product/data/dummies/product.data.dart';
 import 'package:product/data/dummies/category.data.dart';
-import 'package:product/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/presentation/components/product_management_card.dart';
 import 'package:product/presentation/screens/product_management_form_screen.dart';
 

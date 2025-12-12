@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
@@ -7,7 +8,6 @@ import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
-import 'package:product/domain/entities/product_entity.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 
 class FakeRepo implements TransactionRepository {

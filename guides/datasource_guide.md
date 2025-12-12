@@ -1,211 +1,385 @@
-# Panduan DataSource: Transaction
+**Panduan Datasource (Transaction)**
 
-Panduan ini mendokumentasikan perilaku DataSource dan Repository untuk fitur Transaction berdasarkan implementasi aktual di kode:
-- `features/transaction/lib/data/repositories/transaction.repository_impl.dart`
-- `features/transaction/lib/data/datasources/**`
+Tujuan: panduan ini menyediakan template file dan contoh kode untuk struktur datasource fitur `transaction`. Salin template ke file yang sesuai dan sesuaikan model/DAO/repository Anda.
 
-Dokumen ini fokus pada: skema tabel lokal, perilaku DAO, kontrak Local/Remote Data Source, serta alur Repository termasuk mode offline/online dan aturan sinkronisasi.
+Struktur yang didokumentasikan:
 
----
+datasources
+├── db
+│   ├── transaction.dao.dart
+│   └── transaction.table.dart
+├── transaction_local.data_source.dart
+└── transaction_remote.data_source.dart
 
-### 1. Struktur Tabel Lokal (SQLite)
+Catatan umum:
+- Gunakan `TransactionModel` untuk mapping JSON/DB.
+- DAO (`transaction.dao.dart`) adalah kontrak untuk operasi DB lokal.
+- `transaction.table.dart` menyimpan nama tabel, kolom, SQL create statements, serta fungsi dari/ke `Map<String, dynamic>`.
+- `transaction_local.data_source.dart` memanggil `TransactionDao` dan mengekspor fungsi helper.
+- `transaction_remote.data_source.dart` berisi panggilan API (response parsing) dan kelas response sederhana.
 
-Tabel utama dan detail, sesuai file definisi:
+1) db/transaction.dao.dart
 
-- `db/transaction.table.dart` (tabel: `transactions`) *tergantung model yang ingin dibuat
-	- Kolom: `id`, `id_server`, `shift_id`, `outlet_id`, `sequence_number`, `order_type_id`, `category_order`, `user_id`, `payment_method`, `date`, `notes`, `total_amount`, `total_qty`, `paid_amount`, `change_money`, `status`, `cancelation_otp`, `cancelation_reason`, `created_at`, `updated_at`, `deleted_at`, `synced_at`.
-- `db/transaction_detail.table.dart` (tabel: `transaction_details`)
-	- Kolom: `id`, `id_server`, `transaction_id`, `product_id`, `product_name`, `product_price`, `qty`, `subtotal`, `created_at`, `updated_at`, `deleted_at`, `synced_at`, `note`.
-
-Catatan:
-- Default status lokal untuk transaksi baru adalah `'Pending'` (lihat DAO dan model).
-- `synced_at` bertipe teks ISO8601 dan boleh `NULL`.
-
----
-
-### 2. Remote Data Source
-
-File: `transaction_remote_data_source.dart`
-
-- Base URL: `'$HOST/$API'` (variabel `HOST` dan `API` dari `core`).
-- Endpoints & method:
-	- GET `.../transactions` → `fetchTransactions({params})` → `TransactionResponse`.
-	- POST `.../transactions` → `postTransaction(payload)` → `TransactionResponse`.
-	- GET `.../transactions/:id` → `getTransaction(id)` → `TransactionResponse`.
-	- PUT `.../transactions/:id` → `updateTransaction(id, payload)` → `TransactionResponse`.
-	- DELETE `.../transactions/:id` → `deleteTransaction(id)` → `TransactionResponse`.
-- Semua request dibungkus `handleApiResponse` dari `core` dan respons didecode via `TransactionResponse.fromJson`.
-
----
-
-### 3. Local Data Source
-
-File: `transaction_local_data_source.dart`
-
-Kontrak & perilaku penting:
-- `getTransactions()` → `List<TransactionModel>`; mapping termasuk detail.
-- `getTransactionById(int id)` → `TransactionModel?`.
-- `getLatestTransaction()` → `TransactionModel?` (urut `created_at DESC LIMIT 1`).
-- `insertTransaction(TransactionModel)` → `TransactionModel?`
-	- Melalui DAO, memaksa `synced_at = NULL` untuk insert pertama kali.
-	- Menjaga default `status = 'Pending'` bila tidak terisi.
-- `insertSyncTransaction(TransactionModel)` → `TransactionModel?`
-	- Insert transaksi dan seluruh `details` secara atomik (single DB transaction).
-- `insertDetails(List<TransactionDetailModel>)` → `List<TransactionDetailModel>?`
-	- Jika sudah ada detail dengan pasangan `(transaction_id, product_id)`, maka: `qty` dijumlah, `subtotal` dihitung ulang = `price * qtyBaru`, `updated_at` diupdate.
-- `deleteDetailsByTransactionId(int)` → `int` (jumlah row terhapus).
-- `updateTransaction(Map<String, dynamic>)` → `int` (affected rows)
-	- Input diproses `sanitizeForDb` untuk menghapus `null` values.
-	- Kunci `id` tetap dipertahankan sebagai filter `WHERE id = ?` di DAO.
-- `deleteTransaction(int)` → `int`.
-
-Utility:
-- `sanitizeForDb(Map)` dari mixin `BaseErrorHelper` (core) dipakai untuk memastikan map siap untuk DB (menghapus `null`, format tanggal ISO, dll.).
-- `_withRetry` melakukan retry ringan untuk error transien.
-
----
-
-### 4. DAO (Database Access Object)
-
-File: `db/transaction.dao.dart`
-
-Metode utama dan aturan:
-- `getTransactions()`
-	- Query semua baris `transactions`, lalu ambil `transaction_details` per transaksi, kembalikan `TransactionModel` lengkap dengan `details`.
-- `getTransactionById(int id)` → data + details untuk `id` tertentu.
-- `getLatestTransaction()` → baris terbaru (urut `created_at` desc) lengkap dengan details.
-- `insertTransaction(Map tx)`
-	- Memastikan `tx['synced_at'] = NULL` saat insert pertama kali.
-	- Membersihkan `null` keys; default `status = 'Pending'` bila kosong.
-	- Mengembalikan `TransactionModel` tanpa details (details bisa diinsert terpisah).
-- `insertSyncTransaction(Map tx, List<Map> details)`
-	- Insert transaksi dan setiap detail (memastikan `transaction_id` terisi) dalam 1 transaksi DB.
-	- Default `status = 'Pending'` bila kosong.
-- `updateTransaction(Map tx)`
-	- Menghapus `id` dari map update (digunakan hanya di clause `WHERE`).
-- `deleteTransaction(int id)`, `clearTransactions()`.
-- `getDetailsByTransactionId(int)`, `insertDetails(List<Map>)`, `deleteDetailsByTransactionId(int)`
-	- `insertDetails`: bila ada baris existing untuk `(transaction_id, product_id)`, maka update baris existing: `qty` dijumlah, `subtotal = price * qtyBaru`, set `updated_at = now`.
-
----
-
-### 5. ketika isOffline, isConnected == false, dan ketika gagal kirim remote saat create dan update
-
-Wajib memastikan kolom `synced_at` menjadi `NULL` pada record transaksi lokal untuk menandakan data belum tersinkron ke server. Ketentuan ini berlaku pada skenario:
-- `isOffline == true` (pemanggil memaksa mode offline).
-- Perangkat tidak terhubung internet (`isConnected == false`).
-- Gagal mengirim ke remote (exception server/jaringan) saat operasi `create` atau `update`.
-
-Rasional & implementasi aktual:
-- Insert lokal pertama lewat DAO sudah memaksa `synced_at = NULL` (`insertTransaction`).
-- Pada `setTransaction/createTransaction`:
-	- Insert lokal dilakukan terlebih dahulu (hasil `synced_at = NULL`).
-	- Jika online dan create ke server sukses, baris lokal diupdate dengan `id_server` dan `synced_at = now()`; bila gagal, tetap biarkan `synced_at = NULL`.
-- Pada `updateTransaction`:
-	- Update lokal dilakukan dahulu. Jika offline/tidak terhubung/gagal update remote, kembalikan data lokal apa adanya. Untuk konsistensi sinkronisasi, kebijakan proyek ini mengharuskan `synced_at` dipastikan `NULL` pada kondisi gagal sinkron ini.
-
-Checklist penerapan (saat menambah/ubah kode):
-- Ketika path eksekusi berakhir di fallback lokal (offline/failed remote), jangan set `synced_at` ke nilai waktu; biarkan `NULL` atau set eksplisit ke `NULL` via `updateTransaction`.
-- Hanya set `synced_at = now()` setelah respons remote sukses dan data lokal telah diperbarui.
-
-API pendukung yang dipakai di kode (Transaction):
-- DAO: `TransactionDao.clearSyncedAt(int id)` → raw SQL `UPDATE ... SET synced_at = NULL WHERE id = ?`.
-- Local DS: `TransactionLocalDataSource.clearSyncedAt(int id)` → membungkus pemanggilan DAO.
-- Repository: di `updateTransaction(...)`, `clearSyncedAt` dipanggil pada tiga kondisi (offline, tidak ada koneksi, gagal remote) untuk menjamin `synced_at` benar-benar `NULL`.
-- Catatan untuk create: insert pertama melalui DAO sudah memaksa `synced_at = NULL`, sehingga tidak perlu pemanggilan eksplisit `clearSyncedAt` pada jalur gagal/offline.
-
----
-
-### 6. Alur di Repository
-
-File: `transaction.repository_impl.dart`
-
-Ringkasan alur per operasi:
-
-- `getDataTransactions({isOffline})`
-	- Jika `isOffline == true` → langsung ambil lokal (return list meskipun kosong).
-	- Cek koneksi. Jika online: GET remote → bila sukses dan ada data, simpan per item ke lokal via `local.insertTransaction` dan kembalikan Entity hasil simpan; jika gagal/empty → fallback ke lokal.
-	- Jika offline/tidak terhubung → fallback ke lokal.
-
-- `createTransaction(transaction, {isOffline})` / `setTransaction(...)`
-	- Insert lokal lebih dulu (`insertTransaction`) → detail disimpan (mapping `transaction_id` lokal).
-	- Jika `isOffline == true` → return hasil lokal langsung (tanpa sync).
-	- Jika online: POST → bila sukses, update lokal: set `id_server` dan `synced_at = now()`; bila gagal exception/invalid response → kembalikan hasil lokal (tetap `synced_at = NULL`).
-
-- `getTransaction(id, {isOffline})`
-	- Offline/forced offline → ambil lokal.
-	- Online → GET remote; bila sukses, simpan sinkron ke lokal (`insertSyncTransaction`) dan return; bila gagal → fallback ke lokal.
-
-- `getLatestTransaction({isOffline})`
-	- Offline/forced offline → ambil lokal latest.
-	- Online → GET list remote, pilih terbaru berdasar `created_at` desc; coba simpan sinkron ke lokal; return yang terbaru.
-
-- `updateTransaction(transaction, {isOffline})`
-	- Jika `id` lokal null → delegasikan ke `setTransaction` (treat as create) agar pasti ada baris lokal.
-	- Update lokal terlebih dulu; replace details: hapus semua by `transaction_id`, lalu `insertDetails` baru.
-	- Offline/forced offline → return lokal.
-	- Cek koneksi: jika offline → return lokal.
-	- Jika `id_server` null → treat as create (POST) via `createTransaction`.
-	- Jika online: PUT remote → ketika sukses, update lokal `id_server` dan `synced_at = now()`; bila gagal exception/invalid response → panggil `local.clearSyncedAt(id)` lalu return lokal (memastikan `synced_at = NULL` sesuai aturan di Bagian 5).
-
-Catatan konsistensi lintas modul:
-- Fitur Customer menerapkan aturan yang sama: pada create/update ketika offline, tidak ada koneksi, atau gagal remote → `synced_at` dijamin `NULL` (melalui insert awal yang men-NULL-kan atau pemanggilan `clearSyncedAt`).
-
-- `deleteTransaction(id, {isOffline})`
-	- Selalu hapus lokal terlebih dahulu, lalu:
-		- Offline/forced offline → return `true`.
-		- Online → coba DELETE remote; apapun hasilnya, return `true` (optimistic deletion).
-
----
-
-### 7. Catatan Implementasi
-
-- `TransactionModel.toInsertDbLocal()` dan `TransactionDetailModel.toInsertDbLocal()` memasukkan nilai tanggal sebagai ISO string; `change_money` dipastikan non-null (0) dan `status` disimpan sebagai string (`'Pending'|'Lunas'|'Batal'`).
-- DAO menghapus `null` key sebelum operasi insert/update agar schema konsisten.
-- `insertDetails` menggunakan logika upsert sederhana berdasarkan `(transaction_id, product_id)` untuk menjumlah `qty` dan menghitung ulang `subtotal`.
-
-### 8. Catatan Tambahan: Aturan id vs idServer (Local vs Server)
-
-Definisi singkat:
-- **`id` (lokal)**: Primary key di SQLite (autoincrement). Hanya berlaku di perangkat.
-- **`idServer` (remote)**: Identifier dari server (API). Dipakai saat kirim/ambil data ke/dari server.
-
-Aturan mapping yang wajib diikuti:
-- fromJson (data dari server → model lokal)
-	- `idServer = _toInt(json['id'])` (atau `json['id_server']` bila API mengembalikan field tersebut)
-	- `id` TIDAK diisi dari JSON server. Biarkan `id` (lokal) dikelola SQLite saat insert.
-
-- toJson (model → payload ke server)
-	- `id = idServer` (field `id` di payload harus berisi id server, bukan id lokal)
-	- `id_server = idServer` (opsional; isi jika backend juga menerima/menyimpan kolom ini)
-
-Contoh implementasi minimal pada Model:
+Contoh (kelas konkret — tidak perlu abstrak):
 
 ```dart
-factory XModel.fromJson(Map<String, dynamic> json) => XModel(
-	// id lokal sengaja tidak diisi dari server
-	idServer: _toInt(json['id'] ?? json['id_server']),
-	// .. field lain
-);
+import 'package:core/core.dart';
+import 'package:transaction/data/models/transaction.model.dart';
+import 'package:transaction/data/datasources/db/transaction.table.dart';
 
-Map<String, dynamic> toJson() => {
-	// saat kirim, gunakan idServer sebagai id
-	'id': idServer,
-	'id_server': idServer, // jika API juga memakai id_server
-	// .. field lain
-};
+class TransactionDao {
+  final Database database;
+  final _logger = Logger('TransactionDao');
+  final bool isShowLog = false;
+
+  TransactionDao(this.database);
+
+  Future<List<TransactionModel>> getTransactions({int? limit, int? offset}) async {
+    final rows = await database.query(
+      TransactionTable.tableName,
+      limit: limit,
+      offset: offset,
+    );
+    return rows.map((r) => TransactionModel.fromDbLocal(r)).toList();
+  }
+
+  Future<TransactionModel?> getTransactionById(int id) async {
+    final rows = await database.query(
+      TransactionTable.tableName,
+      where: '${TransactionTable.colId} = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return TransactionModel.fromDbLocal(rows.first);
+  }
+
+  Future<TransactionModel> insertTransaction(Map<String, dynamic> data) async {
+    return await database.transaction((txn) async {
+      final id = await txn.insert(TransactionTable.tableName, data);
+      final inserted = await txn.query(
+        TransactionTable.tableName,
+        where: '${TransactionTable.colId} = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      return TransactionModel.fromDbLocal(inserted.first);
+    });
+  }
+
+  Future<int> updateTransaction(Map<String, dynamic> map) async {
+    final id = map['id'];
+    final cleaned = Map<String, dynamic>.from(map)..remove('id');
+    return await database.update(
+      TransactionTable.tableName,
+      cleaned,
+      where: '${TransactionTable.colId} = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteTransaction(int id) async {
+    return await database.delete(
+      TransactionTable.tableName,
+      where: '${TransactionTable.colId} = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> clearSyncedAt(int id) async {
+    return await database.rawUpdate(
+      'UPDATE ${TransactionTable.tableName} SET ${TransactionTable.colSyncedAt} = NULL WHERE ${TransactionTable.colId} = ?',
+      [id],
+    );
+  }
+}
 ```
 
-Implikasi pada alur create/update:
-- Create lokal (offline/awal):
-	- Insert ke DB dengan `id = null` (autoincrement), `idServer = null`, dan `synced_at = NULL` (belum tersinkron).
-- Create remote sukses:
-	- Update baris lokal: set `id_server` dari respons server dan `synced_at = now()`.
-- Update ke server:
-	- Wajib punya `idServer` (jika `idServer == null`, treat as create). Payload kirim `'id': idServer`.
-- Gagal kirim (offline / no-connection / server error):
-	- Pastikan `synced_at = NULL` pada baris lokal (gunakan helper `clearSyncedAt`).
+2) db/transaction.table.dart
 
----
+Contoh format tabel yang konsisten (meniru `CustomerTable` style):
 
-Dokumen ini bersifat sumber rujukan baku untuk pengembangan Transaction DataSource & Repository. Jika ada perubahan kode, mohon sinkronkan panduan ini agar selalu konsisten dengan implementasi.
+```dart
+class TransactionTable {
+  static const String tableName = 'transactions';
+
+  static const String colId = 'id';
+  static const String colIdServer = 'id_server';
+  static const String colTotal = 'total';
+  static const String colCreatedAt = 'created_at';
+  static const String colSyncedAt = 'synced_at';
+  static const String colUpdatedAt = 'updated_at';
+  static const String colDeletedAt = 'deleted_at';
+
+  static const String createTableQuery = '''
+    CREATE TABLE $tableName (
+      $colId INTEGER PRIMARY KEY,
+      $colIdServer INTEGER,
+      $colTotal REAL,
+      $colCreatedAt TEXT NULL,
+      $colSyncedAt TEXT NULL,
+      $colUpdatedAt TEXT NULL,
+      $colDeletedAt TEXT NULL
+    )
+  ''';
+}
+```
+
+3) transaction_local.data_source.dart
+
+4) transaction_local.data_source.dart
+
+Contoh sesuai pola `CustomerLocalDataSource` (sesuaikan nama paket & model):
+
+```dart
+import 'package:core/core.dart';
+import 'package:core/data/datasources/core_database.dart';
+import 'package:transaction/data/models/transaction.model.dart';
+import 'package:transaction/data/datasources/db/transaction.dao.dart';
+
+class TransactionLocalDataSource with BaseErrorHelper {
+  final CoreDatabase databaseHelper = CoreDatabase();
+  final Database? _testDb;
+  final _logger = Logger('TransactionLocalDataSource');
+  final bool isShowLog = false;
+
+  TransactionLocalDataSource({Database? testDb}) : _testDb = testDb;
+
+  void _logInfo(String msg) {
+    if (isShowLog) _logger.info(msg);
+  }
+
+  void _logWarning(String msg) {
+    if (isShowLog) _logger.warning(msg);
+  }
+
+  void _logSevere(String msg, [Object? e, StackTrace? st]) {
+    if (isShowLog) _logger.severe(msg, e, st);
+  }
+
+  Future<T> _withRetry<T>(Future<T> Function() action,
+      {int retries = 3,
+      Duration delay = const Duration(milliseconds: 50)}) async {
+    var attempt = 0;
+    while (true) {
+      try {
+        return await action();
+      } catch (_) {
+        attempt++;
+        if (attempt >= retries) rethrow;
+        await Future.delayed(delay);
+      }
+    }
+  }
+
+  @visibleForTesting
+  TransactionDao createDao(Database db) => TransactionDao(db);
+
+  Future<List<TransactionModel>> getTransactions({int? limit, int? offset}) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat getTransactions');
+        return [];
+      }
+      final dao = createDao(db);
+      final result = await dao.getTransactions(limit: limit, offset: offset);
+      _logInfo('getTransactions: count=${result.length}');
+      return result;
+    } catch (e, st) {
+      _logSevere('Error getTransactions', e, st);
+      rethrow;
+    }
+  }
+
+  Future<TransactionModel?> getTransactionById(int id) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat getTransactionById');
+        return null;
+      }
+      final dao = createDao(db);
+      return await dao.getTransactionById(id);
+    } catch (e, st) {
+      _logSevere('Error getTransactionById', e, st);
+      rethrow;
+    }
+  }
+
+  Future<TransactionModel?> insertTransaction(TransactionModel txn) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat insertTransaction');
+        return null;
+      }
+      final dao = createDao(db);
+      final map = sanitizeForDb(txn.toInsertDbLocal());
+      final inserted =
+          await _withRetry(() async => await dao.insertTransaction(map));
+      _logInfo('insertTransaction: id=${inserted.id}');
+      return inserted;
+    } catch (e, st) {
+      _logSevere('Error insertTransaction', e, st);
+      rethrow;
+    }
+  }
+
+  Future<int> updateTransaction(Map<String, dynamic> data) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat updateTransaction');
+        return 0;
+      }
+      final dao = createDao(db);
+      final map = sanitizeForDb(Map<String, dynamic>.from(data));
+      if (data.containsKey('id')) map['id'] = data['id'];
+      final updated = await dao.updateTransaction(map);
+      _logInfo('updateTransaction: rows=$updated');
+      return updated;
+    } catch (e, st) {
+      _logSevere('Error updateTransaction', e, st);
+      rethrow;
+    }
+  }
+
+  Future<int> deleteTransaction(int id) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat deleteTransaction');
+        return 0;
+      }
+      final dao = createDao(db);
+      final count = await dao.deleteTransaction(id);
+      _logInfo('deleteTransaction: rows=$count');
+      return count;
+    } catch (e, st) {
+      _logSevere('Error deleteTransaction', e, st);
+      rethrow;
+    }
+  }
+
+  Future<int> clearTransactions() async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat clearTransactions');
+        return 0;
+      }
+      final dao = createDao(db);
+      return await dao.clearTransactions();
+    } catch (e, st) {
+      _logSevere('Error clearTransactions', e, st);
+      rethrow;
+    }
+  }
+
+  Future<int> clearSyncedAt(int id) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat clearSyncedAt');
+        return 0;
+      }
+      final dao = createDao(db);
+      final count = await dao.clearSyncedAt(id);
+      _logInfo('clearSyncedAt: rows=$count');
+      return count;
+    } catch (e, st) {
+      _logSevere('Error clearSyncedAt', e, st);
+      rethrow;
+    }
+  }
+}
+```
+
+5) transaction_remote.data_source.dart
+
+Contoh minimal (sesuaikan klien HTTP yang dipakai):
+
+```dart
+// Response wrapper for transaction
+import 'package:core/core.dart';
+import 'package:transaction/data/models/transaction.model.dart';
+import 'package:transaction/data/responses/transaction.response.dart';
+
+class TransactionRemoteDataSource with BaseErrorHelper {
+  final String host;
+  final String api;
+  final ApiHelper _apiHelper;
+
+  TransactionRemoteDataSource({
+    String? host,
+    String? api,
+    ApiHelper? apiHelper,
+  })  : host = host ?? HOST,
+        api = api ?? API,
+        _apiHelper = apiHelper ?? ApiHelper();
+
+  Future<TransactionResponse> fetchTransactions({Map<String, dynamic>? params}) async {
+    final response = await handleApiResponse(
+      () async =>
+          _apiHelper.get(url: '$host/$api/transactions', params: params ?? {}),
+    );
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  /// Kirim transaksi ke API remote. Mengembalikan respons ter-decode.
+  Future<TransactionResponse> postTransaction(Map<String, dynamic> payload) async {
+    final response = await handleApiResponse(
+      () async =>
+          _apiHelper.post(url: '$host/$api/transactions', body: payload),
+    );
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  Future<TransactionResponse> getTransaction(int id) async {
+    final response = await handleApiResponse(
+      () async => _apiHelper.get(url: '$host/$api/transactions/$id'),
+    );
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  Future<TransactionResponse> updateTransaction(int id, Map<String, dynamic> payload) async {
+    final response = await handleApiResponse(
+      () async => _apiHelper.put(url: '$host/$api/transactions/$id', body: payload),
+    );
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  Future<TransactionResponse> deleteTransaction(int id) async {
+    final response = await handleApiResponse(
+      () async => _apiHelper.delete(url: '$host/$api/transactions/$id'),
+    );
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return TransactionResponse.fromJson(decoded);
+  }
+
+  // _writeResponseToFile removed — tidak digunakan
+}
+```
+
+Panduan penggunaan singkat:
+- Letakkan file-file di path yang dinyatakan.
+- Buat implementasi `TransactionDao` di layer `data/datasources/db/` yang menggunakan sqlite/sqflite.
+- Override provider datasource/repository di composition root (`main.dart`) agar provider di `presentation/providers` dapat membaca instance nyata.
+- Pastikan model (`TransactionModel`) punya `fromJson`, `toJson`, `toInsertDbLocal()` dan `fromDbLocal()` bila diperlukan.
+
+Lokasi file response (filesystem):
+
+- Buat file response untuk transaksi pada path absolut berikut:
+
+  D:\projects\sbpos_mobile_v2\features\transaction\lib\data\responses\transaction.response.dart
+
+  File ini harus berisi kelas `TransactionResponse` dengan format `success`, `message`, dan `data` (list `TransactionModel`), seperti contoh pada bagian `transaction_remote.data_source.dart`.
+
+Jika Anda ingin, saya bisa: 1) buatkan template file `transaction.dao.dart`/`transaction.table.dart` langsung di repo, atau 2) membuat contoh implementasi DAO dengan `sqflite`. Pilih opsi mana?

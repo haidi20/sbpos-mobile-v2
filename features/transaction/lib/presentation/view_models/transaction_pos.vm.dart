@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/product_entity.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';

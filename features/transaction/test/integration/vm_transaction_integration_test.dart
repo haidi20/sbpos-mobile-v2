@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 // sqlite_api re-exported by sqflite_common_ffi
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
@@ -11,7 +12,6 @@ import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
-import 'package:product/domain/entities/product_entity.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 
 class FakeRemote extends TransactionRemoteDataSource {

@@ -1,9 +1,8 @@
 // ViewModel for landing_page_menu
 import 'package:core/core.dart';
-import 'package:product/domain/entities/category_entity.dart';
-import 'package:product/domain/entities/product_entity.dart';
-import 'package:landing_page_menu/domain/usecases/get_products.dart';
-import 'package:landing_page_menu/data/datasources/data/category_product_data.dart';
+import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/domain/entities/category.entity.dart';
+import 'package:product/domain/usecases/get_products.usecase.dart';
 
 class LandingPageMenuState {
   final String? error;
@@ -19,7 +18,7 @@ class LandingPageMenuState {
     this.isLoading = false,
     this.products = const [],
     this.itemSelectedCount = 0,
-    this.categoryMenuData = CategoryProductData.data,
+    this.categoryMenuData = const [],
   });
 
   LandingPageMenuState copyWith({

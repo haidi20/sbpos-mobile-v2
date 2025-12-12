@@ -28,7 +28,7 @@ class CustomerSheet {
                 final state = ref.watch(customerViewModelProvider);
                 final vm = ref.read(customerViewModelProvider.notifier);
 
-                if (state.isAdding) {
+                if (state.isForm) {
                   // Show form with a back button to return to list
                   return Column(
                     children: [
@@ -51,7 +51,7 @@ class CustomerSheet {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.arrow_back),
-                              onPressed: () => vm.setIsAdding(false),
+                              onPressed: () => vm.setIsForm(false),
                               tooltip: 'Kembali',
                             ),
                             const SizedBox(width: 4),

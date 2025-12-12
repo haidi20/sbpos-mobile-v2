@@ -1,25 +1,23 @@
 import 'package:product/data/models/product.model.dart';
 
-class LandingPageMenuResponse {
+class ProductResponse {
   final bool success;
   final String message;
   final List<ProductModel>? data;
 
-  LandingPageMenuResponse({
+  ProductResponse({
     required this.success,
     required this.message,
     this.data,
   });
 
-  factory LandingPageMenuResponse.fromJson(Map<String, dynamic> json) {
-    return LandingPageMenuResponse(
+  factory ProductResponse.fromJson(Map<String, dynamic> json) {
+    return ProductResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      data: json['data'] != null
-          ? (json['data'] as List)
-              .map((item) => ProductModel.fromJson(item))
-              .toList()
-          : null,
+      data: (json['data'] as List<dynamic>?)
+          ?.map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
+          .toList(),
     );
   }
 

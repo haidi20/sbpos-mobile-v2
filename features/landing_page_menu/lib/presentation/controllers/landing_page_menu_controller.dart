@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/product_entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:landing_page_menu/presentation/widgets/product_detail_widget.dart';
 
 class LandingPageMenuController {

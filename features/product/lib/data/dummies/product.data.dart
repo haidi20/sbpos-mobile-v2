@@ -1,5 +1,5 @@
-import 'package:product/domain/entities/product_entity.dart';
-import 'package:product/domain/entities/category_entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/domain/entities/category.entity.dart';
 
 const List<ProductEntity> initialProducts = [
   ProductEntity(

@@ -1,4 +1,4 @@
-import 'package:product/data/models/inventory_model.dart';
+import 'package:product/data/models/inventory.model.dart';
 
 final List<InventoryItem> inventoryList = [
   InventoryItem(

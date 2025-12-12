@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import 'package:landing_page_menu/landing_page_menu.dart';
 import 'package:landing_page_menu/presentation/components/product_card.dart';
+import 'package:landing_page_menu/presentation/providers/landing_page_menu_provider.dart';
 import 'package:landing_page_menu/presentation/widgets/landing_page_menu_add_widget.dart';
 import 'package:landing_page_menu/presentation/widgets/shopping_cart_summary_bar_widget.dart';
 

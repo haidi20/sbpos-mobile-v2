@@ -5,7 +5,7 @@ class CustomerState {
   final List<CustomerEntity> customers;
   final CustomerEntity? selectedCustomer;
   final String? error;
-  final bool isAdding;
+  final bool isForm;
   final String? searchQuery;
 
   const CustomerState({
@@ -13,7 +13,7 @@ class CustomerState {
     this.customers = const [],
     this.selectedCustomer,
     this.error,
-    this.isAdding = false,
+    this.isForm = false,
     this.searchQuery = '',
   });
 
@@ -21,14 +21,14 @@ class CustomerState {
     bool? loading,
     String? error,
     List<CustomerEntity>? customers,
-    bool? isAdding,
+    bool? isForm,
     String? searchQuery,
   }) =>
       CustomerState(
         loading: loading ?? this.loading,
         customers: customers ?? this.customers,
         error: error ?? this.error,
-        isAdding: isAdding ?? this.isAdding,
+        isForm: isForm ?? this.isForm,
         searchQuery: searchQuery ?? this.searchQuery,
       );
 
@@ -38,7 +38,7 @@ class CustomerState {
       customers: [],
       selectedCustomer: null,
       error: null,
-      isAdding: false,
+      isForm: false,
       searchQuery: null,
     );
   }
@@ -52,14 +52,14 @@ extension CustomerStateClearX on CustomerState {
     bool clearSelectedCustomer = false,
     bool clearSearchQuery = false,
     bool resetLoading = false,
-    bool resetIsAdding = false,
+    bool resetIsForm = false,
   }) {
     return CustomerState(
       loading: resetLoading ? false : loading,
       customers: clearCustomers ? const [] : customers,
       selectedCustomer: clearSelectedCustomer ? null : selectedCustomer,
       error: clearError ? null : error,
-      isAdding: resetIsAdding ? false : isAdding,
+      isForm: resetIsForm ? false : isForm,
       searchQuery: clearSearchQuery ? null : searchQuery,
     );
   }
