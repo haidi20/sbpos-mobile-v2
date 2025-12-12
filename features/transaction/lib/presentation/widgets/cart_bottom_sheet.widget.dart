@@ -14,15 +14,6 @@ Widget buildHeader({
     padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
     child: Column(
       children: [
-        Container(
-          width: 48,
-          height: 6,
-          decoration: BoxDecoration(
-            color: AppColors.gray300,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -406,14 +397,7 @@ Widget buildSummaryBottom({
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      'Transaksi Berhasil!\nTotal: ${formatRupiah(controller.finalTotal)}'),
-                ),
-              );
               viewModel.onShowMethodPayment();
-              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.sbOrange,
@@ -424,7 +408,7 @@ Widget buildSummaryBottom({
               ),
             ),
             child: const Text(
-              'Bayar Sekarang',
+              'Melanjutkan Pembayaran',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

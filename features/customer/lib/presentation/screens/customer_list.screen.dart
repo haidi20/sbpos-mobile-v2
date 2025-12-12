@@ -122,15 +122,6 @@ class CustomerListScreen extends HookConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        const Text(
-          'HASIL PENCARIAN',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: AppColors.gray500,
-          ),
-        ),
       ],
     );
   }

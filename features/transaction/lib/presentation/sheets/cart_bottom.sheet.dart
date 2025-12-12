@@ -1,7 +1,9 @@
 import 'package:core/core.dart';
+// Removed unused import: cart.screen.dart
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/widgets/cart_bottom_sheet.widget.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/screens/cart.screen.dart';
+import 'package:transaction/presentation/screens/cart_method_payment.screen.dart';
 import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
@@ -29,9 +31,6 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final logger = Logger('CartBottomSheet');
-    // 2. WATCH STATE: Agar UI rebuild saat cart/total berubah
-    final stateTransaction = ref.watch(transactionPosViewModelProvider);
-    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
     // Dengarkan perubahan state untuk memastikan reaktivitas
     ref.listen<TransactionPosState>(transactionPosViewModelProvider,
@@ -54,8 +53,8 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       child: DraggableScrollableSheet(
         expand: false,
         // Buka hampir penuh saat diakses
-        initialChildSize: 0.95,
         minChildSize: 0.4,
+        initialChildSize: 0.95,
         // Izinkan penuh saat di-drag
         // maxChildSize: 1.0,
         maxChildSize: 0.95,
@@ -67,45 +66,38 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 top: Radius.circular(24),
               ),
             ),
-            // Buat header dan customer card tetap, lalu bagian order + summary yang bisa scroll sendiri
-            child: Column(
-              children: [
-                buildHeader(
-                  onClearCart: _controller.onClearCart,
-                  viewModel: viewModel,
-                  stateTransaction: stateTransaction,
-                ),
-                buildCustomerCard(
-                  context: context,
-                  viewModel: viewModel,
-                  state: stateTransaction,
-                ),
-                const SizedBox(height: 24),
-                // Bagian ini saja yang scroll saat data banyak
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ListView(
-                      controller: scrollController,
-                      physics: const ClampingScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      children: [
-                        buildOrderList(
-                          viewModel: viewModel,
-                          stateTransaction: stateTransaction,
-                          controller: _controller,
-                          orderNoteController: _controller.orderNoteController,
+            // Make the sheet content scrollable using the provided scrollController
+            child: SingleChildScrollView(
+              controller: scrollController,
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 48,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AppColors.gray300,
+                          borderRadius: BorderRadius.circular(3),
                         ),
-                        buildSummaryBottom(
-                          context: context,
-                          viewModel: viewModel,
-                          controller: _controller,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    // Terapkan rendering berdasarkan `typeChart` di state
+                    Builder(builder: (context) {
+                      final state = ref.watch(transactionPosViewModelProvider);
+                      if (state.typeChart == TypeChart.main) {
+                        return const CartScreen();
+                      }
+                      return const CartMethodPaymentScreen();
+                    }),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },

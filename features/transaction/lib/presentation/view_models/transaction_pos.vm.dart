@@ -257,6 +257,10 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(activeNoteId: id);
   }
 
+  void setTypeChart(TypeChart type) {
+    state = state.copyWith(typeChart: type);
+  }
+
   Future<void> onAddToCart(ProductEntity product) async {
     final index = state.details.indexWhere((d) => d.productId == product.id);
     List<TransactionDetailEntity> updated;
@@ -295,7 +299,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   Future<void> onShowMethodPayment() async {
-    // Placeholder for showing method payment
+    state = state.copyWith(typeChart: TypeChart.checkout);
   }
 
   // Clear Cart — use DeleteTransaction usecase for existing local transaction

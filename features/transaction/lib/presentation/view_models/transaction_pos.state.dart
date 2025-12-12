@@ -2,12 +2,18 @@ import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
+enum TypeChart {
+  main,
+  checkout,
+}
+
 class TransactionPosState {
   final String? error;
   final bool isLoading;
   final String orderNote;
   final int? activeNoteId;
   final String? searchQuery;
+  final TypeChart typeChart;
   final String activeCategory;
   final TransactionEntity? transaction;
   final CustomerEntity? selectedCustomer;
@@ -22,6 +28,7 @@ class TransactionPosState {
     this.selectedCustomer,
     this.isLoading = false,
     this.activeCategory = "All",
+    this.typeChart = TypeChart.main,
     List<TransactionDetailEntity>? details,
   }) : details = details ?? const [];
 
@@ -31,6 +38,7 @@ class TransactionPosState {
     String? orderNote,
     int? activeNoteId,
     String? searchQuery,
+    TypeChart? typeChart,
     String? activeCategory,
     TransactionEntity? transaction,
     CustomerEntity? selectedCustomer,
@@ -41,6 +49,7 @@ class TransactionPosState {
       details: details ?? this.details,
       isLoading: isLoading ?? this.isLoading,
       orderNote: orderNote ?? this.orderNote,
+      typeChart: typeChart ?? this.typeChart,
       searchQuery: searchQuery ?? this.searchQuery,
       transaction: transaction ?? this.transaction,
       activeNoteId: activeNoteId ?? this.activeNoteId,

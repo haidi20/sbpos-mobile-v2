@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:product/data/dummies/product.data.dart';
 import 'package:product/data/dummies/category.data.dart';
-import 'package:product/domain/entities/category.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/domain/entities/category.entity.dart';
 import 'package:product/presentation/components/product_card.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
