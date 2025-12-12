@@ -14,6 +14,13 @@ class TransactionPosState {
   final int? activeNoteId;
   final String? searchQuery;
   final TypeChart typeChart;
+  // UI state for payment flow
+  final String orderType; // 'dine_in' | 'take_away' | 'online'
+  final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
+  final String paymentMethod; // 'cash' | 'qris' | 'transfer'
+  final int cashReceived;
+  final String viewMode; // 'cart' | 'checkout'
+  final bool showErrorSnackbar;
   final String activeCategory;
   final TransactionEntity? transaction;
   final CustomerEntity? selectedCustomer;
@@ -29,6 +36,12 @@ class TransactionPosState {
     this.isLoading = false,
     this.activeCategory = "All",
     this.typeChart = TypeChart.main,
+    this.orderType = 'dine_in',
+    this.ojolProvider = '',
+    this.paymentMethod = 'cash',
+    this.cashReceived = 0,
+    this.viewMode = 'cart',
+    this.showErrorSnackbar = false,
     List<TransactionDetailEntity>? details,
   }) : details = details ?? const [];
 
@@ -39,6 +52,12 @@ class TransactionPosState {
     int? activeNoteId,
     String? searchQuery,
     TypeChart? typeChart,
+    String? orderType,
+    String? ojolProvider,
+    String? paymentMethod,
+    int? cashReceived,
+    String? viewMode,
+    bool? showErrorSnackbar,
     String? activeCategory,
     TransactionEntity? transaction,
     CustomerEntity? selectedCustomer,
@@ -49,6 +68,12 @@ class TransactionPosState {
       details: details ?? this.details,
       isLoading: isLoading ?? this.isLoading,
       orderNote: orderNote ?? this.orderNote,
+      orderType: orderType ?? this.orderType,
+      ojolProvider: ojolProvider ?? this.ojolProvider,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      cashReceived: cashReceived ?? this.cashReceived,
+      viewMode: viewMode ?? this.viewMode,
+      showErrorSnackbar: showErrorSnackbar ?? this.showErrorSnackbar,
       typeChart: typeChart ?? this.typeChart,
       searchQuery: searchQuery ?? this.searchQuery,
       transaction: transaction ?? this.transaction,
@@ -70,6 +95,13 @@ class TransactionPosState {
       isLoading: false,
       activeCategory: "All",
       details: const [],
+      // reset UI state to defaults
+      orderType: 'dine_in',
+      ojolProvider: '',
+      paymentMethod: 'cash',
+      cashReceived: 0,
+      viewMode: 'cart',
+      showErrorSnackbar: false,
     );
   }
 }

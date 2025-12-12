@@ -261,6 +261,31 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(typeChart: type);
   }
 
+  // UI setters for payment/order flow
+  void setOrderType(String type) {
+    state = state.copyWith(orderType: type);
+  }
+
+  void setOjolProvider(String provider) {
+    state = state.copyWith(ojolProvider: provider);
+  }
+
+  void setPaymentMethod(String method) {
+    state = state.copyWith(paymentMethod: method);
+  }
+
+  void setCashReceived(int amount) {
+    state = state.copyWith(cashReceived: amount);
+  }
+
+  void setViewMode(String mode) {
+    state = state.copyWith(viewMode: mode);
+  }
+
+  void setShowErrorSnackbar(bool v) {
+    state = state.copyWith(showErrorSnackbar: v);
+  }
+
   Future<void> onAddToCart(ProductEntity product) async {
     final index = state.details.indexWhere((d) => d.productId == product.id);
     List<TransactionDetailEntity> updated;
