@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/widgets/cart_method_payment.widget.dart';
 
 class CartMethodPaymentScreen extends ConsumerStatefulWidget {
@@ -13,19 +13,16 @@ class CartMethodPaymentScreen extends ConsumerStatefulWidget {
 
 class _CartMethodPaymentScreenState
     extends ConsumerState<CartMethodPaymentScreen> {
-  late final CartBottomSheetController _controller;
   late final ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _controller = CartBottomSheetController(ref, context);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -35,18 +32,18 @@ class _CartMethodPaymentScreenState
     final stateTransaction = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
-    // Return the inner column only — this widget is intended to be
-    // included inside the bottom sheet `cart_bottom.sheet.dart`.
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           OrderTypeSelector(
-              onChanged: (v) => viewModel.setOrderType(v),
-              value: stateTransaction.orderType),
+            orderTypes: viewModel.getOrderTypes,
+            value: stateTransaction.orderType,
+            onChanged: (v) => viewModel.setOrderType(v),
+          ),
           const SizedBox(height: 12),
-          if (stateTransaction.orderType == 'online')
+          if (stateTransaction.orderType == OrderType.online)
             OjolProviderSelector(
               value: stateTransaction.ojolProvider,
               onChanged: (v) => viewModel.setOjolProvider(v),
@@ -58,10 +55,10 @@ class _CartMethodPaymentScreenState
           ),
           const SizedBox(height: 12),
           PaymentDetails(
-            paymentMethod: stateTransaction.paymentMethod,
-            cashReceived: stateTransaction.cashReceived,
-            onCashChanged: (v) => viewModel.setCashReceived(v),
             cartDetails: stateTransaction.details,
+            cashReceived: stateTransaction.cashReceived,
+            paymentMethod: stateTransaction.paymentMethod,
+            onCashChanged: (v) => viewModel.setCashReceived(v),
           ),
           const SizedBox(height: 12),
           FooterSummary(
@@ -70,14 +67,15 @@ class _CartMethodPaymentScreenState
             onToggleView: () => viewModel.setViewMode(
                 stateTransaction.viewMode == 'cart' ? 'checkout' : 'cart'),
             onProcess: () {
-              if (stateTransaction.orderType == 'online' &&
+              if (stateTransaction.orderType == OrderType.online &&
                   (stateTransaction.ojolProvider.isEmpty)) {
                 viewModel.setShowErrorSnackbar(true);
-                Future.delayed(const Duration(seconds: 3),
-                    () => viewModel.setShowErrorSnackbar(false));
+                Future.delayed(
+                  const Duration(seconds: 3),
+                  () => viewModel.setShowErrorSnackbar(false),
+                );
                 return;
               }
-              // Hook point: call viewModel to process payment if available
             },
           ),
           if (stateTransaction.showErrorSnackbar) const SizedBox(height: 8),

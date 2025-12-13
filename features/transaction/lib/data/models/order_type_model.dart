@@ -1,9 +1,9 @@
-import 'package:landing_page_menu/domain/entities/order_type_entity.dart';
+import 'package:transaction/domain/entitties/order_type.entity.dart';
 
 class OrderTypeModel {
   final int? id;
-  final int? idServer; // <-- ditambahkan
   final String name;
+  final int? idServer; // <-- ditambahkan
   final String? icon; // <-- ditambahkan
 
   final DateTime? deletedAt;

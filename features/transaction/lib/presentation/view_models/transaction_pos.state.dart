@@ -4,7 +4,14 @@ import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 enum TypeChart {
   main,
+  confirm,
   checkout,
+}
+
+enum OrderType {
+  dineIn,
+  takeAway,
+  online,
 }
 
 class TransactionPosState {
@@ -15,7 +22,7 @@ class TransactionPosState {
   final String? searchQuery;
   final TypeChart typeChart;
   // UI state for payment flow
-  final String orderType; // 'dine_in' | 'take_away' | 'online'
+  final OrderType orderType; // 'dine_in' | 'take_away' | 'online'
   final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
   final String paymentMethod; // 'cash' | 'qris' | 'transfer'
   final int cashReceived;
@@ -36,7 +43,7 @@ class TransactionPosState {
     this.isLoading = false,
     this.activeCategory = "All",
     this.typeChart = TypeChart.main,
-    this.orderType = 'dine_in',
+    this.orderType = OrderType.dineIn,
     this.ojolProvider = '',
     this.paymentMethod = 'cash',
     this.cashReceived = 0,
@@ -52,7 +59,7 @@ class TransactionPosState {
     int? activeNoteId,
     String? searchQuery,
     TypeChart? typeChart,
-    String? orderType,
+    OrderType? orderType,
     String? ojolProvider,
     String? paymentMethod,
     int? cashReceived,
@@ -96,7 +103,7 @@ class TransactionPosState {
       activeCategory: "All",
       details: const [],
       // reset UI state to defaults
-      orderType: 'dine_in',
+      orderType: OrderType.dineIn,
       ojolProvider: '',
       paymentMethod: 'cash',
       cashReceived: 0,

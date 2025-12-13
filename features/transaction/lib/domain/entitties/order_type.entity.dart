@@ -1,9 +1,10 @@
-import 'package:landing_page_menu/data/models/order_type_model.dart';
+import 'package:transaction/data/models/order_type_model.dart';
 
 class OrderTypeEntity {
   final int? id;
   final int? idServer;
   final String name;
+  final String? icon;
   final DateTime? deletedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -12,6 +13,7 @@ class OrderTypeEntity {
   const OrderTypeEntity({
     this.id,
     this.idServer,
+    this.icon,
     required this.name,
     this.deletedAt,
     this.createdAt,
@@ -23,6 +25,7 @@ class OrderTypeEntity {
     int? id,
     int? idServer,
     String? name,
+    String? icon,
     DateTime? deletedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -30,8 +33,9 @@ class OrderTypeEntity {
   }) {
     return OrderTypeEntity(
       id: id ?? this.id,
-      idServer: idServer ?? this.idServer,
+      icon: icon ?? this.icon,
       name: name ?? this.name,
+      idServer: idServer ?? this.idServer,
       deletedAt: deletedAt ?? this.deletedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -42,13 +46,13 @@ class OrderTypeEntity {
   factory OrderTypeEntity.fromModel(OrderTypeModel model) {
     return OrderTypeEntity(
       id: model.id,
-      idServer:
-          model.id, // atau model.idServer jika model menyediakan field terpisah
+      idServer: model.id,
+      icon: model.icon,
       name: model.name,
       deletedAt: model.deletedAt,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
-      syncedAt: model.updatedAt, // atau null, tergantung strategi sinkronisasi
+      syncedAt: model.updatedAt,
     );
   }
 
@@ -56,6 +60,7 @@ class OrderTypeEntity {
     return OrderTypeModel(
       id: id,
       name: name,
+      icon: icon,
       deletedAt: deletedAt,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -66,6 +71,7 @@ class OrderTypeEntity {
   List<Object?> get props => [
         id,
         idServer,
+        icon,
         name,
         deletedAt?.millisecondsSinceEpoch,
         createdAt?.millisecondsSinceEpoch,
@@ -79,6 +85,7 @@ class OrderTypeEntity {
     return other is OrderTypeEntity &&
         other.id == id &&
         other.idServer == idServer &&
+        other.icon == icon &&
         other.name == name &&
         other.deletedAt?.millisecondsSinceEpoch ==
             deletedAt?.millisecondsSinceEpoch &&
@@ -95,6 +102,7 @@ class OrderTypeEntity {
     return Object.hashAll([
       id,
       idServer,
+      icon,
       name,
       deletedAt?.millisecondsSinceEpoch,
       createdAt?.millisecondsSinceEpoch,

@@ -1,10 +1,9 @@
 import 'package:core/core.dart';
-// Removed unused import: cart.screen.dart
+import 'package:transaction/presentation/screens/cart.screen.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
-import 'package:transaction/presentation/screens/cart.screen.dart';
+import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
 import 'package:transaction/presentation/screens/cart_method_payment.screen.dart';
-import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -14,12 +13,12 @@ class CartBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
-  late final CartBottomSheetController _controller;
+  late final CartScreenController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = CartBottomSheetController(ref, context);
+    _controller = CartScreenController(ref, context);
   }
 
   @override
@@ -92,6 +91,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                       final state = ref.watch(transactionPosViewModelProvider);
                       if (state.typeChart == TypeChart.main) {
                         return const CartScreen();
+                      }
+                      if (state.typeChart == TypeChart.confirm) {
+                        // Tampilkan CartScreen dalam mode konfirmasi (hanya baca)
+                        return const CartScreen(readOnly: true);
                       }
                       return const CartMethodPaymentScreen();
                     }),

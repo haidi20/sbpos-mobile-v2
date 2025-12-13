@@ -1,24 +1,26 @@
 import 'package:core/core.dart';
+import 'package:transaction/presentation/widgets/cart_screen.widget.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/widgets/cart_bottom_sheet.widget.dart';
-import 'package:transaction/presentation/controllers/cart_bottom_sheet.controller.dart';
+import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
-  const CartScreen({super.key});
+  final bool readOnly;
+
+  const CartScreen({super.key, this.readOnly = false});
 
   @override
   ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
-  late final CartBottomSheetController _controller;
+  late final CartScreenController _controller;
   late final ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _controller = CartBottomSheetController(ref, context);
+    _controller = CartScreenController(ref, context);
   }
 
   @override
@@ -68,11 +70,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   stateTransaction: stateTransaction,
                   controller: _controller,
                   orderNoteController: _controller.orderNoteController,
+                  readOnly: widget.readOnly,
                 ),
                 buildSummaryBottom(
                   context: context,
                   viewModel: viewModel,
                   controller: _controller,
+                  readOnly: widget.readOnly,
                 ),
               ],
             ),

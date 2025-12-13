@@ -8,6 +8,8 @@ import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
+import 'package:transaction/data/dummy/order_type_dummy.dart';
 
 class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final CreateTransaction _createTransaction;
@@ -146,7 +148,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }
   }
 
-  List<TransactionDetailEntity> get filteredDetails {
+  List<TransactionDetailEntity> get getFilteredDetails {
     final query = state.searchQuery?.toLowerCase() ?? "";
     final category = state.activeCategory;
 
@@ -156,6 +158,17 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       final matchesCategory = category == "All" ||
           (item.note?.toLowerCase() == category.toLowerCase());
       return matchesQuery && matchesCategory;
+    }).toList();
+  }
+
+  List<Map<String, Object?>> get getOrderTypes {
+    return orderTypeDummies.map((m) {
+      final id = (m.idServer ?? m.id)?.toString() ?? m.name;
+      return {
+        'id': id,
+        'label': m.name,
+        'icon': resolveOrderTypeIcon(m.icon),
+      };
     }).toList();
   }
 
@@ -262,7 +275,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   // UI setters for payment/order flow
-  void setOrderType(String type) {
+  void setOrderType(OrderType type) {
     state = state.copyWith(orderType: type);
   }
 

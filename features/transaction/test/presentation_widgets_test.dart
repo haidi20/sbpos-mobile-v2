@@ -1,33 +1,27 @@
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:transaction/presentation/components/detail_info.dart';
-import 'package:transaction/presentation/components/detail_info.card.dart';
 import 'package:transaction/presentation/components/order.card.dart';
+import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/summary_row.dart';
-import 'package:transaction/presentation/components/summary_row.card.dart';
-import 'package:transaction/presentation/components/transaction.card.dart';
-
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
-import 'package:transaction/presentation/sheets/transaction_detail.sheet.dart';
-import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
-import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
-import 'package:transaction/presentation/screens/transaction.screen.dart';
-
-import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/components/transaction.card.dart';
 import 'package:transaction/presentation/view_models/transaction.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
-import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
-import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
-import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
-import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
-import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
-
-import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
+import 'package:transaction/presentation/screens/transaction.screen.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/components/summary_row.card.dart';
+import 'package:transaction/presentation/components/detail_info.card.dart';
+import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
+import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
+import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
+import 'package:transaction/presentation/sheets/transaction_detail.sheet.dart';
+import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
+import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
+import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 
 class FakeTransactionRepository implements TransactionRepository {
   @override
@@ -115,14 +109,6 @@ void main() {
       );
 
       // Removed unused fakes since OrderCard no longer needs them
-      final state = TransactionPosState(details: [
-        const TransactionDetailEntity(
-          productId: 1,
-          productName: 'Product A',
-          productPrice: 10000,
-          qty: 1,
-        )
-      ]);
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
@@ -142,9 +128,8 @@ void main() {
               onSetActiveNoteId: (id) {},
               onSetItemNote: (id, value) {},
             ),
-            DetailInfo(tx: tx.copyWith(details: state.details)),
             const DetailInfoCard(
-                icon: Icons.info, label: 'Card', value: 'Value'),
+                icon: Icons.info, label: 'Detail Item', value: 'Value'),
           ]),
         ),
       ));

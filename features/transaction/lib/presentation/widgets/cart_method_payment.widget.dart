@@ -1,22 +1,20 @@
 import 'package:core/core.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class OrderTypeSelector extends StatelessWidget {
-  final String value;
-  final void Function(String) onChanged;
+  final OrderType value;
+  final void Function(OrderType) onChanged;
+  final List<Map<String, Object?>> orderTypes;
+
   const OrderTypeSelector({
     super.key,
     required this.value,
     required this.onChanged,
+    required this.orderTypes,
   });
 
   @override
   Widget build(BuildContext context) {
-    const types = [
-      {'id': 'dine_in', 'label': 'Makan di Tempat', 'icon': Icons.restaurant},
-      {'id': 'take_away', 'label': 'Bungkus', 'icon': Icons.shopping_bag},
-      {'id': 'online', 'label': 'Online / Ojol', 'icon': Icons.directions_bike},
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -26,11 +24,14 @@ class OrderTypeSelector extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Row(
-          children: types.map((t) {
+          children: orderTypes.map((t) {
             final id = t['id'] as String;
             final label = t['label'] as String;
             final icon = t['icon'] as IconData;
-            final selected = id == value;
+            final selected = (id == 'dine_in' && value == OrderType.dineIn) ||
+                (id == 'take_away' && value == OrderType.takeAway) ||
+                (id == 'online' && value == OrderType.online);
+
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(right: 8.0),
@@ -48,7 +49,13 @@ class OrderTypeSelector extends StatelessWidget {
                       ),
                     ),
                   ),
-                  onPressed: () => onChanged(id),
+                  onPressed: () => onChanged(
+                    id == 'dine_in'
+                        ? OrderType.dineIn
+                        : id == 'take_away'
+                            ? OrderType.takeAway
+                            : OrderType.online,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -58,7 +65,9 @@ class OrderTypeSelector extends StatelessWidget {
                         label,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w700),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -75,8 +84,11 @@ class OrderTypeSelector extends StatelessWidget {
 class OjolProviderSelector extends StatelessWidget {
   final String value;
   final void Function(String) onChanged;
-  const OjolProviderSelector(
-      {super.key, required this.value, required this.onChanged});
+  const OjolProviderSelector({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,51 +97,60 @@ class OjolProviderSelector extends StatelessWidget {
       'Grab Food',
       'Shopee Food',
     ];
+
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.orange.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade100),
+        border: Border.all(
+          color: Colors.orange.shade100,
+        ),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Center(
-          child: Text(
-            'Pilih Jenis Ojol',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.orange,
-              fontWeight: FontWeight.w800,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(
+            child: Text(
+              'Pilih Jenis Ojol',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.orange,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: providers.map((p) {
-            final sel = p == value;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: sel ? Colors.orange : Colors.white,
-                    foregroundColor: sel ? Colors.white : Colors.grey[700],
-                  ),
-                  onPressed: () => onChanged(p),
-                  child: Text(
-                    p,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+          const SizedBox(height: 8),
+          Row(
+            children: providers.map(
+              (p) {
+                final sel = p == value;
+
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: sel ? Colors.orange : Colors.white,
+                        foregroundColor: sel ? Colors.white : Colors.grey[700],
+                      ),
+                      onPressed: () => onChanged(p),
+                      child: Text(
+                        p,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ]),
+                );
+              },
+            ).toList(),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -167,6 +188,7 @@ class PaymentMethodSelector extends StatelessWidget {
           children: methods.map((m) {
             final id = m['id'] as String;
             final sel = id == value;
+
             return Expanded(
               child: TextButton(
                 style: TextButton.styleFrom(
@@ -176,13 +198,14 @@ class PaymentMethodSelector extends StatelessWidget {
                 ),
                 onPressed: () => onChanged(id),
                 child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(m['icon'] as IconData, size: 16),
-                      const SizedBox(width: 8),
-                      Text(m['label'] as String)
-                    ]),
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(m['icon'] as IconData, size: 16),
+                    const SizedBox(width: 8),
+                    Text(m['label'] as String),
+                  ],
+                ),
               ),
             );
           }).toList(),
@@ -193,22 +216,24 @@ class PaymentMethodSelector extends StatelessWidget {
 }
 
 class PaymentDetails extends StatelessWidget {
-  final String paymentMethod;
   final int cashReceived;
-  final void Function(int) onCashChanged;
   final List cartDetails;
-  const PaymentDetails(
-      {super.key,
-      required this.paymentMethod,
-      required this.cashReceived,
-      required this.onCashChanged,
-      required this.cartDetails});
+  final String paymentMethod;
+  final void Function(int) onCashChanged;
+
+  const PaymentDetails({
+    super.key,
+    required this.cartDetails,
+    required this.cashReceived,
+    required this.paymentMethod,
+    required this.onCashChanged,
+  });
 
   int _computeCartTotal() {
     try {
       return cartDetails.fold<int>(0, (s, d) {
         final subtotal =
-            (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 1))) as int;
+            (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 1,),)) as int;
         return s + subtotal;
       });
     } catch (_) {
@@ -243,7 +268,11 @@ class PaymentDetails extends StatelessWidget {
                   prefixText: 'Rp ',
                   hintText: '0',
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                      borderRadius: BorderRadius.all(
+                    Radius.circular(
+                      12,
+                    ),
+                  )),
                 ),
                 onChanged: (v) => onCashChanged(int.tryParse(v) ?? 0),
               ),
@@ -314,21 +343,27 @@ class PaymentDetails extends StatelessWidget {
 }
 
 class BankRow extends StatelessWidget {
-  final String bankName;
   final String account;
-  const BankRow({super.key, required this.bankName, required this.account});
+  final String bankName;
+
+  const BankRow({
+    super.key,
+    required this.account,
+    required this.bankName,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Row(children: [
             Container(
               width: 40,
@@ -338,9 +373,13 @@ class BankRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
-                  child: Text(bankName.substring(0, 3),
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold))),
+                  child: Text(
+                bankName.substring(0, 3),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              )),
             ),
             const SizedBox(width: 12),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -348,35 +387,46 @@ class BankRow extends StatelessWidget {
                 'Bank $bankName',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
-              Text(account, style: const TextStyle(fontWeight: FontWeight.bold))
+              Text(
+                account,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
             ])
           ]),
-          Text('Salin',
-              style: TextStyle(
-                  color: Colors.blue.shade700, fontWeight: FontWeight.w700))
-        ]));
+          Text(
+            'Salin',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: Colors.blue.shade700,
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
 
 class FooterSummary extends StatelessWidget {
   final List details;
   final String viewMode;
-  final VoidCallback onToggleView;
   final VoidCallback onProcess;
+  final VoidCallback onToggleView;
 
   const FooterSummary({
     super.key,
     required this.details,
     required this.viewMode,
-    required this.onToggleView,
     required this.onProcess,
+    required this.onToggleView,
   });
 
   int _computeCartTotal() {
     try {
       return details.fold<int>(0, (s, d) {
         final subtotal =
-            (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 1))) as int;
+            (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 1,),)) as int;
         return s + subtotal;
       });
     } catch (_) {
@@ -394,7 +444,11 @@ class FooterSummary extends StatelessWidget {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey.shade100)),
+        border: Border(
+          top: BorderSide(
+            color: Colors.grey.shade100,
+          ),
+        ),
       ),
       child: Column(
         children: [
@@ -403,40 +457,58 @@ class FooterSummary extends StatelessWidget {
               'Subtotal',
               style: TextStyle(color: Colors.grey.shade600),
             ),
-            Text('Rp ${cartTotal.toString()}',
-                style: TextStyle(color: Colors.grey.shade600))
+            Text(
+              'Rp ${cartTotal.toString()}',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+              ),
+            )
           ]),
           const SizedBox(height: 6),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(
-              'Pajak (10%)',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-            Text('Rp ${tax.toString()}',
-                style: TextStyle(color: Colors.grey.shade600))
-          ]),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Pajak (10%)',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+              Text(
+                'Rp ${tax.toString()}',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              )
+            ],
+          ),
           const SizedBox(height: 8),
           Divider(color: Colors.grey.shade200),
           const SizedBox(height: 8),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text(
-              'Total',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Text('Rp ${grandTotal.toString()}',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
-          ]),
+              Text(
+                'Rp ${grandTotal.toString()}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            ],
+          ),
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: viewMode == 'cart' ? onToggleView : onProcess,
             style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                backgroundColor:
-                    viewMode == 'cart' ? Colors.orange : Colors.blue),
+              minimumSize: const Size.fromHeight(48),
+              backgroundColor: viewMode == 'cart' ? Colors.orange : Colors.blue,
+            ),
             child: Text(
               viewMode == 'cart' ? 'Lanjut Pembayaran' : 'Bayar Sekarang',
               style: const TextStyle(
@@ -477,8 +549,13 @@ class ErrorSnackbar extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 4),
-                Text('Silahkan memilih Jenis Ojol diatas untuk melanjutkan.',
-                    style: TextStyle(color: Colors.white, fontSize: 12))
+                Text(
+                  'Silahkan memilih Jenis Ojol diatas untuk melanjutkan.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                )
               ],
             ),
           )
