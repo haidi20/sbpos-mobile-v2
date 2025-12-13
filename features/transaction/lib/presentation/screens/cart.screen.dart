@@ -56,8 +56,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              // Limit list height to a reasonable portion of the screen
-              // so it gets a bounded height for its viewport.
               maxHeight: MediaQuery.of(context).size.height * 0.6,
             ),
             child: ListView(

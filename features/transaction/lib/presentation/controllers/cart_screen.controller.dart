@@ -203,7 +203,7 @@ class CartScreenController {
 
   void onUpdateQuantity(int id, int delta) async {
     await _viewModel.setUpdateQuantity(id, delta);
-    final int total = _viewModel.cartCount;
+    final int total = _viewModel.getCartCount;
 
     _logger.info("total cart items after update: $total");
 

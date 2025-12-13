@@ -89,10 +89,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                     // Terapkan rendering berdasarkan `typeChart` di state
                     Builder(builder: (context) {
                       final state = ref.watch(transactionPosViewModelProvider);
-                      if (state.typeChart == TypeChart.main) {
+                      if (state.typeChart == ETypeChart.main) {
                         return const CartScreen();
                       }
-                      if (state.typeChart == TypeChart.confirm) {
+                      if (state.typeChart == ETypeChart.confirm) {
                         // Tampilkan CartScreen dalam mode konfirmasi (hanya baca)
                         return const CartScreen(readOnly: true);
                       }

@@ -301,7 +301,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "${viewModel.cartCount}",
+                                  "${viewModel.getCartCount}",
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -326,7 +326,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                               ),
                             ),
                             Text(
-                              viewModel.cartTotal,
+                              viewModel.getCartTotal,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(

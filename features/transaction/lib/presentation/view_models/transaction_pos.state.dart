@@ -2,16 +2,16 @@ import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
-enum TypeChart {
+enum ETypeChart {
   main,
   confirm,
   checkout,
 }
 
-enum OrderType {
+enum EOrderType {
   dineIn,
-  takeAway,
   online,
+  takeAway,
 }
 
 class TransactionPosState {
@@ -20,9 +20,9 @@ class TransactionPosState {
   final String orderNote;
   final int? activeNoteId;
   final String? searchQuery;
-  final TypeChart typeChart;
+  final ETypeChart typeChart;
   // UI state for payment flow
-  final OrderType orderType; // 'dine_in' | 'take_away' | 'online'
+  final EOrderType orderType; // 'dine_in' | 'take_away' | 'online'
   final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
   final String paymentMethod; // 'cash' | 'qris' | 'transfer'
   final int cashReceived;
@@ -42,8 +42,8 @@ class TransactionPosState {
     this.selectedCustomer,
     this.isLoading = false,
     this.activeCategory = "All",
-    this.typeChart = TypeChart.main,
-    this.orderType = OrderType.dineIn,
+    this.typeChart = ETypeChart.main,
+    this.orderType = EOrderType.dineIn,
     this.ojolProvider = '',
     this.paymentMethod = 'cash',
     this.cashReceived = 0,
@@ -55,17 +55,17 @@ class TransactionPosState {
   TransactionPosState copyWith({
     String? error,
     bool? isLoading,
+    String? viewMode,
+    int? cashReceived,
     String? orderNote,
     int? activeNoteId,
     String? searchQuery,
-    TypeChart? typeChart,
-    OrderType? orderType,
+    EOrderType? orderType,
     String? ojolProvider,
     String? paymentMethod,
-    int? cashReceived,
-    String? viewMode,
-    bool? showErrorSnackbar,
+    ETypeChart? typeChart,
     String? activeCategory,
+    bool? showErrorSnackbar,
     TransactionEntity? transaction,
     CustomerEntity? selectedCustomer,
     List<TransactionDetailEntity>? details,
@@ -103,7 +103,7 @@ class TransactionPosState {
       activeCategory: "All",
       details: const [],
       // reset UI state to defaults
-      orderType: OrderType.dineIn,
+      orderType: EOrderType.dineIn,
       ojolProvider: '',
       paymentMethod: 'cash',
       cashReceived: 0,

@@ -33,9 +33,6 @@ class TransactionViewModel extends StateNotifier<TransactionState> {
     // _loadTransactions();
   }
 
-  // _loadTransactions was removed because it's unused; use `refresh()` or
-  // call the usecase directly when needed.
-
   Future<void> refresh() async {
     try {
       state = state.copyWith(isLoading: true);

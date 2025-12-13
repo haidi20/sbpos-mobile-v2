@@ -2,8 +2,8 @@ import 'package:core/core.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class OrderTypeSelector extends StatelessWidget {
-  final OrderType value;
-  final void Function(OrderType) onChanged;
+  final EOrderType value;
+  final void Function(EOrderType) onChanged;
   final List<Map<String, Object?>> orderTypes;
 
   const OrderTypeSelector({
@@ -28,9 +28,9 @@ class OrderTypeSelector extends StatelessWidget {
             final id = t['id'] as String;
             final label = t['label'] as String;
             final icon = t['icon'] as IconData;
-            final selected = (id == 'dine_in' && value == OrderType.dineIn) ||
-                (id == 'take_away' && value == OrderType.takeAway) ||
-                (id == 'online' && value == OrderType.online);
+            final selected = (id == 'dine_in' && value == EOrderType.dineIn) ||
+                (id == 'take_away' && value == EOrderType.takeAway) ||
+                (id == 'online' && value == EOrderType.online);
 
             return Expanded(
               child: Padding(
@@ -51,10 +51,10 @@ class OrderTypeSelector extends StatelessWidget {
                   ),
                   onPressed: () => onChanged(
                     id == 'dine_in'
-                        ? OrderType.dineIn
+                        ? EOrderType.dineIn
                         : id == 'take_away'
-                            ? OrderType.takeAway
-                            : OrderType.online,
+                            ? EOrderType.takeAway
+                            : EOrderType.online,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

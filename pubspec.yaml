@@ -13,8 +13,6 @@ dependencies:
     sdk: flutter
   landing_page_menu:
     path: features/landing_page_menu
-  mode:
-    path: features/mode
   outlet:
     path: features/outlet
   product:

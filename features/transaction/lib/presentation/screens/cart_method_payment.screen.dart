@@ -43,7 +43,7 @@ class _CartMethodPaymentScreenState
             onChanged: (v) => viewModel.setOrderType(v),
           ),
           const SizedBox(height: 12),
-          if (stateTransaction.orderType == OrderType.online)
+          if (stateTransaction.orderType == EOrderType.online)
             OjolProviderSelector(
               value: stateTransaction.ojolProvider,
               onChanged: (v) => viewModel.setOjolProvider(v),
@@ -67,7 +67,7 @@ class _CartMethodPaymentScreenState
             onToggleView: () => viewModel.setViewMode(
                 stateTransaction.viewMode == 'cart' ? 'checkout' : 'cart'),
             onProcess: () {
-              if (stateTransaction.orderType == OrderType.online &&
+              if (stateTransaction.orderType == EOrderType.online &&
                   (stateTransaction.ojolProvider.isEmpty)) {
                 viewModel.setShowErrorSnackbar(true);
                 Future.delayed(

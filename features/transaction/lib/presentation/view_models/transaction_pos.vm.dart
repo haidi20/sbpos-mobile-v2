@@ -31,123 +31,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     _loadLocalTransaction();
   }
 
-  // Persist updated details (and optionally notes) to local DB first,
-  // then update state only when persistence succeeds.
-  Future<void> _persistAndUpdateState(
-      List<TransactionDetailEntity> updatedDetails,
-      {String? orderNote}) async {
-    try {
-      state = state.copyWith(isLoading: true);
-
-      final totalAmount = updatedDetails.fold<int>(0, (sum, d) {
-        return sum + (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 0)));
-      });
-      final totalQty =
-          updatedDetails.fold<int>(0, (sum, d) => sum + (d.qty ?? 0));
-      // _logger.info(
-      //     "Persisting transaction: totalAmount=$totalAmount, totalQty=$totalQty, detailsCount=${updatedDetails.length}");
-
-      // bikin transaksi baru
-      if (state.transaction == null) {
-        final txEntity = TransactionEntity(
-          outletId: state.transaction?.outletId ?? 8,
-          sequenceNumber: state.transaction?.sequenceNumber ?? 1,
-          orderTypeId: state.transaction?.orderTypeId ?? 1,
-          date: DateTime.now(),
-          totalAmount: totalAmount,
-          totalQty: totalQty,
-          notes: orderNote ?? state.orderNote,
-          details: updatedDetails,
-        );
-
-        final res = await _createTransaction.call(txEntity, isOffline: true);
-        res.fold((f) {
-          _logger.severe('Create transaction failed: $f');
-          state = state.copyWith(isLoading: false);
-        }, (created) {
-          final updatedDetailsFromServer = created.details ?? updatedDetails;
-          state = state.copyWith(
-            transaction: created,
-            details: updatedDetailsFromServer,
-            isLoading: false,
-          );
-        });
-      } else {
-        // existing transaction
-        if (updatedDetails.isEmpty) {
-          // delete transaction first
-          final txId = state.transaction?.id;
-          if (txId != null) {
-            final res = await _deleteTransaction.call(txId, isOffline: true);
-            res.fold((f) {
-              _logger.severe('Delete transaction failed: $f');
-              state = state.copyWith(isLoading: false);
-            }, (ok) {
-              state = state.copyWith(
-                details: [],
-                transaction: null,
-                orderNote: "",
-                activeNoteId: null,
-                isLoading: false,
-              );
-            });
-          } else {
-            state = state.copyWith(transaction: null, isLoading: false);
-          }
-        } else {
-          final txEntity = state.transaction!.copyWith(
-            details: updatedDetails,
-            totalAmount: totalAmount,
-            totalQty: totalQty,
-            notes: orderNote ?? state.orderNote,
-          );
-
-          // _logger.info(
-          //     "Updating transaction id=${txEntity.id}, totalAmount=$totalAmount, totalQty=$totalQty, detailsCount=${updatedDetails.length}");
-
-          final res = await _updateTransaction.call(txEntity, isOffline: true);
-          res.fold((f) {
-            _logger.severe("Failed to update transaction: $f");
-            state = state.copyWith(isLoading: false);
-          }, (updated) {
-            _logger.info(
-                "Updated transaction id=${updated.id}, detailsCount=${updated.details?.length ?? 0}");
-            // Avoid UI flicker when repository returns empty details temporarily
-            final safeDetails = (updated.details != null &&
-                    (updated.details?.isNotEmpty ?? false))
-                ? updated.details!
-                : updatedDetails;
-            state = state.copyWith(
-                transaction: updated, details: safeDetails, isLoading: false);
-          });
-        }
-      }
-    } catch (e) {
-      _logger.severe('PersistAndUpdateState failed', e as Object?);
-      state = state.copyWith(isLoading: false);
-    }
-  }
-
-  // attempt to load existing transaction from local db using isOffline=true
-  Future<void> _loadLocalTransaction() async {
-    _logger.info('_loadLocalTransaction: starting load from local DB...');
-    try {
-      // fetch the single active/latest transaction (created desc, limit 1)
-      final res = await _getTransactionActive.call(isOffline: true);
-      res.fold((f) {
-        // silently ignore failures for init
-        _logger
-            .info('_loadLocalTransaction: no existing local transaction found');
-      }, (tx) {
-        _logger.info(
-            'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
-        state = state.copyWith(transaction: tx, details: tx.details ?? []);
-      });
-    } catch (e) {
-      // ignore init load errors
-    }
-  }
-
+  // ------------------ Getters ------------------
   List<TransactionDetailEntity> get getFilteredDetails {
     final query = state.searchQuery?.toLowerCase() ?? "";
     final category = state.activeCategory;
@@ -172,7 +56,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }).toList();
   }
 
-  String get cartTotal {
+  String get getCartTotal {
     final total = state.details.fold<int>(0, (sum, item) {
       if (item.subtotal != null) return sum + (item.subtotal ?? 0);
       final price = item.productPrice ?? 0;
@@ -182,9 +66,10 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     return formatRupiah(total.toDouble());
   }
 
-  int get cartCount =>
+  int get getCartCount =>
       state.details.fold(0, (sum, item) => sum + (item.qty ?? 0));
 
+  // ------------------ Setters / Mutators ------------------
   Future<void> setUpdateQuantity(int productId, int delta) async {
     final index =
         state.details.indexWhere((item) => item.productId == productId);
@@ -270,12 +155,12 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(activeNoteId: id);
   }
 
-  void setTypeChart(TypeChart type) {
+  void setTypeChart(ETypeChart type) {
     state = state.copyWith(typeChart: type);
   }
 
   // UI setters for payment/order flow
-  void setOrderType(OrderType type) {
+  void setOrderType(EOrderType type) {
     state = state.copyWith(orderType: type);
   }
 
@@ -299,6 +184,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(showErrorSnackbar: v);
   }
 
+  // ------------------ Actions (on*) ------------------
   Future<void> onAddToCart(ProductEntity product) async {
     final index = state.details.indexWhere((d) => d.productId == product.id);
     List<TransactionDetailEntity> updated;
@@ -337,7 +223,15 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   Future<void> onShowMethodPayment() async {
-    state = state.copyWith(typeChart: TypeChart.checkout);
+    final ETypeChart current = state.typeChart;
+
+    if (current == ETypeChart.main) {
+      state = state.copyWith(typeChart: ETypeChart.confirm);
+    } else if (current == ETypeChart.confirm) {
+      state = state.copyWith(typeChart: ETypeChart.checkout);
+    } else {
+      state = state.copyWith(typeChart: ETypeChart.checkout);
+    }
   }
 
   // Clear Cart — use DeleteTransaction usecase for existing local transaction
@@ -360,6 +254,118 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       state = TransactionPosState.cleared();
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
+  // ------------------ Private helpers ------------------
+  // Persist updated details (and optionally notes) to local DB first,
+  // then update state only when persistence succeeds.
+  Future<void> _persistAndUpdateState(
+      List<TransactionDetailEntity> updatedDetails,
+      {String? orderNote}) async {
+    try {
+      state = state.copyWith(isLoading: true);
+
+      final totalAmount = updatedDetails.fold<int>(0, (sum, d) {
+        return sum + (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 0)));
+      });
+      final totalQty =
+          updatedDetails.fold<int>(0, (sum, d) => sum + (d.qty ?? 0));
+
+      // bikin transaksi baru
+      if (state.transaction == null) {
+        final txEntity = TransactionEntity(
+          outletId: state.transaction?.outletId ?? 8,
+          sequenceNumber: state.transaction?.sequenceNumber ?? 1,
+          orderTypeId: state.transaction?.orderTypeId ?? 1,
+          date: DateTime.now(),
+          totalAmount: totalAmount,
+          totalQty: totalQty,
+          notes: orderNote ?? state.orderNote,
+          details: updatedDetails,
+        );
+
+        final res = await _createTransaction.call(txEntity, isOffline: true);
+        res.fold((f) {
+          _logger.severe('Create transaction failed: $f');
+          state = state.copyWith(isLoading: false);
+        }, (created) {
+          final updatedDetailsFromServer = created.details ?? updatedDetails;
+          state = state.copyWith(
+            transaction: created,
+            details: updatedDetailsFromServer,
+            isLoading: false,
+          );
+        });
+      } else {
+        // existing transaction
+        if (updatedDetails.isEmpty) {
+          // delete transaction first
+          final txId = state.transaction?.id;
+          if (txId != null) {
+            final res = await _deleteTransaction.call(txId, isOffline: true);
+            res.fold((f) {
+              _logger.severe('Delete transaction failed: $f');
+              state = state.copyWith(isLoading: false);
+            }, (ok) {
+              state = state.copyWith(
+                details: [],
+                transaction: null,
+                orderNote: "",
+                activeNoteId: null,
+                isLoading: false,
+              );
+            });
+          } else {
+            state = state.copyWith(transaction: null, isLoading: false);
+          }
+        } else {
+          final txEntity = state.transaction!.copyWith(
+            details: updatedDetails,
+            totalAmount: totalAmount,
+            totalQty: totalQty,
+            notes: orderNote ?? state.orderNote,
+          );
+
+          final res = await _updateTransaction.call(txEntity, isOffline: true);
+          res.fold((f) {
+            _logger.severe("Failed to update transaction: $f");
+            state = state.copyWith(isLoading: false);
+          }, (updated) {
+            _logger.info(
+                "Updated transaction id=${updated.id}, detailsCount=${updated.details?.length ?? 0}");
+            final safeDetails = (updated.details != null &&
+                    (updated.details?.isNotEmpty ?? false))
+                ? updated.details!
+                : updatedDetails;
+            state = state.copyWith(
+                transaction: updated, details: safeDetails, isLoading: false);
+          });
+        }
+      }
+    } catch (e) {
+      _logger.severe('PersistAndUpdateState failed', e as Object?);
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  // attempt to load existing transaction from local db using isOffline=true
+  Future<void> _loadLocalTransaction() async {
+    _logger.info('_loadLocalTransaction: starting load from local DB...');
+    try {
+      // fetch the single active/latest transaction (created desc, limit 1)
+      final res = await _getTransactionActive.call(isOffline: true);
+      res.fold((f) {
+        // silently ignore failures for init
+        _logger
+            .info('_loadLocalTransaction: no existing local transaction found');
+      }, (tx) {
+        _logger.info(
+            'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
+        state = state.copyWith(transaction: tx, details: tx.details ?? []);
+      });
+    } catch (e) {
+      // ignore init load errors
     }
   }
 }

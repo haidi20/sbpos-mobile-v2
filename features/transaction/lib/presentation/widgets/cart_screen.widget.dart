@@ -18,7 +18,7 @@ Widget buildHeader({
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Pesanan (${viewModel.cartCount} items)',
+              'Pesanan (${viewModel.getCartCount} items)',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -114,11 +114,11 @@ Widget buildCustomerCard({
 }
 
 Widget buildOrderList({
+  bool readOnly = false,
   required CartScreenController controller,
   required TransactionPosViewModel viewModel,
   required TransactionPosState stateTransaction,
   required TextEditingController orderNoteController,
-  bool readOnly = false,
 }) {
   // final logger = Logger('CartBottomSheetWidget.buildOrderList');
 
