@@ -138,6 +138,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // Set active category
   void setActiveCategory(String category) {
     state = state.copyWith(activeCategory: category);
+    unawaited(_persistAndUpdateState(
+        List<TransactionDetailEntity>.from(state.details)));
   }
 
   // Set search query
@@ -155,25 +157,34 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(activeNoteId: id);
   }
 
-  void setTypeChart(ETypeChart type) {
-    state = state.copyWith(typeChart: type);
+  void setTypeCart(ETypeCart type) {
+    state = state.copyWith(typeCart: type);
   }
 
   // UI setters for payment/order flow
   void setOrderType(EOrderType type) {
     state = state.copyWith(orderType: type);
+    // persist change to local DB using current details
+    unawaited(_persistAndUpdateState(
+        List<TransactionDetailEntity>.from(state.details)));
   }
 
   void setOjolProvider(String provider) {
     state = state.copyWith(ojolProvider: provider);
+    unawaited(_persistAndUpdateState(
+        List<TransactionDetailEntity>.from(state.details)));
   }
 
   void setPaymentMethod(String method) {
     state = state.copyWith(paymentMethod: method);
+    unawaited(_persistAndUpdateState(
+        List<TransactionDetailEntity>.from(state.details)));
   }
 
   void setCashReceived(int amount) {
     state = state.copyWith(cashReceived: amount);
+    unawaited(_persistAndUpdateState(
+        List<TransactionDetailEntity>.from(state.details)));
   }
 
   void setViewMode(String mode) {
@@ -224,14 +235,14 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   Future<void> onShowMethodPayment() async {
-    final ETypeChart current = state.typeChart;
+    final ETypeCart current = state.typeCart;
 
-    if (current == ETypeChart.main) {
-      state = state.copyWith(typeChart: ETypeChart.confirm);
-    } else if (current == ETypeChart.confirm) {
-      state = state.copyWith(typeChart: ETypeChart.checkout);
+    if (current == ETypeCart.main) {
+      state = state.copyWith(typeCart: ETypeCart.confirm);
+    } else if (current == ETypeCart.confirm) {
+      state = state.copyWith(typeCart: ETypeCart.checkout);
     } else {
-      state = state.copyWith(typeChart: ETypeChart.checkout);
+      state = state.copyWith(typeCart: ETypeCart.checkout);
     }
   }
 
@@ -273,17 +284,41 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       });
       final totalQty =
           updatedDetails.fold<int>(0, (sum, d) => sum + (d.qty ?? 0));
+      // map UI order type to DB id
+      int orderTypeIdFromState() {
+        switch (state.orderType) {
+          case EOrderType.dineIn:
+            return 1;
+          case EOrderType.takeAway:
+            return 2;
+          case EOrderType.online:
+            return 3;
+        }
+      }
+
+      // prepare paid/change values from UI
+      final paidAmountFromState =
+          state.cashReceived == 0 ? null : state.cashReceived;
+      final changeMoneyFromState = (state.cashReceived - totalAmount) < 0
+          ? 0
+          : (state.cashReceived - totalAmount);
 
       // bikin transaksi baru
       if (state.transaction == null) {
         final txEntity = TransactionEntity(
           outletId: state.transaction?.outletId ?? 8,
           sequenceNumber: state.transaction?.sequenceNumber ?? 1,
-          orderTypeId: state.transaction?.orderTypeId ?? 1,
+          orderTypeId: orderTypeIdFromState(),
           date: DateTime.now(),
           totalAmount: totalAmount,
           totalQty: totalQty,
           notes: orderNote ?? state.orderNote,
+          categoryOrder: state.activeCategory,
+          userId: state.selectedCustomer?.id,
+          paymentMethod: state.paymentMethod,
+          ojolProvider: state.ojolProvider,
+          paidAmount: paidAmountFromState,
+          changeMoney: changeMoneyFromState,
           // allow forcing status (e.g., proses on explicit store), default pending
           status: forceStatus ?? TransactionStatus.pending,
           details: updatedDetails,
@@ -296,9 +331,9 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
         }, (created) {
           final updatedDetailsFromServer = created.details ?? updatedDetails;
           state = state.copyWith(
+            isLoading: false,
             transaction: created,
             details: updatedDetailsFromServer,
-            isLoading: false,
           );
         });
       } else {
@@ -324,11 +359,23 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
             state = state.copyWith(transaction: null, isLoading: false);
           }
         } else {
+          // ensure details point to current transaction id when updating
+          final detailsWithTxId = updatedDetails
+              .map((d) => d.copyWith(transactionId: state.transaction?.id))
+              .toList();
+
           final txEntity = state.transaction!.copyWith(
-            details: updatedDetails,
+            details: detailsWithTxId,
             totalAmount: totalAmount,
             totalQty: totalQty,
             notes: orderNote ?? state.orderNote,
+            orderTypeId: orderTypeIdFromState(),
+            categoryOrder: state.activeCategory,
+            userId: state.selectedCustomer?.id,
+            paymentMethod: state.paymentMethod,
+            ojolProvider: state.ojolProvider,
+            paidAmount: paidAmountFromState,
+            changeMoney: changeMoneyFromState,
             // preserve existing status unless forceStatus provided
             status: forceStatus ?? state.transaction!.status,
           );

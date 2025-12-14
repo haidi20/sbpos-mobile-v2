@@ -14,7 +14,7 @@ class TransactionPosController {
       : viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
   void onShowCartSheet() {
-    viewModel.setTypeChart(ETypeChart.main);
+    viewModel.setTypeCart(ETypeCart.main);
 
     showModalBottomSheet(
       context: context,

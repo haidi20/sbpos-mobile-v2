@@ -2,7 +2,7 @@ import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
-enum ETypeChart {
+enum ETypeCart {
   main,
   confirm,
   checkout,
@@ -20,7 +20,7 @@ class TransactionPosState {
   final String orderNote;
   final int? activeNoteId;
   final String? searchQuery;
-  final ETypeChart typeChart;
+  final ETypeCart typeCart;
   // UI state for payment flow
   final EOrderType orderType; // 'dine_in' | 'take_away' | 'online'
   final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
@@ -42,7 +42,7 @@ class TransactionPosState {
     this.selectedCustomer,
     this.isLoading = false,
     this.activeCategory = "All",
-    this.typeChart = ETypeChart.main,
+    this.typeCart = ETypeCart.main,
     this.orderType = EOrderType.dineIn,
     this.ojolProvider = '',
     this.paymentMethod = 'cash',
@@ -63,7 +63,7 @@ class TransactionPosState {
     EOrderType? orderType,
     String? ojolProvider,
     String? paymentMethod,
-    ETypeChart? typeChart,
+    ETypeCart? typeCart,
     String? activeCategory,
     bool? showErrorSnackbar,
     TransactionEntity? transaction,
@@ -81,7 +81,7 @@ class TransactionPosState {
       cashReceived: cashReceived ?? this.cashReceived,
       viewMode: viewMode ?? this.viewMode,
       showErrorSnackbar: showErrorSnackbar ?? this.showErrorSnackbar,
-      typeChart: typeChart ?? this.typeChart,
+      typeCart: typeCart ?? this.typeCart,
       searchQuery: searchQuery ?? this.searchQuery,
       transaction: transaction ?? this.transaction,
       activeNoteId: activeNoteId ?? this.activeNoteId,
