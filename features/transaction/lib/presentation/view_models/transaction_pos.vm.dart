@@ -31,6 +31,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     _loadLocalTransaction();
   }
 
+  /// Public helper to reset the whole POS state to initial cleared defaults.
+  /// Exposed so callers outside the viewmodel (e.g., controllers) can request
+  /// a full reset without accessing the protected `state` member directly.
+  void clearAll() {
+    state = TransactionPosState.cleared();
+  }
+
   // ------------------ Getters ------------------
   List<TransactionDetailEntity> get getFilteredDetails {
     final query = state.searchQuery?.toLowerCase() ?? "";
@@ -229,9 +236,10 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
   Future<void> onStore({ProductEntity? product}) async {
     await _persistAndUpdateState(
-        List<TransactionDetailEntity>.from(state.details),
-        // set status to proses when explicitly storing/processing the order
-        forceStatus: TransactionStatus.proses);
+      List<TransactionDetailEntity>.from(state.details),
+      // set status to proses when explicitly storing/processing the order
+      forceStatus: TransactionStatus.proses,
+    );
   }
 
   Future<void> onShowMethodPayment() async {

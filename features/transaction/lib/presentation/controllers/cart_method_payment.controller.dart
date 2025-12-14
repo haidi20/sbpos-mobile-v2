@@ -25,7 +25,13 @@ class CartMethodPaymentController {
       return;
     }
 
-    
+    // Simpan transaksi di latar belakang tapi tunggu sampai selesai (status akan menjadi 'proses')
+    await _viewModel.onStore();
+
+    // Setelah berhasil disimpan, reset seluruh state POS ke kondisi awal
+    _viewModel.clearAll();
+    // Navigasi ke halaman daftar transaksi menggunakan router singleton
+    AppRouter.instance.router.go(AppRoutes.transaction);
   }
 
   void onToggleView() {
@@ -34,8 +40,8 @@ class CartMethodPaymentController {
     _viewModel.setViewMode(next);
   }
 
-  // Lightweight view model for order types used by the widget
-  // Keeps presentation logic out of the widget file.
+  // View model ringan untuk tipe pesanan yang digunakan oleh widget
+  // Menjaga logika presentasi tetap berada di controller, bukan di file widget.
   List<OrderTypeItemUiModel> getOrderTypeItems() {
     final state = ref.read(transactionPosViewModelProvider);
     final raw = _viewModel.getOrderTypes; // List<Map<String, Object?>>
