@@ -18,6 +18,7 @@ class TransactionTable {
   static const String colPaidAmount = 'paid_amount';
   static const String colChangeMoney = 'change_money';
   static const String colStatus = 'status';
+  static const String colIsPaid = 'is_paid';
   static const String colCancelationOtp = 'cancelation_otp';
   static const String colCancelationReason = 'cancelation_reason';
   static const String colCreatedAt = 'created_at';
@@ -43,6 +44,7 @@ class TransactionTable {
       $colTotalQty INTEGER,
       $colPaidAmount INTEGER,
       $colChangeMoney INTEGER,
+      $colIsPaid INTEGER NOT NULL DEFAULT 0,
       $colStatus TEXT NULL,
       $colCancelationOtp TEXT NULL,
       $colCancelationReason TEXT NULL,

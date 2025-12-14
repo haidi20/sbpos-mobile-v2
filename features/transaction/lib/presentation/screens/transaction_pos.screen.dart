@@ -36,17 +36,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
     final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
-    final filteredProducts = initialProducts.where((p) {
-      final matchesCategory = state.activeCategory == "All" ||
-          (p.category?.name ?? '') == state.activeCategory;
-      final searchQuery = state.searchQuery ?? '';
-      final matchesSearch = searchQuery.isEmpty ||
-          (p.name != null &&
-              p.name!.toLowerCase().contains(
-                    searchQuery.toLowerCase(),
-                  ));
-      return matchesCategory && matchesSearch;
-    }).toList();
+    final filteredProducts = viewModel.getFilteredProducts(initialProducts);
 
     return Scaffold(
       backgroundColor: AppColors.sbBg,
@@ -228,6 +218,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
               itemCount: filteredProducts.length,
               itemBuilder: (context, index) {
                 final product = filteredProducts[index];
+
                 return ProductCard(
                   product: product,
                   onTap: () {

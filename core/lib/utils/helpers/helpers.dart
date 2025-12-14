@@ -108,3 +108,17 @@ extension DateTimeReadableId on DateTime {
     }
   }
 }
+
+extension DateTimeDisplay on DateTime {
+  /// Returns a compact localized date time string in format `dd/MM/yyyy HH:mm`.
+  String toDisplayDateTime() {
+    final d = this;
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString();
+    final hh = d.hour.toString().padLeft(2, '0');
+    final min = d.minute.toString().padLeft(2, '0');
+    return '$dd/$mm/$yyyy $hh:$min';
+  }
+}
+

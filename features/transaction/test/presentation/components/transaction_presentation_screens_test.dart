@@ -1,12 +1,12 @@
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:transaction/presentation/screens/transaction.screen.dart';
+import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 import 'package:transaction/presentation/sheets/transaction_detail.sheet.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
@@ -85,13 +85,13 @@ void main() {
   final fakeRepo = FakeTransactionRepository();
 
   group('Transaction presentation screens', () {
-    testWidgets('TransactionScreen builds with provider override',
+    testWidgets('TransactionHistoryScreen builds with provider override',
         (tester) async {
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionViewModelProvider.overrideWith((ref) => TransactionViewModel(
-            GetTransactionsUsecase(fakeRepo),
-            GetTransactionsOffline(fakeRepo))),
-      ], child: const MaterialApp(home: TransactionScreen())));
+        transactionHistoryViewModelProvider.overrideWith((ref) =>
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
+                GetTransactionsOffline(fakeRepo))),
+      ], child: const MaterialApp(home: TransactionHistoryScreen())));
 
       await tester.pumpAndSettle();
       expect(find.text('Riwayat Transaksi'), findsOneWidget);

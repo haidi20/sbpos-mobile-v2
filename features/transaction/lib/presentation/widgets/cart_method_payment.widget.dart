@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class OrderTypeSelector extends StatelessWidget {
   final void Function(String) onChanged;
@@ -146,8 +147,8 @@ class OjolProviderSelector extends StatelessWidget {
 }
 
 class PaymentMethodSelector extends StatelessWidget {
-  final String value;
-  final void Function(String) onChanged;
+  final EPaymentMethod value;
+  final void Function(EPaymentMethod) onChanged;
   const PaymentMethodSelector({
     super.key,
     required this.value,
@@ -177,7 +178,7 @@ class PaymentMethodSelector extends StatelessWidget {
         child: Row(
           children: methods.map((m) {
             final id = m['id'] as String;
-            final sel = id == value;
+            final sel = id == value.name;
 
             return Expanded(
               child: TextButton(
@@ -186,7 +187,8 @@ class PaymentMethodSelector extends StatelessWidget {
                   backgroundColor: sel ? Colors.white : Colors.transparent,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                onPressed: () => onChanged(id),
+                onPressed: () => onChanged(
+                    EPaymentMethod.values.firstWhere((e) => e.name == id)),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -208,8 +210,11 @@ class PaymentMethodSelector extends StatelessWidget {
 class PaymentDetails extends StatelessWidget {
   final int cashReceived;
   final List cartDetails;
-  final String paymentMethod;
+  final EPaymentMethod paymentMethod;
   final void Function(int) onCashChanged;
+  final int Function() computeCartTotal;
+  final int Function() computeGrandTotal;
+  final int Function() computeChange;
 
   const PaymentDetails({
     super.key,
@@ -217,26 +222,15 @@ class PaymentDetails extends StatelessWidget {
     required this.cashReceived,
     required this.paymentMethod,
     required this.onCashChanged,
+    required this.computeCartTotal,
+    required this.computeGrandTotal,
+    required this.computeChange,
   });
-
-  int _computeCartTotal() {
-    try {
-      return cartDetails.fold<int>(0, (s, d) {
-        final subtotal =
-            (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 1,),)) as int;
-        return s + subtotal;
-      });
-    } catch (_) {
-      return 0;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final cartTotal = _computeCartTotal();
-    final tax = (cartTotal * 0.1).round();
-    final grandTotal = cartTotal + tax;
-    final change = cashReceived - grandTotal;
+    final grandTotal = computeGrandTotal();
+    final change = computeChange();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -245,7 +239,7 @@ class PaymentDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade100),
       ),
-      child: paymentMethod == 'cash'
+      child: paymentMethod == EPaymentMethod.cash
           ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text(
                 'Uang Diterima',
@@ -271,7 +265,7 @@ class PaymentDetails extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(children: [
                   ElevatedButton(
-                    onPressed: () => onCashChanged(grandTotal),
+                    onPressed: () => onCashChanged(computeGrandTotal()),
                     child: const Text('Uang Pas'),
                   ),
                   const SizedBox(width: 8),
@@ -305,15 +299,16 @@ class PaymentDetails extends StatelessWidget {
                     ]),
               ),
             ])
-          : paymentMethod == 'qris'
+          : paymentMethod == EPaymentMethod.qris
               ? Column(children: [
                   Container(
                     width: 160,
                     height: 160,
                     color: Colors.white,
                     child: Image.network(
-                        'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAY-$grandTotal',
-                        fit: BoxFit.cover),
+                      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAY-$grandTotal',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -400,35 +395,33 @@ class BankRow extends StatelessWidget {
 
 class FooterSummary extends StatelessWidget {
   final List details;
-  final String viewMode;
+  final EViewMode viewMode;
+  final bool isPaid;
   final VoidCallback onProcess;
   final VoidCallback onToggleView;
+  final void Function(bool) onIsPaidChanged;
+  final int Function() computeCartTotal;
+  final int Function() computeTax;
+  final int Function() computeGrandTotal;
 
   const FooterSummary({
     super.key,
     required this.details,
     required this.viewMode,
+    required this.isPaid,
     required this.onProcess,
     required this.onToggleView,
+    required this.onIsPaidChanged,
+    required this.computeCartTotal,
+    required this.computeTax,
+    required this.computeGrandTotal,
   });
-
-  int _computeCartTotal() {
-    try {
-      return details.fold<int>(0, (s, d) {
-        final subtotal =
-            (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 1,),)) as int;
-        return s + subtotal;
-      });
-    } catch (_) {
-      return 0;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final cartTotal = _computeCartTotal();
-    final tax = (cartTotal * 0.1).round();
-    final grandTotal = cartTotal + tax;
+    final cartTotal = computeCartTotal();
+    final tax = computeTax();
+    final grandTotal = computeGrandTotal();
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -493,14 +486,29 @@ class FooterSummary extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          // Langsung Bayar checkbox
+          Row(
+            children: [
+              Checkbox(
+                value: isPaid,
+                onChanged: (v) => onIsPaidChanged(v ?? false),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(child: Text('Langsung Bayar')),
+            ],
+          ),
+          const SizedBox(height: 8),
           ElevatedButton(
-            onPressed: viewMode == 'cart' ? onToggleView : onProcess,
+            onPressed: viewMode == EViewMode.cart ? onToggleView : onProcess,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
-              backgroundColor: viewMode == 'cart' ? Colors.orange : Colors.blue,
+              backgroundColor:
+                  viewMode == EViewMode.cart ? Colors.orange : Colors.blue,
             ),
             child: Text(
-              viewMode == 'cart' ? 'Lanjut Pembayaran' : 'Bayar Sekarang',
+              viewMode == EViewMode.cart
+                  ? 'Lanjut Pembayaran'
+                  : 'Bayar Sekarang',
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.white,

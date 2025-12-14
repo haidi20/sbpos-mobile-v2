@@ -15,7 +15,6 @@ import 'package:setting/presentation/screens/notification_setting_screen.dart';
 
 import 'package:dashboard/presentation/screens/report_screen.dart';
 import 'package:product/presentation/screens/inventory_screen.dart';
-import 'package:transaction/presentation/screens/transaction.screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/presentation/screens/product_management_screen.dart';
@@ -60,13 +59,6 @@ class AppRouter {
           name: AppRoutes.notification,
           pageBuilder: (context, state) {
             return const MaterialPage(child: NotificationScreen());
-          },
-        ),
-        GoRoute(
-          path: AppRoutes.transaction,
-          name: AppRoutes.transaction,
-          pageBuilder: (context, state) {
-            return const MaterialPage(child: TransactionScreen());
           },
         ),
         GoRoute(

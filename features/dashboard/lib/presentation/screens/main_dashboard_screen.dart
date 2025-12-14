@@ -3,8 +3,8 @@ import 'package:dashboard/presentation/widgets/main_header.dart';
 import 'package:dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:dashboard/presentation/view_models/dashboard.state.dart';
 import 'package:dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:transaction/presentation/screens/transaction.screen.dart';
 import 'package:dashboard/presentation/controllers/dashboard.controller.dart';
+import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 import 'package:dashboard/presentation/widgets/bottom_navigation_bar_custom.dart';
 import 'package:dashboard/presentation/component/floating_action_button_custom.dart';
 
@@ -45,7 +45,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
       // Body
       body: state.activeTab == AppTab.dashboard
           ? const DashboardScreen()
-          : const TransactionScreen(),
+          : const TransactionHistoryScreen(),
 
       // --- BAGIAN INI YANG PENTING (MENGGANTIKAN BottomNav React) ---
 

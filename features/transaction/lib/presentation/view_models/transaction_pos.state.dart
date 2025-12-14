@@ -14,6 +14,17 @@ enum EOrderType {
   takeAway,
 }
 
+enum EViewMode {
+  cart,
+  checkout,
+}
+
+enum EPaymentMethod {
+  cash,
+  qris,
+  transfer,
+}
+
 class TransactionPosState {
   final String? error;
   final bool isLoading;
@@ -21,12 +32,12 @@ class TransactionPosState {
   final int? activeNoteId;
   final String? searchQuery;
   final ETypeCart typeCart;
-  // UI state for payment flow
-  final EOrderType orderType; // 'dine_in' | 'take_away' | 'online'
+  final EOrderType orderType;
   final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
-  final String paymentMethod; // 'cash' | 'qris' | 'transfer'
+  final EPaymentMethod paymentMethod;
   final int cashReceived;
-  final String viewMode; // 'cart' | 'checkout'
+  final EViewMode viewMode;
+  final bool isPaid;
   final bool showErrorSnackbar;
   final String activeCategory;
   final TransactionEntity? transaction;
@@ -45,9 +56,10 @@ class TransactionPosState {
     this.typeCart = ETypeCart.main,
     this.orderType = EOrderType.dineIn,
     this.ojolProvider = '',
-    this.paymentMethod = 'cash',
+    this.paymentMethod = EPaymentMethod.cash,
     this.cashReceived = 0,
-    this.viewMode = 'cart',
+    this.viewMode = EViewMode.cart,
+    this.isPaid = false,
     this.showErrorSnackbar = false,
     List<TransactionDetailEntity>? details,
   }) : details = details ?? const [];
@@ -55,20 +67,21 @@ class TransactionPosState {
   TransactionPosState copyWith({
     String? error,
     bool? isLoading,
-    String? viewMode,
+    EViewMode? viewMode,
     int? cashReceived,
     String? orderNote,
     int? activeNoteId,
     String? searchQuery,
     EOrderType? orderType,
     String? ojolProvider,
-    String? paymentMethod,
+    EPaymentMethod? paymentMethod,
     ETypeCart? typeCart,
     String? activeCategory,
     bool? showErrorSnackbar,
     TransactionEntity? transaction,
     CustomerEntity? selectedCustomer,
     List<TransactionDetailEntity>? details,
+    bool? isPaid,
   }) {
     return TransactionPosState(
       error: error ?? this.error,
@@ -80,6 +93,7 @@ class TransactionPosState {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       cashReceived: cashReceived ?? this.cashReceived,
       viewMode: viewMode ?? this.viewMode,
+      isPaid: isPaid ?? this.isPaid,
       showErrorSnackbar: showErrorSnackbar ?? this.showErrorSnackbar,
       typeCart: typeCart ?? this.typeCart,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -105,9 +119,10 @@ class TransactionPosState {
       // reset UI state to defaults
       orderType: EOrderType.dineIn,
       ojolProvider: '',
-      paymentMethod: 'cash',
+      paymentMethod: EPaymentMethod.cash,
       cashReceived: 0,
-      viewMode: 'cart',
+      viewMode: EViewMode.cart,
+      isPaid: false,
       showErrorSnackbar: false,
     );
   }

@@ -1,12 +1,11 @@
 class AppRoutes {
   // static const String mode = '/mode';
   static const String login = '/login';
+  static const String outlet = '/outlet';
   static const String report = '/report';
   static const String settings = '/settings';
   static const String dashboard = '/dashboard';
-  static const String outlet = '/outlet';
   static const String inventory = '/inventory';
-  static const String transaction = '/transaction';
   static const String landingPageMenu = '/landing';
   static const String notification = '/notification';
   static const String comingSoonScreen = '/coming-soon';

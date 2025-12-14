@@ -1,14 +1,15 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/usecases/get_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
-import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
-import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
-import 'package:transaction/presentation/view_models/transaction.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
+import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
+import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
+import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/providers/transaction_repository.provider.dart';
 
 // Usecase providers (dipindahkan dari transaction_usecase_providers.dart)
@@ -62,9 +63,10 @@ final transactionPosViewModelProvider =
   );
 });
 
-final transactionViewModelProvider =
-    StateNotifierProvider<TransactionViewModel, TransactionState>((ref) {
+final transactionHistoryViewModelProvider =
+    StateNotifierProvider<TransactionHistoryViewModel, TransactionHistoryState>(
+        (ref) {
   final getTxn = ref.watch(getTransactions);
   final getTxnOffline = ref.watch(getTransactionsOffline);
-  return TransactionViewModel(getTxn, getTxnOffline);
+  return TransactionHistoryViewModel(getTxn, getTxnOffline);
 });

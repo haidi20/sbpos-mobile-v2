@@ -26,9 +26,11 @@ void main() {
         (WidgetTester tester) async {
       final model = transactionList.first; // dummy TransactionModel
 
+      final entity = TransactionEntity.fromModel(model);
+
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
-          body: TransactionCard(tx: model, onTap: () {}),
+          body: TransactionCard(tx: entity, onTap: () {}),
         ),
       ));
 

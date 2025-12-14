@@ -7,7 +7,9 @@ import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionEntity {
   final int? id;
+  final int? idServer;
   final int? shiftId;
+  final DateTime? syncedAt;
   final int outletId;
   final int sequenceNumber;
   final int orderTypeId;
@@ -20,6 +22,7 @@ class TransactionEntity {
   final int totalQty;
   final int? paidAmount;
   final int changeMoney;
+  final bool isPaid;
   final TransactionStatus status;
   final String? cancelationOtp;
   final String? cancelationReason;
@@ -31,6 +34,7 @@ class TransactionEntity {
 
   const TransactionEntity({
     this.id,
+    this.idServer,
     this.shiftId,
     required this.outletId,
     required this.sequenceNumber,
@@ -44,6 +48,7 @@ class TransactionEntity {
     required this.totalQty,
     this.paidAmount,
     this.changeMoney = 0,
+    this.isPaid = false,
     this.status = TransactionStatus.pending,
     this.cancelationOtp,
     this.cancelationReason,
@@ -52,10 +57,12 @@ class TransactionEntity {
     this.updatedAt,
     this.deletedAt,
     this.details,
+    this.syncedAt,
   });
 
   TransactionEntity copyWith({
     int? id,
+    int? idServer,
     int? shiftId,
     int? outletId,
     int? sequenceNumber,
@@ -69,6 +76,7 @@ class TransactionEntity {
     int? totalQty,
     int? paidAmount,
     int? changeMoney,
+    bool? isPaid,
     TransactionStatus? status,
     String? cancelationOtp,
     String? cancelationReason,
@@ -77,9 +85,11 @@ class TransactionEntity {
     DateTime? updatedAt,
     DateTime? deletedAt,
     List<TransactionDetailEntity>? details,
+    DateTime? syncedAt,
   }) {
     return TransactionEntity(
       id: id ?? this.id,
+      idServer: idServer ?? this.idServer,
       shiftId: shiftId ?? this.shiftId,
       outletId: outletId ?? this.outletId,
       sequenceNumber: sequenceNumber ?? this.sequenceNumber,
@@ -93,6 +103,7 @@ class TransactionEntity {
       totalQty: totalQty ?? this.totalQty,
       paidAmount: paidAmount ?? this.paidAmount,
       changeMoney: changeMoney ?? this.changeMoney,
+      isPaid: isPaid ?? this.isPaid,
       status: status ?? this.status,
       cancelationOtp: cancelationOtp ?? this.cancelationOtp,
       cancelationReason: cancelationReason ?? this.cancelationReason,
@@ -101,12 +112,14 @@ class TransactionEntity {
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       details: details ?? this.details,
+      syncedAt: syncedAt ?? this.syncedAt,
     );
   }
 
   factory TransactionEntity.fromModel(TransactionModel model) {
     return TransactionEntity(
       id: model.id,
+      idServer: model.idServer,
       shiftId: model.shiftId,
       outletId: model.outletId!,
       sequenceNumber: model.sequenceNumber!,
@@ -120,6 +133,7 @@ class TransactionEntity {
       totalQty: model.totalQty!,
       paidAmount: model.paidAmount,
       changeMoney: model.changeMoney ?? 0,
+      isPaid: model.isPaid ?? false,
       status: model.status ?? TransactionStatus.pending,
       cancelationOtp: model.cancelationOtp,
       cancelationReason: model.cancelationReason,
@@ -127,6 +141,7 @@ class TransactionEntity {
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
       deletedAt: model.deletedAt,
+      syncedAt: model.syncedAt,
       details: model.details
           ?.map((m) => TransactionDetailEntity.fromModel(m))
           .toList(),
@@ -136,6 +151,7 @@ class TransactionEntity {
   TransactionModel toModel() {
     return TransactionModel(
       id: id,
+      idServer: idServer,
       shiftId: shiftId,
       outletId: outletId,
       sequenceNumber: sequenceNumber,
@@ -150,12 +166,14 @@ class TransactionEntity {
       paidAmount: paidAmount,
       changeMoney: changeMoney,
       status: status,
+      isPaid: isPaid,
       cancelationOtp: cancelationOtp,
       cancelationReason: cancelationReason,
       ojolProvider: ojolProvider,
       createdAt: createdAt,
       updatedAt: updatedAt,
       deletedAt: deletedAt,
+      syncedAt: syncedAt,
       details: details?.map((d) => d.toModel()).toList(),
     );
   }
@@ -193,6 +211,7 @@ class TransactionEntity {
   @override
   int get hashCode => Object.hashAll([
         id,
+        idServer,
         shiftId,
         outletId,
         sequenceNumber,
@@ -213,11 +232,12 @@ class TransactionEntity {
         createdAt,
         updatedAt,
         deletedAt,
+        syncedAt,
       ]);
 
   @override
   String toString() {
-    return 'TransactionEntity(id: $id, shiftId: $shiftId, outletId: $outletId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, details: $details)';
+    return 'TransactionEntity(id: $id, idServer: $idServer, shiftId: $shiftId, outletId: $outletId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, syncedAt: $syncedAt, details: $details)';
   }
 
   Color get statusColor => status.color;

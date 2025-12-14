@@ -119,7 +119,6 @@ void main() {
       // 4) Daftar rute yang akan di-capture
       final routePaths = <String>[
         AppRoutes.dashboard,
-        AppRoutes.transaction,
         AppRoutes.transactionPos,
         AppRoutes.transactionHistory,
         AppRoutes.inventory,

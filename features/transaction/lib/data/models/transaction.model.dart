@@ -17,6 +17,7 @@ class TransactionModel {
   final int? totalQty;
   final int? paidAmount;
   final int? changeMoney;
+  final bool? isPaid;
   final TransactionStatus? status;
   final String? cancelationOtp;
   final String? cancelationReason;
@@ -43,6 +44,7 @@ class TransactionModel {
     this.totalQty,
     this.paidAmount,
     this.changeMoney,
+    this.isPaid,
     this.status,
     this.cancelationOtp,
     this.cancelationReason,
@@ -70,6 +72,7 @@ class TransactionModel {
     int? totalQty,
     int? paidAmount,
     int? changeMoney,
+    bool? isPaid,
     TransactionStatus? status,
     String? cancelationOtp,
     String? cancelationReason,
@@ -96,6 +99,7 @@ class TransactionModel {
       totalQty: totalQty ?? this.totalQty,
       paidAmount: paidAmount ?? this.paidAmount,
       changeMoney: changeMoney ?? this.changeMoney,
+      isPaid: isPaid ?? this.isPaid,
       status: status ?? this.status,
       cancelationOtp: cancelationOtp ?? this.cancelationOtp,
       cancelationReason: cancelationReason ?? this.cancelationReason,
@@ -125,6 +129,11 @@ class TransactionModel {
         totalQty: _toInt(json['total_qty']),
         paidAmount: _toInt(json['paid_amount']),
         changeMoney: _toInt(json['change_money']),
+        isPaid: (json['is_paid'] != null)
+            ? ((json['is_paid'] is int)
+                ? (json['is_paid'] as int) == 1
+                : (json['is_paid'].toString() == '1'))
+            : null,
         status: _statusFromString(json['status'] as String?),
         cancelationOtp: json['cancelation_otp'],
         cancelationReason: json['cancelation_reason'],
@@ -164,6 +173,7 @@ class TransactionModel {
         'paid_amount': paidAmount,
         // DB migration expects change_money NOT NULL DEFAULT 0
         'change_money': changeMoney ?? 0,
+        'is_paid': (isPaid == true) ? 1 : 0,
         // store enum as string for DB/JSON
         'status': _statusToString(status) ?? 'Pending',
         'cancelation_otp': cancelationOtp,
@@ -193,6 +203,7 @@ class TransactionModel {
         'paid_amount': paidAmount,
         // ensure DB non-null default
         'change_money': changeMoney ?? 0,
+        'is_paid': (isPaid == true) ? 1 : 0,
         // store enum as string
         'status': _statusToString(status) ?? 'Pending',
         'cancelation_otp': cancelationOtp,
@@ -225,6 +236,8 @@ class TransactionModel {
       paidAmount: _toInt(map['paid_amount']),
       // ensure changeMoney defaults to 0
       changeMoney: _toInt(map['change_money']) ?? 0,
+      // read is_paid as int -> bool
+      isPaid: ((_toInt(map['is_paid']) ?? 0) == 1),
       // read ojol_provider from local db map
       ojolProvider: map['ojol_provider'] as String?,
       // parse stored status string into enum, default to Pending

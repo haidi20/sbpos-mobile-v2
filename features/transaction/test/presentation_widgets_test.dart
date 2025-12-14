@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transaction/presentation/components/order.card.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/summary_row.dart';
+import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/components/transaction.card.dart';
-import 'package:transaction/presentation/view_models/transaction.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
-import 'package:transaction/presentation/screens/transaction.screen.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
@@ -149,7 +149,7 @@ void main() {
       // Provide both viewmodel overrides in a single ProviderScope to avoid
       // changing overrides mid-test (Riverpod limitation).
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionViewModelProvider.overrideWith((ref) => TransactionViewModel(
+        transactionHistoryViewModelProvider.overrideWith((ref) => TransactionHistoryViewModel(
             GetTransactionsUsecase(fakeRepo),
             GetTransactionsOffline(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
@@ -158,14 +158,14 @@ void main() {
                 UpdateTransaction(fakeRepo),
                 DeleteTransaction(fakeRepo),
                 GetTransactionActive(fakeRepo))),
-      ], child: const MaterialApp(home: TransactionScreen())));
+      ], child: const MaterialApp(home: TransactionHistoryScreen())));
 
       await tester.pumpAndSettle();
-      expect(find.byType(TransactionScreen), findsOneWidget);
+      expect(find.byType(TransactionHistoryScreen), findsOneWidget);
 
       // POS screen reuse same ProviderScope; just rebuild the widget tree
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionViewModelProvider.overrideWith((ref) => TransactionViewModel(
+        transactionHistoryViewModelProvider.overrideWith((ref) => TransactionHistoryViewModel(
             GetTransactionsUsecase(fakeRepo),
             GetTransactionsOffline(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
@@ -181,7 +181,7 @@ void main() {
 
       // Cart bottom sheet
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionViewModelProvider.overrideWith((ref) => TransactionViewModel(
+        transactionHistoryViewModelProvider.overrideWith((ref) => TransactionHistoryViewModel(
             GetTransactionsUsecase(fakeRepo),
             GetTransactionsOffline(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
