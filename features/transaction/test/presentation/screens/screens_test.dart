@@ -43,7 +43,7 @@ class _FakeRepo implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline}) async =>
+          {bool? isOffline, IQueryGetTransactions? query}) async =>
       Right(_list);
 
   @override

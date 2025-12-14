@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 
 abstract class TransactionRepository {
@@ -17,7 +18,7 @@ abstract class TransactionRepository {
 
   /// Get all transactions (plural)
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-      {bool? isOffline});
+      {bool? isOffline, QueryGetTransactions? query});
 
   /// Get the latest single transaction (created_at desc limit 1)
   Future<Either<Failure, TransactionEntity>> getLatestTransaction(

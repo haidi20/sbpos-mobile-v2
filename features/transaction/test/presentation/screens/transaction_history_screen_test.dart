@@ -28,7 +28,7 @@ class _FakeRepo implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline}) async =>
+          {bool? isOffline, IQueryGetTransactions? query}) async =>
       Right([]);
 
   @override
@@ -109,8 +109,8 @@ void main() {
     expect(vm.state.selectedDate?.month, now.month);
     expect(vm.state.selectedDate?.day, now.day);
 
-    // tap Kemarin tab
-    final kemarinFinder = find.widgetWithText(ChoiceChip, 'Kemarin');
+    // tap Kemarin tab (text label)
+    final kemarinFinder = find.text('Kemarin');
     expect(kemarinFinder, findsOneWidget);
     await tester.tap(kemarinFinder);
     await tester.pumpAndSettle();

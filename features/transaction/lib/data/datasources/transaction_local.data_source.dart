@@ -4,6 +4,7 @@ import 'package:core/data/datasources/core_database.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 
 class TransactionLocalDataSource with BaseErrorHelper {
   final CoreDatabase databaseHelper = CoreDatabase();
@@ -47,15 +48,16 @@ class TransactionLocalDataSource with BaseErrorHelper {
     }
   }
 
-  Future<List<TransactionModel>> getTransactions() async {
+  Future<List<TransactionModel>> getTransactions(
+      {QueryGetTransactions? query}) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
         _logWarning('Database gagal dibuka/null');
         return [];
       }
-      final query = createDao(db);
-      final result = await query.getTransactions();
+      final dao = createDao(db);
+      final result = await dao.getTransactions(query: query);
       _logInfo('getTransactions: success count=${result.length}');
       return result;
     } catch (e, st) {

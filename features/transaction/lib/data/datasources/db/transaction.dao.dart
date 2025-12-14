@@ -3,6 +3,7 @@ import 'transaction.table.dart';
 import 'transaction_detail.table.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 
 class TransactionDao {
   final Database database;
@@ -21,9 +22,36 @@ class TransactionDao {
 
   TransactionDao(this.database);
 
-  Future<List<TransactionModel>> getTransactions() async {
+  Future<List<TransactionModel>> getTransactions(
+      {QueryGetTransactions? query}) async {
     try {
-      final txs = await database.query(TransactionTable.tableName);
+      // Build where clause when query provided: match sequence_number or notes, and optional date
+      String? where;
+      final List<Object?> whereArgs = [];
+      if (query != null) {
+        final parts = <String>[];
+        if (query.search != null && query.search!.isNotEmpty) {
+          final like = '%${query.search!.replaceAll('%', '\%')}%';
+          parts.add(
+              'CAST(${TransactionTable.colSequenceNumber} AS TEXT) LIKE ? OR ${TransactionTable.colNotes} LIKE ?');
+          whereArgs.addAll([like, like]);
+        }
+        if (query.date != null) {
+          // match date prefix (ISO yyyy-MM-dd)
+          final prefix = query.date!.toIso8601String().substring(0, 10) + '%';
+          parts.add('${TransactionTable.colDate} LIKE ?');
+          whereArgs.add(prefix);
+        }
+        if (parts.isNotEmpty) {
+          where = parts.join(' AND ');
+        }
+      }
+
+      final txs = await database.query(
+        TransactionTable.tableName,
+        where: where,
+        whereArgs: whereArgs.isEmpty ? null : whereArgs,
+      );
       List<TransactionModel> result = [];
       for (var t in txs) {
         final details = await database.query(
@@ -183,13 +211,21 @@ class TransactionDao {
 
   Future<int> deleteTransaction(int id) async {
     try {
-      final res = await database.delete(
-        TransactionTable.tableName,
-        where: '${TransactionTable.colId} = ?',
-        whereArgs: [id],
-      );
-      _logInfo('deleteTransaction: success id=$id rows=$res');
-      return res;
+      // ensure details are removed as well to avoid orphaned rows
+      return await database.transaction((txn) async {
+        await txn.delete(
+          TransactionDetailTable.tableName,
+          where: '${TransactionDetailTable.colTransactionId} = ?',
+          whereArgs: [id],
+        );
+        final res = await txn.delete(
+          TransactionTable.tableName,
+          where: '${TransactionTable.colId} = ?',
+          whereArgs: [id],
+        );
+        _logInfo('deleteTransaction: success id=$id rows=$res');
+        return res;
+      });
     } catch (e, s) {
       _logSevere('Error deleteTransaction: $e', e, s);
       rethrow;
@@ -298,6 +334,12 @@ class TransactionDao {
               TransactionDetailTable.colUpdatedAt:
                   DateTime.now().toIso8601String(),
             };
+            // if incoming payload contains a note, include it in the update
+            if (d.containsKey(TransactionDetailTable.colNote) &&
+                d[TransactionDetailTable.colNote] != null) {
+              updateMap[TransactionDetailTable.colNote] =
+                  d[TransactionDetailTable.colNote];
+            }
             await txn.update(
               TransactionDetailTable.tableName,
               updateMap,

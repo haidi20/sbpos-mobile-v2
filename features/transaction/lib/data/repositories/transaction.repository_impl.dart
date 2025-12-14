@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
 import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
@@ -18,8 +19,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     required this.local,
   });
 
-  Future<List<TransactionEntity>> _getLocalEntities() async {
-    final localResp = await local.getTransactions();
+  Future<List<TransactionEntity>> _getLocalEntities(
+      {QueryGetTransactions? query}) async {
+    final localResp = await local.getTransactions(query: query);
     return localResp
         .map((model) => TransactionEntity.fromModel(model))
         .toList();
@@ -91,12 +93,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<Either<Failure, List<TransactionEntity>>> getDataTransactions({
     bool? isOffline,
+    QueryGetTransactions? query,
   }) async {
     // Jika pemanggil memaksa mode offline, langsung ambil dari local.
     // Return local list even when empty to avoid surfacing network errors
     // when caller explicitly requested offline mode.
     if (isOffline == true) {
-      final localEntities = await _getLocalEntities();
+      final localEntities = await _getLocalEntities(query: query);
       return Right(localEntities);
     }
 
@@ -229,9 +232,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-      {bool? isOffline}) async {
+      {bool? isOffline, QueryGetTransactions? query}) async {
     // reuse getDataTransactions
-    return await getDataTransactions(isOffline: isOffline);
+    return await getDataTransactions(isOffline: isOffline, query: query);
   }
 
   @override

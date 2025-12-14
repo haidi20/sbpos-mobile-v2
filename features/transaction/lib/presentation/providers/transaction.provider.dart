@@ -67,6 +67,5 @@ final transactionHistoryViewModelProvider =
     StateNotifierProvider<TransactionHistoryViewModel, TransactionHistoryState>(
         (ref) {
   final getTxn = ref.watch(getTransactions);
-  final getTxnOffline = ref.watch(getTransactionsOffline);
-  return TransactionHistoryViewModel(getTxn, getTxnOffline);
+  return TransactionHistoryViewModel(getTxn);
 });

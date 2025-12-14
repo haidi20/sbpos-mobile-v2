@@ -1,7 +1,7 @@
 // Header + Search widget (extracted for testability)
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-import 'package:transaction/presentation/components/transaction.card.dart';
+import 'package:transaction/presentation/components/transaction_history.card.dart';
 
 class TransactionHistoryHeader extends StatelessWidget {
   final ValueChanged<String> onSearch;
@@ -112,7 +112,7 @@ class TransactionHistoryList extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = transactions[index];
-        return TransactionCard(
+        return TransactionHistoryCard(
           tx: tx,
           onTap: () => onTap(tx),
         );

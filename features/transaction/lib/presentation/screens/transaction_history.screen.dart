@@ -1,7 +1,6 @@
 import 'package:core/core.dart';
-import 'package:transaction/presentation/components/transaction.card.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/presentation/widgets/transaction_history_screen.widget.dart';
 import 'package:transaction/presentation/widgets/transaction_history_tabtime.widget.dart';
@@ -23,8 +22,8 @@ class _TransactionHistoryScreenState
   void initState() {
     super.initState();
     _controller = TransactionHistoryController();
-    Future.microtask(
-        () => ref.read(transactionHistoryViewModelProvider.notifier).refresh());
+    Future.microtask(() =>
+        ref.read(transactionHistoryViewModelProvider.notifier).onRefresh());
   }
 
   @override
@@ -34,7 +33,7 @@ class _TransactionHistoryScreenState
     final state = ref.watch(transactionHistoryViewModelProvider);
     // Menggunakan daftar transaksi yang sudah difilter dari ViewModel (berdasarkan state.searchQuery pada viewModel)
     final List<TransactionEntity> filteredTransactions =
-        viewModel.getFilteredTransactions;
+        viewModel.getTransactions;
 
     return Scaffold(
       backgroundColor: AppColors.sbBg,

@@ -43,7 +43,7 @@ class FakeTransactionRepository implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline}) async =>
+          {bool? isOffline, IQueryGetTransactions? query}) async =>
       const Right(<TransactionEntity>[]);
 
   @override
@@ -149,9 +149,9 @@ void main() {
       // Provide both viewmodel overrides in a single ProviderScope to avoid
       // changing overrides mid-test (Riverpod limitation).
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionHistoryViewModelProvider.overrideWith((ref) => TransactionHistoryViewModel(
-            GetTransactionsUsecase(fakeRepo),
-            GetTransactionsOffline(fakeRepo))),
+        transactionHistoryViewModelProvider.overrideWith((ref) =>
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
+                GetTransactionsOffline(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
             TransactionPosViewModel(
                 CreateTransaction(fakeRepo),
@@ -165,9 +165,9 @@ void main() {
 
       // POS screen reuse same ProviderScope; just rebuild the widget tree
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionHistoryViewModelProvider.overrideWith((ref) => TransactionHistoryViewModel(
-            GetTransactionsUsecase(fakeRepo),
-            GetTransactionsOffline(fakeRepo))),
+        transactionHistoryViewModelProvider.overrideWith((ref) =>
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
+                GetTransactionsOffline(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
             TransactionPosViewModel(
                 CreateTransaction(fakeRepo),
@@ -181,9 +181,9 @@ void main() {
 
       // Cart bottom sheet
       await tester.pumpWidget(ProviderScope(overrides: [
-        transactionHistoryViewModelProvider.overrideWith((ref) => TransactionHistoryViewModel(
-            GetTransactionsUsecase(fakeRepo),
-            GetTransactionsOffline(fakeRepo))),
+        transactionHistoryViewModelProvider.overrideWith((ref) =>
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
+                GetTransactionsOffline(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
             TransactionPosViewModel(
                 CreateTransaction(fakeRepo),

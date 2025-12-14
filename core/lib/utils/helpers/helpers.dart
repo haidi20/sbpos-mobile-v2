@@ -122,3 +122,17 @@ extension DateTimeDisplay on DateTime {
   }
 }
 
+
+extension DateDisplay on DateTime {
+  String toDisplayDate() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final date = DateTime(year, month, day);
+    if (date == today) return 'Hari ini';
+    if (date == today.subtract(const Duration(days: 1))) return 'Kemarin';
+    final dd = day.toString().padLeft(2, '0');
+    final mm = month.toString().padLeft(2, '0');
+    final yyyy = year.toString();
+    return '$dd/$mm/$yyyy';
+  }
+}

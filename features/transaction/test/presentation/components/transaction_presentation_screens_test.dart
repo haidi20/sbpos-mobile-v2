@@ -38,7 +38,7 @@ class FakeTransactionRepository implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline}) async =>
+          {bool? isOffline, IQueryGetTransactions? query}) async =>
       const Right(<TransactionEntity>[]);
 
   @override

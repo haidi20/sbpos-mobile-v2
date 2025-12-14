@@ -2,11 +2,11 @@
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 
-class TransactionCard extends StatelessWidget {
+class TransactionHistoryCard extends StatelessWidget {
   final TransactionEntity tx;
   final VoidCallback onTap;
 
-  const TransactionCard({
+  const TransactionHistoryCard({
     super.key,
     required this.tx,
     required this.onTap,
