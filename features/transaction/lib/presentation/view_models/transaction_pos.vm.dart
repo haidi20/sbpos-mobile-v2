@@ -216,10 +216,11 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     await _persistAndUpdateState(updated);
   }
 
-  Future<void> onStoreLocal({ProductEntity? product}) async {
-    // onStoreLocal: perform DB-first persistence using current state.details
+  Future<void> onStore({ProductEntity? product}) async {
     await _persistAndUpdateState(
-        List<TransactionDetailEntity>.from(state.details));
+        List<TransactionDetailEntity>.from(state.details),
+        // set status to proses when explicitly storing/processing the order
+        forceStatus: TransactionStatus.proses);
   }
 
   Future<void> onShowMethodPayment() async {
@@ -262,7 +263,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // then update state only when persistence succeeds.
   Future<void> _persistAndUpdateState(
       List<TransactionDetailEntity> updatedDetails,
-      {String? orderNote}) async {
+      {String? orderNote,
+      TransactionStatus? forceStatus}) async {
     try {
       state = state.copyWith(isLoading: true);
 
@@ -282,6 +284,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
           totalAmount: totalAmount,
           totalQty: totalQty,
           notes: orderNote ?? state.orderNote,
+          // allow forcing status (e.g., proses on explicit store), default pending
+          status: forceStatus ?? TransactionStatus.pending,
           details: updatedDetails,
         );
 
@@ -325,6 +329,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
             totalAmount: totalAmount,
             totalQty: totalQty,
             notes: orderNote ?? state.orderNote,
+            // preserve existing status unless forceStatus provided
+            status: forceStatus ?? state.transaction!.status,
           );
 
           final res = await _updateTransaction.call(txEntity, isOffline: true);

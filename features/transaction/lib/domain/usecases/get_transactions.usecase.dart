@@ -9,6 +9,10 @@ class GetTransactionsUsecase {
 
   Future<Either<Failure, List<TransactionEntity>>> call(
       {bool isOffline = false}) async {
-    return await repository.getTransactions(isOffline: isOffline);
+    try {
+      return await repository.getTransactions(isOffline: isOffline);
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
   }
 }

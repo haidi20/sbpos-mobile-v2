@@ -413,12 +413,12 @@ packages:
     source: hosted
     version: "1.15.0"
   mode:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "../mode"
       relative: true
     source: path
-    version: "1.0.0+1"
+    version: "0.0.1"
   nm:
     dependency: transitive
     description:

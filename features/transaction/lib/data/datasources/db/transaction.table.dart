@@ -12,6 +12,7 @@ class TransactionTable {
   static const String colPaymentMethod = 'payment_method';
   static const String colDate = 'date';
   static const String colNotes = 'notes';
+  static const String colOjolProvider = 'ojol_provider';
   static const String colTotalAmount = 'total_amount';
   static const String colTotalQty = 'total_qty';
   static const String colPaidAmount = 'paid_amount';
@@ -32,6 +33,7 @@ class TransactionTable {
       $colOutletId INTEGER,
       $colSequenceNumber INTEGER,
       $colOrderTypeId INTEGER,
+      $colOjolProvider TEXT,
       $colCategoryOrder TEXT,
       $colUserId INTEGER,
       $colPaymentMethod TEXT,

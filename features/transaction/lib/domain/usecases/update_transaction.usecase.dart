@@ -9,6 +9,10 @@ class UpdateTransaction {
 
   Future<Either<Failure, TransactionEntity>> call(TransactionEntity tx,
       {bool? isOffline}) async {
-    return await repository.updateTransaction(tx, isOffline: isOffline);
+    try {
+      return await repository.updateTransaction(tx, isOffline: isOffline);
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
   }
 }

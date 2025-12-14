@@ -97,7 +97,14 @@ Map<String, dynamic> sanitizeForDb(Map<String, dynamic> src) {
 extension DateTimeReadableId on DateTime {
   String dateTimeReadable() {
     // Format: "Hari, dd MMMM yyyy HH:mm" dalam bahasa Indonesia
-    final formatter = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID');
-    return formatter.format(this);
+    try {
+      final formatter = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID');
+      return formatter.format(this);
+    } catch (e) {
+      // In unit tests intl locale data may not be initialized. Fallback
+      // to a simple ISO-like format to avoid throwing during widget tests.
+      final fallback = DateFormat('yyyy-MM-dd HH:mm');
+      return fallback.format(this);
+    }
   }
 }

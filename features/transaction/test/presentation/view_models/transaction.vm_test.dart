@@ -150,7 +150,7 @@ void main() {
     });
 
     test(
-        'onStoreLocal creates transaction locally and assigns transactionId to details',
+        'onStore creates transaction locally and assigns transactionId to details',
         () async {
       const product = ProductEntity(id: 11, name: 'Product A', price: 10000.0);
 
@@ -163,7 +163,7 @@ void main() {
       );
       vm.state = vm.state.copyWith(transaction: null, details: [detail]);
 
-      await vm.onStoreLocal(product: product);
+      await vm.onStore(product: product);
 
       expect(vm.state.transaction, isNotNull);
       expect(vm.state.transaction?.toModel().toJson()['id'], equals(1));

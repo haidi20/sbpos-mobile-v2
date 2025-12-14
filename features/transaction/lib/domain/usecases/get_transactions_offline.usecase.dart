@@ -8,6 +8,10 @@ class GetTransactionsOffline {
   GetTransactionsOffline(this.repository);
 
   Future<Either<Failure, List<TransactionEntity>>> call() async {
-    return await repository.getTransactions(isOffline: true);
+    try {
+      return await repository.getTransactions(isOffline: true);
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
   }
 }

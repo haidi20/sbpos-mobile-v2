@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'transaction_status.dart';
-export 'transaction_status.dart';
+import 'transaction_status.extension.dart';
+export 'transaction_status.extension.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
@@ -23,6 +23,7 @@ class TransactionEntity {
   final TransactionStatus status;
   final String? cancelationOtp;
   final String? cancelationReason;
+  final String? ojolProvider;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
@@ -46,6 +47,7 @@ class TransactionEntity {
     this.status = TransactionStatus.pending,
     this.cancelationOtp,
     this.cancelationReason,
+    this.ojolProvider,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -70,6 +72,7 @@ class TransactionEntity {
     TransactionStatus? status,
     String? cancelationOtp,
     String? cancelationReason,
+    String? ojolProvider,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -93,6 +96,7 @@ class TransactionEntity {
       status: status ?? this.status,
       cancelationOtp: cancelationOtp ?? this.cancelationOtp,
       cancelationReason: cancelationReason ?? this.cancelationReason,
+      ojolProvider: ojolProvider ?? this.ojolProvider,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -119,6 +123,7 @@ class TransactionEntity {
       status: model.status ?? TransactionStatus.pending,
       cancelationOtp: model.cancelationOtp,
       cancelationReason: model.cancelationReason,
+      ojolProvider: model.ojolProvider,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
       deletedAt: model.deletedAt,
@@ -147,6 +152,7 @@ class TransactionEntity {
       status: status,
       cancelationOtp: cancelationOtp,
       cancelationReason: cancelationReason,
+      ojolProvider: ojolProvider,
       createdAt: createdAt,
       updatedAt: updatedAt,
       deletedAt: deletedAt,
@@ -178,13 +184,14 @@ class TransactionEntity {
         other.status == status &&
         other.cancelationOtp == cancelationOtp &&
         other.cancelationReason == cancelationReason &&
+        other.ojolProvider == ojolProvider &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.deletedAt == deletedAt;
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         id,
         shiftId,
         outletId,
@@ -202,10 +209,11 @@ class TransactionEntity {
         status,
         cancelationOtp,
         cancelationReason,
+        ojolProvider,
         createdAt,
         updatedAt,
         deletedAt,
-      );
+      ]);
 
   @override
   String toString() {

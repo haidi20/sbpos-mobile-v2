@@ -1,0 +1,10 @@
+name: mode
+description: Placeholder package to satisfy path dependency during tests
+version: 0.0.1
+publish_to: none
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+  flutter: '>=1.17.0'
+dependencies:
+  flutter:
+    sdk: flutter

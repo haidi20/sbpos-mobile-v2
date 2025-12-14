@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum TransactionStatus { lunas, pending, batal, unknown }
+enum TransactionStatus { lunas, pending, proses, batal, unknown }
 
 extension TransactionStatusExtension on TransactionStatus {
   String get value {
@@ -9,6 +9,8 @@ extension TransactionStatusExtension on TransactionStatus {
         return 'lunas';
       case TransactionStatus.pending:
         return 'pending';
+      case TransactionStatus.proses:
+        return 'proses';
       case TransactionStatus.batal:
         return 'batal';
       case TransactionStatus.unknown:
@@ -22,6 +24,8 @@ extension TransactionStatusExtension on TransactionStatus {
         return Colors.green;
       case TransactionStatus.pending:
         return Colors.orange;
+      case TransactionStatus.proses:
+        return Colors.blue;
       case TransactionStatus.batal:
         return Colors.red;
       case TransactionStatus.unknown:

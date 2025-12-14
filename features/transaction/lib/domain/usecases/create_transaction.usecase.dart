@@ -11,7 +11,11 @@ class CreateTransaction {
       {bool? isOffline}) async {
     // Ensure newly created transactions are marked as pending by default.
     final txWithPending = tx.copyWith(status: TransactionStatus.pending);
-    return await repository.createTransaction(txWithPending,
-        isOffline: isOffline);
+    try {
+      return await repository.createTransaction(txWithPending,
+          isOffline: isOffline);
+    } catch (e) {
+      return const Left(UnknownFailure());
+    }
   }
 }

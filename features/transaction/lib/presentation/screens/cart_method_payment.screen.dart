@@ -2,6 +2,7 @@ import 'package:core/core.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/widgets/cart_method_payment.widget.dart';
+import 'package:transaction/presentation/controllers/cart_method_payment.controller.dart';
 
 class CartMethodPaymentScreen extends ConsumerStatefulWidget {
   const CartMethodPaymentScreen({super.key});
@@ -14,11 +15,13 @@ class CartMethodPaymentScreen extends ConsumerStatefulWidget {
 class _CartMethodPaymentScreenState
     extends ConsumerState<CartMethodPaymentScreen> {
   late final ScrollController _scrollController;
+  late final CartMethodPaymentController _controller;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _controller = CartMethodPaymentController(ref, context);
   }
 
   @override
@@ -38,9 +41,8 @@ class _CartMethodPaymentScreenState
         mainAxisSize: MainAxisSize.min,
         children: [
           OrderTypeSelector(
-            orderTypes: viewModel.getOrderTypes,
-            value: stateTransaction.orderType,
-            onChanged: (v) => viewModel.setOrderType(v),
+            orderTypes: _controller.getOrderTypeItems(),
+            onChanged: (id) => _controller.selectOrderTypeById(id),
           ),
           const SizedBox(height: 12),
           if (stateTransaction.orderType == EOrderType.online)
@@ -64,19 +66,8 @@ class _CartMethodPaymentScreenState
           FooterSummary(
             details: stateTransaction.details,
             viewMode: stateTransaction.viewMode,
-            onToggleView: () => viewModel.setViewMode(
-                stateTransaction.viewMode == 'cart' ? 'checkout' : 'cart'),
-            onProcess: () {
-              if (stateTransaction.orderType == EOrderType.online &&
-                  (stateTransaction.ojolProvider.isEmpty)) {
-                viewModel.setShowErrorSnackbar(true);
-                Future.delayed(
-                  const Duration(seconds: 3),
-                  () => viewModel.setShowErrorSnackbar(false),
-                );
-                return;
-              }
-            },
+            onProcess: () => _controller.onProcess(),
+            onToggleView: () => _controller.onToggleView(),
           ),
           if (stateTransaction.showErrorSnackbar) const SizedBox(height: 8),
           if (stateTransaction.showErrorSnackbar) const ErrorSnackbar(),

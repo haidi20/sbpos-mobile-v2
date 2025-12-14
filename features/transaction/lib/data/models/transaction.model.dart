@@ -1,5 +1,5 @@
 import 'package:transaction/data/models/transaction_detail.model.dart';
-import 'package:transaction/domain/entitties/transaction_status.dart';
+import 'package:transaction/domain/entitties/transaction_status.extension.dart';
 
 class TransactionModel {
   final int? id;
@@ -20,6 +20,7 @@ class TransactionModel {
   final TransactionStatus? status;
   final String? cancelationOtp;
   final String? cancelationReason;
+  final String? ojolProvider;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
@@ -45,6 +46,7 @@ class TransactionModel {
     this.status,
     this.cancelationOtp,
     this.cancelationReason,
+    this.ojolProvider,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -71,6 +73,7 @@ class TransactionModel {
     TransactionStatus? status,
     String? cancelationOtp,
     String? cancelationReason,
+    String? ojolProvider,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -96,6 +99,7 @@ class TransactionModel {
       status: status ?? this.status,
       cancelationOtp: cancelationOtp ?? this.cancelationOtp,
       cancelationReason: cancelationReason ?? this.cancelationReason,
+      ojolProvider: ojolProvider ?? this.ojolProvider,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -112,6 +116,7 @@ class TransactionModel {
         sequenceNumber: _toInt(json['sequence_number']),
         orderTypeId: _toInt(json['order_type_id']),
         categoryOrder: json['category_order'],
+        ojolProvider: json['ojol_provider'] as String?,
         userId: _toInt(json['user_id']),
         paymentMethod: json['payment_method'],
         date: json['date'] != null ? DateTime.tryParse(json['date']) : null,
@@ -149,6 +154,7 @@ class TransactionModel {
         'sequence_number': sequenceNumber,
         'order_type_id': orderTypeId,
         'category_order': categoryOrder,
+        'ojol_provider': ojolProvider,
         'user_id': userId,
         'payment_method': paymentMethod,
         'date': date?.toIso8601String(),
@@ -177,6 +183,7 @@ class TransactionModel {
         'sequence_number': sequenceNumber,
         'order_type_id': orderTypeId,
         'category_order': categoryOrder,
+        'ojol_provider': ojolProvider,
         'user_id': userId,
         'payment_method': paymentMethod,
         'date': date?.toIso8601String(),
@@ -218,6 +225,8 @@ class TransactionModel {
       paidAmount: _toInt(map['paid_amount']),
       // ensure changeMoney defaults to 0
       changeMoney: _toInt(map['change_money']) ?? 0,
+      // read ojol_provider from local db map
+      ojolProvider: map['ojol_provider'] as String?,
       // parse stored status string into enum, default to Pending
       status: _statusFromString(map['status'] as String?),
       cancelationOtp: map['cancelation_otp'] as String?,
@@ -250,6 +259,8 @@ class TransactionModel {
         return TransactionStatus.lunas;
       case 'Pending':
         return TransactionStatus.pending;
+      case 'Proses':
+        return TransactionStatus.proses;
       case 'Batal':
         return TransactionStatus.batal;
       default:
@@ -264,6 +275,8 @@ class TransactionModel {
         return 'Lunas';
       case TransactionStatus.pending:
         return 'Pending';
+      case TransactionStatus.proses:
+        return 'Proses';
       case TransactionStatus.batal:
         return 'Batal';
       default:
