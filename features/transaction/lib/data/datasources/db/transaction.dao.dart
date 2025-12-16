@@ -31,14 +31,14 @@ class TransactionDao {
       if (query != null) {
         final parts = <String>[];
         if (query.search != null && query.search!.isNotEmpty) {
-          final like = '%${query.search!.replaceAll('%', '\%')}%';
+          final like = '%${query.search!.replaceAll('%', r'\%')}%';
           parts.add(
               'CAST(${TransactionTable.colSequenceNumber} AS TEXT) LIKE ? OR ${TransactionTable.colNotes} LIKE ?');
           whereArgs.addAll([like, like]);
         }
         if (query.date != null) {
           // match date prefix (ISO yyyy-MM-dd)
-          final prefix = query.date!.toIso8601String().substring(0, 10) + '%';
+          final prefix = '${query.date!.toIso8601String().substring(0, 10)}%';
           parts.add('${TransactionTable.colDate} LIKE ?');
           whereArgs.add(prefix);
         }

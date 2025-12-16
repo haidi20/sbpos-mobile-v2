@@ -8,7 +8,6 @@ import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
-import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/providers/transaction_repository.provider.dart';
 
@@ -21,11 +20,6 @@ final createTransaction = Provider((ref) {
 final getTransactions = Provider((ref) {
   final repo = ref.watch(transactionRepositoryProvider);
   return GetTransactionsUsecase(repo!);
-});
-
-final getTransactionsOffline = Provider((ref) {
-  final repo = ref.watch(transactionRepositoryProvider);
-  return GetTransactionsOffline(repo!);
 });
 
 final getTransaction = Provider((ref) {

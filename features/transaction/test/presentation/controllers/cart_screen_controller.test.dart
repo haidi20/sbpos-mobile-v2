@@ -7,6 +7,7 @@ import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
@@ -35,7 +36,7 @@ class _FakeRepo implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline, IQueryGetTransactions? query}) async =>
+          {bool? isOffline, QueryGetTransactions? query}) async =>
       Right([]);
 
   @override

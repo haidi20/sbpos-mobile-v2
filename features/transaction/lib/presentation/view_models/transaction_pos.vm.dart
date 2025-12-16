@@ -11,6 +11,8 @@ import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
 import 'package:transaction/data/dummy/order_type_dummy.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
 
 class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final CreateTransaction _createTransaction;
@@ -18,26 +20,33 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final DeleteTransaction _deleteTransaction;
   final GetTransactionActive _getTransactionActive;
   final _logger = Logger('TransactionPosViewModel');
+  late final TransactionPersistence _persistence;
   // Debounce timers for note updates
   Timer? _orderNoteDebounce;
   final Map<int, Timer> _itemNoteDebounces = {};
 
-  /// Membuat `TransactionPosViewModel` dan memulai pemuatan transaksi lokal.
-  /// Memanggil `_loadLocalTransaction()` saat inisialisasi untuk mengisi state
-  /// dari data transaksi yang tersimpan secara offline jika ada.
+  // Membuat `TransactionPosViewModel` dan memulai pemuatan transaksi lokal.
+  // Memanggil `_loadLocalTransaction()` saat inisialisasi untuk mengisi state
+  // dari data transaksi yang tersimpan secara offline jika ada.
   TransactionPosViewModel(
     this._createTransaction,
     this._updateTransaction,
     this._deleteTransaction,
     this._getTransactionActive,
   ) : super(TransactionPosState()) {
-    // load existing transaction from local DB (offline) on init
+    // initialize persistence service and load existing transaction from local DB
+    _persistence = TransactionPersistence(
+      _createTransaction,
+      _updateTransaction,
+      _deleteTransaction,
+      _logger,
+    );
     _loadLocalTransaction();
   }
 
   // ------------------ Getters ------------------
-  /// Mengembalikan daftar `TransactionDetailEntity` yang sudah difilter
-  /// berdasarkan `searchQuery` dan `activeCategory` untuk tampilan UI.
+  // Mengembalikan daftar `TransactionDetailEntity` yang sudah difilter
+  // berdasarkan `searchQuery` dan `activeCategory` untuk tampilan UI.
   List<TransactionDetailEntity> get getFilteredDetails {
     final query = state.searchQuery?.toLowerCase() ?? "";
     final category = state.activeCategory;
@@ -51,7 +60,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }).toList();
   }
 
-  /// Menghasilkan list tipe order (Map) yang siap dipakai oleh UI selector.
+  // Menghasilkan list tipe order (Map) yang siap dipakai oleh UI selector.
   List<Map<String, Object?>> get getOrderTypes {
     return orderTypeDummies.map((m) {
       final id = (m.idServer ?? m.id)?.toString() ?? m.name;
@@ -65,53 +74,35 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
   // Mengembalikan total keranjang dalam format rupiah sebagai `String`.
   String get getCartTotal {
-    final total = state.details.fold<int>(0, (sum, item) {
-      if (item.subtotal != null) return sum + (item.subtotal ?? 0);
-      final price = item.productPrice ?? 0;
-      final qty = item.qty ?? 0;
-      return sum + (price * qty);
-    });
+    final total = calculateCartTotal(state.details);
     return formatRupiah(total.toDouble());
   }
 
-  /// Menghitung total jumlah item (kuantitas) di dalam keranjang.
-  int get getCartCount =>
-      state.details.fold(0, (sum, item) => sum + (item.qty ?? 0));
+  // Menghitung total jumlah item (kuantitas) di dalam keranjang.
+  int get getCartCount => calculateCartCount(state.details);
 
-  /// Menghitung total nilai keranjang sebagai `int` (tanpa format).
-  /// Digunakan untuk perhitungan internal (tax, grand total, dll.).
+  // Menghitung total nilai keranjang sebagai `int` (tanpa format).
+  // Digunakan untuk perhitungan internal (tax, grand total, dll.).
   int get getCartTotalValue {
-    try {
-      final details = state.details;
-      return details.fold<int>(0, (s, d) {
-        final price = d.productPrice ?? 0;
-        final qty = d.qty ?? 1;
-        final subtotal = d.subtotal ?? (price * qty);
-        return s + subtotal;
-      });
-    } catch (_) {
-      return 0;
-    }
+    return calculateCartTotalValue(state.details);
   }
 
-  /// Menghitung pajak (10%) dari total keranjang.
+  // Menghitung pajak (10%) dari total keranjang.
   int get getTaxValue {
-    final cartTotal = getCartTotalValue;
-    return (cartTotal * 0.1).round();
+    return calculateTaxValue(state.details);
   }
 
-  /// Menghitung grand total (total + pajak).
+  // Menghitung grand total (total + pajak).
   int get getGrandTotalValue => getCartTotalValue + getTaxValue;
 
-  /// Menghitung kembalian berdasarkan `state.cashReceived` dikurangi
-  /// `getGrandTotalValue`.
+  // Menghitung kembalian berdasarkan `state.cashReceived` dikurangi
+  // `getGrandTotalValue`.
   int get getChangeValue {
-    final cash = state.cashReceived;
-    return cash - getGrandTotalValue;
+    return calculateChangeValue(state.cashReceived, state.details);
   }
 
-  /// Mengonversi `getOrderTypes` menjadi list `OrderTypeItemUiModel`
-  /// untuk ditampilkan pada selector tipe order di UI.
+  // Mengonversi `getOrderTypes` menjadi list `OrderTypeItemUiModel`
+  // untuk ditampilkan pada selector tipe order di UI.
   List<OrderTypeItemUiModel> getOrderTypeItems() {
     final raw = getOrderTypes; // List<Map<String, Object?>
     return raw.map((m) {
@@ -132,10 +123,10 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }).toList();
   }
 
-  /// Mengembalikan daftar produk yang sudah difilter berdasarkan state POS.
-  ///
-  /// Filter meliputi `activeCategory` dan `searchQuery` sehingga UI bisa
-  /// meminta daftar produk yang sudah disesuaikan dengan kondisi saat ini.
+  // Mengembalikan daftar produk yang sudah difilter berdasarkan state POS.
+  //
+  // Filter meliputi `activeCategory` dan `searchQuery` sehingga UI bisa
+  // meminta daftar produk yang sudah disesuaikan dengan kondisi saat ini.
   List<ProductEntity> getFilteredProducts(List<ProductEntity> products) {
     final category = state.activeCategory;
     final searchQuery = state.searchQuery?.toLowerCase() ?? '';
@@ -149,7 +140,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }).toList();
   }
 
-  /// Pilih `EOrderType` berdasarkan `id` string dari UI.
+  // Pilih `EOrderType` berdasarkan `id` string dari UI.
   void selectOrderTypeById(String id) {
     final type = id == 'dine_in'
         ? EOrderType.dineIn
@@ -160,9 +151,9 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   // ------------------ Setters / Mutators ------------------
-  /// Menambah atau mengurangi kuantitas produk pada detail berdasarkan
-  /// `productId` dan `delta`, lalu menyimpan perubahan ke database lokal.
-  Future<void> setUpdateQuantity(int productId, int delta) async {
+  // Menambah atau mengurangi kuantitas produk pada detail berdasarkan
+  // `productId` dan `valueAddQty`, lalu menyimpan perubahan ke database lokal.
+  Future<void> setUpdateQuantity(int productId, int valueAddQty) async {
     final index =
         state.details.indexWhere((item) => item.productId == productId);
     if (index == -1) return;
@@ -171,16 +162,21 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     // Defensive check
     if (index < 0 || index >= updated.length) return;
     final old = updated[index];
-    final newQty = (old.qty ?? 0) + delta;
+    final newQty = (old.qty ?? 0) + valueAddQty;
     if (newQty <= 0) {
       updated.removeAt(index);
     } else {
       final price = old.productPrice ?? 0;
-      updated[index] = old.copyWith(qty: newQty, subtotal: price * newQty);
+
+      updated[index] = old.copyWith(
+        qty: newQty,
+        subtotal: price * newQty,
+      );
     }
 
     // persist to DB first, then update state when success
-    await _persistAndUpdateState(updated);
+    await _persistence.persistAndUpdateState(
+        () => state, (s) => state = s, updated);
   }
 
   // Update Item Note with debounce to avoid rapid DB writes
@@ -200,8 +196,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     _itemNoteDebounces[productId]?.cancel();
     _itemNoteDebounces[productId] =
         Timer(const Duration(milliseconds: 400), () {
-      unawaited(_persistAndUpdateState(
-          List<TransactionDetailEntity>.from(state.details)));
+      unawaited(_persistence.persistAndUpdateState(() => state,
+          (s) => state = s, List<TransactionDetailEntity>.from(state.details)));
     });
   }
 
@@ -216,13 +212,14 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     _orderNoteDebounce?.cancel();
     _orderNoteDebounce = Timer(const Duration(milliseconds: 500), () {
       final updatedDetails = List<TransactionDetailEntity>.from(state.details);
-      unawaited(
-          _persistAndUpdateState(updatedDetails, orderNote: state.orderNote));
+      unawaited(_persistence.persistAndUpdateState(
+          () => state, (s) => state = s, updatedDetails,
+          orderNote: state.orderNote));
     });
   }
 
-  /// Menetapkan `selectedCustomer` pada state; jika `null` maka menghapus
-  /// customer yang dipilih sambil mempertahankan bagian state lain.
+  // Menetapkan `selectedCustomer` pada state; jika `null` maka menghapus
+  // customer yang dipilih sambil mempertahankan bagian state lain.
   void setCustomer(CustomerEntity? customer) {
     if (customer == null) {
       // Use factory that preserves all other fields and clears customer only
@@ -234,21 +231,21 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   // Set active category
-  /// Set kategori aktif untuk filter produk dan persist perubahan.
+  // Set kategori aktif untuk filter produk dan persist perubahan.
   void setActiveCategory(String category) {
     state = state.copyWith(activeCategory: category);
-    unawaited(_persistAndUpdateState(
+    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
         List<TransactionDetailEntity>.from(state.details)));
   }
 
   // Set search query
-  /// Set query pencarian yang digunakan untuk memfilter `details`.
+  // Set query pencarian yang digunakan untuk memfilter `details`.
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
   }
 
   // Set Active Note ID
-  /// Set atau clear `activeNoteId` di state.
+  // Set atau clear `activeNoteId` di state.
   void setActiveNoteId(int? id) {
     if (id == null) {
       state = state.clear(clearActiveNoteId: true);
@@ -258,62 +255,67 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(activeNoteId: id);
   }
 
-  /// Mengatur tipe tampilan cart (`ETypeCart`) di state.
+  // Mengatur tipe tampilan cart (`ETypeCart`) di state.
   void setTypeCart(ETypeCart type) {
     state = state.copyWith(typeCart: type);
   }
 
   // UI setters for payment/order flow
-  /// Mengubah tipe order (dineIn/takeAway/online) dan menyimpan perubahan
-  /// ke database lokal.
+  // Mengubah tipe order (dineIn/takeAway/online) dan menyimpan perubahan
+  // ke database lokal.
   void setOrderType(EOrderType type) {
     state = state.copyWith(orderType: type);
     // persist change to local DB using current details
-    unawaited(_persistAndUpdateState(
+    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
         List<TransactionDetailEntity>.from(state.details)));
   }
 
-  /// Menetapkan provider ojol untuk order online dan persist ke DB.
+  // Menetapkan provider ojol untuk order online dan persist ke DB.
   void setOjolProvider(String provider) {
     state = state.copyWith(ojolProvider: provider);
-    unawaited(_persistAndUpdateState(
+    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
         List<TransactionDetailEntity>.from(state.details)));
   }
 
-  /// Menetapkan metode pembayaran dan menyimpan perubahan ke DB.
+  // Menetapkan metode pembayaran dan menyimpan perubahan ke DB.
   void setPaymentMethod(EPaymentMethod method) {
     state = state.copyWith(paymentMethod: method);
-    unawaited(_persistAndUpdateState(
-        List<TransactionDetailEntity>.from(state.details)));
+    unawaited(
+      _persistence.persistAndUpdateState(
+        () => state,
+        (s) => state = s,
+        List<TransactionDetailEntity>.from(state.details),
+      ),
+    );
   }
 
-  /// Menetapkan flag langsung bayar (isPaid) dan persist ke DB.
+  // Menetapkan flag langsung bayar (isPaid) dan persist ke DB.
   void setIsPaid(bool v) {
     state = state.copyWith(isPaid: v);
-    unawaited(_persistAndUpdateState(
+    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
         List<TransactionDetailEntity>.from(state.details)));
   }
 
-  /// Menetapkan jumlah tunai yang diterima dan persist perubahan.
+  // Menetapkan jumlah tunai yang diterima dan persist perubahan.
   void setCashReceived(int amount) {
     state = state.copyWith(cashReceived: amount);
-    unawaited(_persistAndUpdateState(
+    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
         List<TransactionDetailEntity>.from(state.details)));
   }
 
-  /// Mengatur mode tampilan view (`cart` atau `checkout`).
+  // Mengatur mode tampilan view (`cart` atau `checkout`).
   void setViewMode(EViewMode mode) {
     state = state.copyWith(viewMode: mode);
   }
 
-  /// Tampilkan atau sembunyikan snackbar error sesuai nilai `v`.
+  // Tampilkan atau sembunyikan snackbar error sesuai nilai `v`.
   void setShowErrorSnackbar(bool v) {
     state = state.copyWith(showErrorSnackbar: v);
   }
 
   // ------------------ Actions (on*) ------------------
-  /// Menambahkan produk ke keranjang; jika sudah ada maka menambah kuantitas.
-  /// Perubahan dipersist ke database lewat helper privat.
+  // Menambahkan produk ke keranjang; jika sudah ada maka menambah kuantitas.
+  // Perubahan dipersist ke database lewat helper privat.
   Future<void> onAddToCart(ProductEntity product) async {
     final index = state.details.indexWhere((d) => d.productId == product.id);
     List<TransactionDetailEntity> updated;
@@ -342,21 +344,21 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     // _logger.info("adding to cart, total items: ${updated.length}");
 
     // persist to DB first, update state after success
-    await _persistAndUpdateState(updated);
+    await _persistence.persistAndUpdateState(
+        () => state, (s) => state = s, updated);
   }
 
-  /// Menyimpan/transaksi final (onStore) dengan memaksa status menjadi
-  /// `proses` lalu mem-persist data ke DB lokal.
+  // Menyimpan/transaksi final (onStore) dengan memaksa status menjadi
+  // `proses` lalu mem-persist data ke DB lokal.
   Future<void> onStore({ProductEntity? product}) async {
-    await _persistAndUpdateState(
-      List<TransactionDetailEntity>.from(state.details),
-      // set status to proses when explicitly storing/processing the order
-      forceStatus: TransactionStatus.proses,
-    );
+    await _persistence.persistAndUpdateState(() => state, (s) => state = s,
+        List<TransactionDetailEntity>.from(state.details),
+        // set status to proses when explicitly storing/processing the order
+        forceStatus: TransactionStatus.proses);
   }
 
-  /// Mengatur transisi `typeCart` ketika pengguna menavigasi alur
-  /// pemilihan metode pembayaran (main -> confirm -> checkout).
+  // Mengatur transisi `typeCart` ketika pengguna menavigasi alur
+  // pemilihan metode pembayaran (main -> confirm -> checkout).
   Future<void> onShowMethodPayment() async {
     final ETypeCart current = state.typeCart;
 
@@ -369,7 +371,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }
   }
 
-  /// Toggle `viewMode` antara cart dan checkout.
+  // Toggle `viewMode` antara cart dan checkout.
   void onToggleView() {
     final next =
         state.viewMode == EViewMode.cart ? EViewMode.checkout : EViewMode.cart;
@@ -378,8 +380,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   // Clear Cart — use DeleteTransaction usecase for existing local transaction
-  /// Membersihkan keranjang. Jika ada transaksi lokal maka akan menghapusnya
-  /// lewat usecase `DeleteTransaction`, jika tidak maka hanya mereset state.
+  // Membersihkan keranjang. Jika ada transaksi lokal maka akan menghapusnya
+  // lewat usecase `DeleteTransaction`, jika tidak maka hanya mereset state.
   Future<void> onClearCart() async {
     try {
       state = state.copyWith(isLoading: true);
@@ -402,162 +404,22 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }
   }
 
-  /// Reset seluruh state POS ke kondisi awal.
+  // Reset seluruh state POS ke kondisi awal.
   void onClearAll() {
     state = TransactionPosState.cleared();
   }
 
-  // ------------------ Private helpers ------------------
-  // Persist updated details (and optionally notes) to local DB first,
-  // then update state only when persistence succeeds.
-  /// Helper privat yang melakukan persist (create/update/delete) pada
-  /// transaksi dan detailnya ke database lokal, lalu memperbarui state
-  /// ketika operasi sukses. Parameter `orderNote` dan `forceStatus`
-  /// dapat dipakai untuk menimpa nilai saat persist.
-  Future<void> _persistAndUpdateState(
-      List<TransactionDetailEntity> updatedDetails,
-      {String? orderNote,
-      TransactionStatus? forceStatus}) async {
-    try {
-      state = state.copyWith(isLoading: true);
-
-      final totalAmount = updatedDetails.fold<int>(0, (sum, d) {
-        return sum + (d.subtotal ?? ((d.productPrice ?? 0) * (d.qty ?? 0)));
-      });
-      final totalQty =
-          updatedDetails.fold<int>(0, (sum, d) => sum + (d.qty ?? 0));
-      // map UI order type to DB id
-      int orderTypeIdFromState() {
-        switch (state.orderType) {
-          case EOrderType.dineIn:
-            return 1;
-          case EOrderType.takeAway:
-            return 2;
-          case EOrderType.online:
-            return 3;
-        }
-      }
-
-      // prepare paid/change values from UI
-      final paidAmountFromState =
-          state.cashReceived == 0 ? null : state.cashReceived;
-      final changeMoneyFromState = (state.cashReceived - totalAmount) < 0
-          ? 0
-          : (state.cashReceived - totalAmount);
-
-      // bikin transaksi baru
-      if (state.transaction == null) {
-        final txEntity = TransactionEntity(
-          outletId: state.transaction?.outletId ?? 8,
-          sequenceNumber: state.transaction?.sequenceNumber ?? 1,
-          orderTypeId: orderTypeIdFromState(),
-          date: DateTime.now(),
-          totalAmount: totalAmount,
-          totalQty: totalQty,
-          notes: orderNote ?? state.orderNote,
-          categoryOrder: state.activeCategory,
-          userId: state.selectedCustomer?.id,
-          paymentMethod: state.paymentMethod.name,
-          ojolProvider: state.ojolProvider,
-          paidAmount: paidAmountFromState,
-          changeMoney: changeMoneyFromState,
-          // allow forcing status (e.g., proses on explicit store), default pending
-          isPaid: state.isPaid,
-          status: forceStatus ??
-              (state.isPaid
-                  ? TransactionStatus.lunas
-                  : TransactionStatus.pending),
-          details: updatedDetails,
-        );
-
-        final res = await _createTransaction.call(
-          txEntity,
-          isOffline: true,
-        );
-        res.fold((f) {
-          _logger.severe('Create transaction failed: $f');
-          state = state.copyWith(isLoading: false);
-        }, (created) {
-          final updatedDetailsFromServer = created.details ?? updatedDetails;
-          state = state.copyWith(
-            isLoading: false,
-            transaction: created,
-            details: updatedDetailsFromServer,
-          );
-        });
-      } else {
-        // existing transaction
-        if (updatedDetails.isEmpty) {
-          // delete transaction first
-          final txId = state.transaction?.id;
-          if (txId != null) {
-            final res = await _deleteTransaction.call(txId, isOffline: true);
-            res.fold((f) {
-              _logger.severe('Delete transaction failed: $f');
-              state = state.copyWith(isLoading: false);
-            }, (ok) {
-              state = state.copyWith(
-                details: [],
-                transaction: null,
-                orderNote: "",
-                activeNoteId: null,
-                isLoading: false,
-              );
-            });
-          } else {
-            state = state.copyWith(transaction: null, isLoading: false);
-          }
-        } else {
-          // ensure details point to current transaction id when updating
-          final detailsWithTxId = updatedDetails
-              .map((d) => d.copyWith(transactionId: state.transaction?.id))
-              .toList();
-
-          final txEntity = state.transaction!.copyWith(
-            details: detailsWithTxId,
-            totalAmount: totalAmount,
-            totalQty: totalQty,
-            notes: orderNote ?? state.orderNote,
-            orderTypeId: orderTypeIdFromState(),
-            categoryOrder: state.activeCategory,
-            userId: state.selectedCustomer?.id,
-            paymentMethod: state.paymentMethod.name,
-            ojolProvider: state.ojolProvider,
-            paidAmount: paidAmountFromState,
-            changeMoney: changeMoneyFromState,
-            // preserve existing status unless forceStatus provided
-            isPaid: state.isPaid,
-            status: forceStatus ??
-                (state.isPaid
-                    ? TransactionStatus.lunas
-                    : state.transaction!.status),
-          );
-
-          final res = await _updateTransaction.call(txEntity, isOffline: true);
-          res.fold((f) {
-            _logger.severe("Failed to update transaction: $f");
-            state = state.copyWith(isLoading: false);
-          }, (updated) {
-            _logger.info(
-                "Updated transaction id=${updated.id}, detailsCount=${updated.details?.length ?? 0}");
-            final safeDetails = (updated.details != null &&
-                    (updated.details?.isNotEmpty ?? false))
-                ? updated.details!
-                : updatedDetails;
-            state = state.copyWith(
-                transaction: updated, details: safeDetails, isLoading: false);
-          });
-        }
-      }
-    } catch (e) {
-      _logger.severe('PersistAndUpdateState failed', e as Object?);
-      state = state.copyWith(isLoading: false);
-    }
-  }
+  // ------------------ Helper Privat ------------------
+  // Persist detail yang sudah diupdate (dan opsional: catatan) ke DB lokal terlebih dahulu,
+  // lalu update state hanya jika penyimpanan berhasil.
+  // Helper privat yang melakukan persist (create/update/delete) pada
+  // transaksi dan detailnya ke database lokal, lalu memperbarui state
+  // ketika operasi sukses. Parameter `orderNote` dan `forceStatus`
+  // dapat dipakai untuk menimpa nilai saat persist.
 
   // attempt to load existing transaction from local db using isOffline=true
-  /// Mencoba memuat transaksi aktif dari database lokal pada saat
-  /// inisialisasi ViewModel. Jika ditemukan, state akan diisi dengan data itu.
+  // Mencoba memuat transaksi aktif dari database lokal pada saat
+  // inisialisasi ViewModel. Jika ditemukan, state akan diisi dengan data itu.
   Future<void> _loadLocalTransaction() async {
     _logger.info('_loadLocalTransaction: starting load from local DB...');
     try {

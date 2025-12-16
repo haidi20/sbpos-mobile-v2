@@ -3,18 +3,17 @@ import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 
 class TransactionHistoryCard extends StatelessWidget {
-  final TransactionEntity tx;
+  final TransactionEntity transaction;
   final VoidCallback onTap;
 
   const TransactionHistoryCard({
     super.key,
-    required this.tx,
+    required this.transaction,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final transaction = tx;
     final sequence = transaction.sequenceNumber.toString();
     final dateString = transaction.date.toDisplayDateTime();
 
@@ -40,7 +39,7 @@ class TransactionHistoryCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _PaymentMethod(tx: transaction),
+                _PaymentMethod(transaction: transaction),
                 const SizedBox(width: 16),
                 Expanded(
                   child: _OrderInfo(
@@ -49,14 +48,17 @@ class TransactionHistoryCard extends StatelessWidget {
                     category: transaction.categoryOrder ?? '-',
                   ),
                 ),
-                _AmountStatus(tx: transaction),
+                _AmountStatus(transaction: transaction),
               ],
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
-              child: CustomPaint(
-                painter: DashedLinePainter(color: AppColors.gray200),
-                size: Size(double.infinity, 1),
+              child: SizedBox(
+                height: 1,
+                width: double.infinity,
+                child: CustomPaint(
+                  painter: DashedLinePainter(color: AppColors.gray200),
+                ),
               ),
             ),
             _FooterRow(totalQty: transaction.totalQty),
@@ -68,12 +70,12 @@ class TransactionHistoryCard extends StatelessWidget {
 }
 
 class _PaymentMethod extends StatelessWidget {
-  final TransactionEntity tx;
-  const _PaymentMethod({required this.tx});
+  final TransactionEntity transaction;
+  const _PaymentMethod({required this.transaction});
 
   @override
   Widget build(BuildContext context) {
-    final paymentMethod = tx.paymentMethod ?? '';
+    final paymentMethod = transaction.paymentMethod ?? '';
     final isQris = paymentMethod.toUpperCase() == 'QRIS';
     final color = isQris ? AppColors.sbBlue : AppColors.sbOrange;
 
@@ -84,8 +86,11 @@ class _PaymentMethod extends StatelessWidget {
         color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(isQris ? Icons.qr_code_2 : Icons.credit_card,
-          color: color, size: 24),
+      child: Icon(
+        isQris ? Icons.qr_code_2 : Icons.credit_card,
+        color: color,
+        size: 24,
+      ),
     );
   }
 }
@@ -134,16 +139,17 @@ class _OrderInfo extends StatelessWidget {
 }
 
 class _AmountStatus extends StatelessWidget {
-  final TransactionEntity tx;
-  const _AmountStatus({required this.tx});
+  final TransactionEntity transaction;
+  const _AmountStatus({required this.transaction});
 
   @override
   Widget build(BuildContext context) {
-    final total = tx.totalAmount.toDouble();
-    final isPending = tx.status == TransactionStatus.pending;
+    final total = transaction.totalAmount.toDouble();
+    final isPending = transaction.status == TransactionStatus.pending;
     final statusColor = isPending ? AppColors.sbOrange : AppColors.sbBlue;
-    final statusValue = tx.status.name.toUpperCase();
-    final isSynced = (tx.idServer != null) || (tx.syncedAt != null);
+    final statusValue = transaction.status.name.toUpperCase();
+    final isSynced =
+        (transaction.idServer != null) || (transaction.syncedAt != null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -209,7 +215,7 @@ class _FooterRow extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '$totalQty Item',
+              '$totalQty ${totalQty == 1 ? 'Item' : 'Items'}',
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.gray500,

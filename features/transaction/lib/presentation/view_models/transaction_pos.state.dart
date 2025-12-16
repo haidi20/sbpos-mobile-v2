@@ -10,8 +10,8 @@ enum ETypeCart {
 
 enum EOrderType {
   dineIn,
-  online,
   takeAway,
+  online,
 }
 
 enum EViewMode {

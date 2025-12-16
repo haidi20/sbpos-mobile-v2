@@ -31,7 +31,6 @@ class _TransactionHistoryScreenState
     final TransactionHistoryViewModel viewModel =
         ref.watch(transactionHistoryViewModelProvider.notifier);
     final state = ref.watch(transactionHistoryViewModelProvider);
-    // Menggunakan daftar transaksi yang sudah difilter dari ViewModel (berdasarkan state.searchQuery pada viewModel)
     final List<TransactionEntity> filteredTransactions =
         viewModel.getTransactions;
 

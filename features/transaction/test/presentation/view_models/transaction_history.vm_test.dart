@@ -6,6 +6,7 @@ import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
 
@@ -169,7 +170,7 @@ class _FakeGetTransactions {
   _FakeGetTransactions(this.local);
 
   Future<Either<Failure, List<TransactionEntity>>> call(
-      {bool isOffline = false, IQueryGetTransactions? query}) async {
+      {bool isOffline = false, QueryGetTransactions? query}) async {
     try {
       final models = await local.getTransactions(query: query);
       final entities =
@@ -219,7 +220,7 @@ class _TestTransactionHistoryViewModel {
 
   Future<void> refresh() async {
     isLoading = true;
-    final q = IQueryGetTransactions(search: searchQuery, date: selectedDate);
+    final q = QueryGetTransactions(search: searchQuery, date: selectedDate);
     final res = await _getTransactions.call(isOffline: true, query: q);
     res.fold((f) {
       error = f.toString();

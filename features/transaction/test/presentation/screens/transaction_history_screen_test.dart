@@ -4,7 +4,7 @@ import 'package:transaction/presentation/screens/transaction_history.screen.dart
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
-import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 
@@ -28,7 +28,7 @@ class _FakeRepo implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline, IQueryGetTransactions? query}) async =>
+          {bool? isOffline, QueryGetTransactions? query}) async =>
       Right([]);
 
   @override
@@ -73,8 +73,7 @@ void main() {
     await tester.pumpWidget(ProviderScope(
         overrides: [
           transactionHistoryViewModelProvider.overrideWith((ref) =>
-              TransactionHistoryViewModel(
-                  GetTransactionsUsecase(fake), GetTransactionsOffline(fake))),
+              TransactionHistoryViewModel(GetTransactionsUsecase(fake))),
         ],
         child: const MaterialApp(
             home: Scaffold(body: TransactionHistoryScreen()))));
@@ -93,8 +92,7 @@ void main() {
     await tester.pumpWidget(ProviderScope(
         overrides: [
           transactionHistoryViewModelProvider.overrideWith((ref) {
-            vm = TransactionHistoryViewModel(
-                GetTransactionsUsecase(fake), GetTransactionsOffline(fake));
+            vm = TransactionHistoryViewModel(GetTransactionsUsecase(fake));
             return vm;
           }),
         ],

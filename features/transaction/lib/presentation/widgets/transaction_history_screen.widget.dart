@@ -113,7 +113,7 @@ class TransactionHistoryList extends StatelessWidget {
       itemBuilder: (context, index) {
         final tx = transactions[index];
         return TransactionHistoryCard(
-          tx: tx,
+          transaction: tx,
           onTap: () => onTap(tx),
         );
       },

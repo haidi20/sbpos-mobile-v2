@@ -8,6 +8,7 @@ import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/components/transaction.card.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -20,7 +21,6 @@ import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 import 'package:transaction/presentation/sheets/transaction_detail.sheet.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
-import 'package:transaction/domain/usecases/get_transactions_offline.usecase.dart';
 import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 
 class FakeTransactionRepository implements TransactionRepository {
@@ -43,7 +43,7 @@ class FakeTransactionRepository implements TransactionRepository {
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
-          {bool? isOffline, IQueryGetTransactions? query}) async =>
+          {bool? isOffline, QueryGetTransactions? query}) async =>
       const Right(<TransactionEntity>[]);
 
   @override
@@ -150,8 +150,7 @@ void main() {
       // changing overrides mid-test (Riverpod limitation).
       await tester.pumpWidget(ProviderScope(overrides: [
         transactionHistoryViewModelProvider.overrideWith((ref) =>
-            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
-                GetTransactionsOffline(fakeRepo))),
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
             TransactionPosViewModel(
                 CreateTransaction(fakeRepo),
@@ -166,8 +165,7 @@ void main() {
       // POS screen reuse same ProviderScope; just rebuild the widget tree
       await tester.pumpWidget(ProviderScope(overrides: [
         transactionHistoryViewModelProvider.overrideWith((ref) =>
-            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
-                GetTransactionsOffline(fakeRepo))),
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
             TransactionPosViewModel(
                 CreateTransaction(fakeRepo),
@@ -182,8 +180,7 @@ void main() {
       // Cart bottom sheet
       await tester.pumpWidget(ProviderScope(overrides: [
         transactionHistoryViewModelProvider.overrideWith((ref) =>
-            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo),
-                GetTransactionsOffline(fakeRepo))),
+            TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo))),
         transactionPosViewModelProvider.overrideWith((ref) =>
             TransactionPosViewModel(
                 CreateTransaction(fakeRepo),
