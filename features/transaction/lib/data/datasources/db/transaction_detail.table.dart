@@ -6,6 +6,9 @@ class TransactionDetailTable {
   static const String colProductId = 'product_id';
   static const String colProductName = 'product_name';
   static const String colProductPrice = 'product_price';
+  static const String colPacketId = 'packet_id';
+  static const String colPacketName = 'packet_name';
+  static const String colPacketPrice = 'packet_price';
   static const String colQty = 'qty';
   static const String colSubtotal = 'subtotal';
   static const String colIdServer = 'id_server';
@@ -23,6 +26,9 @@ class TransactionDetailTable {
       $colProductId INTEGER,
       $colProductName TEXT,
       $colProductPrice INTEGER,
+      $colPacketId INTEGER,
+      $colPacketName TEXT,
+      $colPacketPrice INTEGER,
       $colQty INTEGER,
       $colSubtotal INTEGER,
       $colCreatedAt TEXT NULL,

@@ -306,15 +306,27 @@ class TransactionDao {
         for (var d in details) {
           final txId = d[TransactionDetailTable.colTransactionId];
           final prodId = d[TransactionDetailTable.colProductId];
+          final packetId = d[TransactionDetailTable.colPacketId];
 
-          // check existing detail by transaction_id + product_id
-          final existing = await txn.query(
-            TransactionDetailTable.tableName,
-            where:
-                '${TransactionDetailTable.colTransactionId} = ? AND ${TransactionDetailTable.colProductId} = ?',
-            whereArgs: [txId, prodId],
-            limit: 1,
-          );
+          // check existing detail: prefer packet_id when present, otherwise product_id
+          List<Map<String, Object?>> existing = [];
+          if (packetId != null) {
+            existing = await txn.query(
+              TransactionDetailTable.tableName,
+              where:
+                  '${TransactionDetailTable.colTransactionId} = ? AND ${TransactionDetailTable.colPacketId} = ?',
+              whereArgs: [txId, packetId],
+              limit: 1,
+            );
+          } else {
+            existing = await txn.query(
+              TransactionDetailTable.tableName,
+              where:
+                  '${TransactionDetailTable.colTransactionId} = ? AND ${TransactionDetailTable.colProductId} = ?',
+              whereArgs: [txId, prodId],
+              limit: 1,
+            );
+          }
 
           if (existing.isNotEmpty) {
             // update existing: sum qty and recompute subtotal
@@ -322,7 +334,10 @@ class TransactionDao {
                 TransactionDetailModel.fromDbLocal(existing.first);
             final existingQty = existingModel.qty ?? 0;
             final incomingQty = (d[TransactionDetailTable.colQty] as int?) ?? 0;
-            final price = (d[TransactionDetailTable.colProductPrice] as int?) ??
+            // determine price from packet_price if packetId present, otherwise product_price
+            final price = (packetId != null
+                    ? (d[TransactionDetailTable.colPacketPrice] as int?)
+                    : (d[TransactionDetailTable.colProductPrice] as int?)) ??
                 existingModel.productPrice ??
                 0;
             final newQty = existingQty + incomingQty;

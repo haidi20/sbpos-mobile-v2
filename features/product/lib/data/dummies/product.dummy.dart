@@ -74,4 +74,58 @@ const List<ProductEntity> initialProducts = [
     ),
     image: "https://picsum.photos/200/200?random=8",
   ),
+  ProductEntity(
+    id: 9,
+    name: "Teh Panas",
+    price: 8000,
+    category: CategoryEntity(
+      name: "Drink",
+    ),
+    image: "https://picsum.photos/200/200?random=9",
+  ),
+  ProductEntity(
+    id: 10,
+    name: "Jus Jeruk",
+    price: 12000,
+    category: CategoryEntity(
+      name: "Drink",
+    ),
+    image: "https://picsum.photos/200/200?random=10",
+  ),
+  ProductEntity(
+    id: 11,
+    name: "Ayam Goreng",
+    price: 28000,
+    category: CategoryEntity(
+      name: "Food",
+    ),
+    image: "https://picsum.photos/200/200?random=11",
+  ),
+  ProductEntity(
+    id: 12,
+    name: "Ayam Bakar",
+    price: 30000,
+    category: CategoryEntity(
+      name: "Food",
+    ),
+    image: "https://picsum.photos/200/200?random=12",
+  ),
+  ProductEntity(
+    id: 13,
+    name: "Bebek Goreng",
+    price: 35000,
+    category: CategoryEntity(
+      name: "Food",
+    ),
+    image: "https://picsum.photos/200/200?random=13",
+  ),
+  ProductEntity(
+    id: 14,
+    name: "Bebek Bakar",
+    price: 37000,
+    category: CategoryEntity(
+      name: "Food",
+    ),
+    image: "https://picsum.photos/200/200?random=14",
+  ),
 ];

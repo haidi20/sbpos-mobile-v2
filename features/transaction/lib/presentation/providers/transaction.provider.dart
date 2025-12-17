@@ -7,6 +7,8 @@ import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
+import 'package:product/presentation/providers/packet.provider.dart';
+import 'package:product/presentation/providers/product.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/providers/transaction_repository.provider.dart';
@@ -48,12 +50,16 @@ final transactionPosViewModelProvider =
   final updateTxn = ref.watch(updateTransaction);
   final deleteTxn = ref.watch(deleteTransaction);
   final getTxnActive = ref.watch(getTransactionActive);
+  final getPackets = ref.watch(packetGetPacketsProvider);
+  final getProducts = ref.watch(productGetProductsProvider);
 
   return TransactionPosViewModel(
     createTxn,
     updateTxn,
     deleteTxn,
     getTxnActive,
+    getPackets,
+    getProducts,
   );
 });
 

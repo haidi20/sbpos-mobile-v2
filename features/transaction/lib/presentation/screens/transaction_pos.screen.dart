@@ -1,11 +1,9 @@
 import 'package:core/core.dart';
-import 'package:product/data/dummies/product.data.dart';
-import 'package:product/data/dummies/category.data.dart';
 import 'package:product/domain/entities/product.entity.dart';
-import 'package:product/domain/entities/category.entity.dart';
+import 'package:product/presentation/components/packet_card.dart';
 import 'package:product/presentation/components/product_card.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/transaction_pos.controller.dart';
 
@@ -18,7 +16,9 @@ class TransactionPosScreen extends ConsumerStatefulWidget {
 }
 
 class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
-  late TransactionPosController _controller;
+  final ScrollController _categoryScrollController = ScrollController();
+  final ScrollController _productGridController = ScrollController();
+  late final TransactionPosController _controller;
 
   @override
   void initState() {
@@ -28,6 +28,9 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
 
   @override
   void dispose() {
+    _categoryScrollController.dispose();
+    _productGridController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -35,160 +38,206 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
-
-    final filteredProducts = viewModel.getFilteredProducts(initialProducts);
+    final filteredProducts =
+        viewModel.getFilteredProducts(viewModel.cachedProducts);
 
     return Scaffold(
-      backgroundColor: AppColors.sbBg,
-      body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        behavior: HitTestBehavior.translucent,
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  // --- HEADER SECTION ---
-                  _buildHeader(
-                    state: state,
-                    viewModel: viewModel,
-                  ),
-                  // --- PRODUCT GRID ---
-                  _buildProductList(
-                    viewModel: viewModel,
-                    filteredProducts: filteredProducts,
-                  ),
-                ],
-              ),
-              // --- FLOATING CART BUTTON ---
-              _buildCartBottomButton(
+      appBar: AppBar(title: const Text('POS')),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: _SearchBar(controller: _controller),
+            ),
+            _CategoryBar(
+              controller: _controller,
+              categoryScrollController: _categoryScrollController,
+              productGridController: _productGridController,
+              viewModel: viewModel,
+              state: state,
+            ),
+            Expanded(
+              child: _ContentArea(
                 state: state,
                 viewModel: viewModel,
+                filteredProducts: filteredProducts,
+                controller: _controller,
+                productGridController: _productGridController,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildHeader({
-    required TransactionPosState state,
-    required TransactionPosViewModel viewModel,
-  }) {
-    return Container(
-      color: AppColors.sbBg,
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Column(
-        children: [
-          // Back Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).maybePop();
-                  },
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "POS Produk",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+// -----------------------------------------------------------------------------
+// Private, testable widgets extracted from TransactionPosScreen
+// -----------------------------------------------------------------------------
+
+class _SearchBar extends StatelessWidget {
+  final TransactionPosController controller;
+
+  const _SearchBar({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            controller: controller.searchController,
+            onChanged: (val) => controller.onSearchChanged(val: val),
+            decoration: InputDecoration(
+              hintText: 'Cari produk...',
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
             ),
           ),
-          const SizedBox(height: 8),
-          // Search Bar
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          onPressed: () => controller.showFilterPopup(),
+          icon: const Icon(Icons.filter_list, color: AppColors.sbBlue),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryBar extends StatelessWidget {
+  final TransactionPosController controller;
+  final ScrollController categoryScrollController;
+  final ScrollController productGridController;
+  final TransactionPosViewModel viewModel;
+  final TransactionPosState state;
+
+  const _CategoryBar({
+    required this.controller,
+    required this.categoryScrollController,
+    required this.productGridController,
+    required this.viewModel,
+    required this.state,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Categories ordering is provided by the ViewModel
+    final categories = viewModel.orderedCategories;
+
+    return SizedBox(
+      height: 56,
+      child: Row(
+        children: [
+          // Left filter button opens a modal to select categories
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _controller.searchController,
-              onChanged: (val) => viewModel.setSearchQuery(val),
-              textInputAction: TextInputAction.search,
-              // ✅ Tetap pertahankan onTapOutside sebagai cadangan
-              onTapOutside: (event) {
-                FocusManager.instance.primaryFocus?.unfocus();
-              },
-              decoration: InputDecoration(
-                hintText: 'Cari produk...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                suffixIcon: (state.searchQuery ?? '').isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.grey),
-                        onPressed: () {
-                          _controller.searchController.clear();
-                          viewModel.setSearchQuery("");
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppColors.sbBlue.withOpacity(0.5),
-                    width: 1.5,
-                  ),
-                ),
+            padding: const EdgeInsets.only(left: 8, right: 8),
+            child: Material(
+              type: MaterialType.transparency,
+              child: IconButton(
+                onPressed: () async {
+                  final selected = await showModalBottomSheet<String>(
+                    context: context,
+                    builder: (ctx) {
+                      return SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: categories.map((name) {
+                            final active = state.activeCategory == name;
+                            return ListTile(
+                              title: Text(name),
+                              leading: active
+                                  ? const Icon(Icons.check,
+                                      color: AppColors.sbBlue)
+                                  : null,
+                              onTap: () => Navigator.of(ctx).pop(name),
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    },
+                  );
+                  if (selected != null) {
+                    final idx = categories.indexOf(selected);
+                    controller.onCategoryTap(
+                      index: idx,
+                      name: selected,
+                      categoryScrollController: categoryScrollController,
+                      productGridController: productGridController,
+                    );
+                  }
+                },
+                icon: const Icon(Icons.filter_list, color: AppColors.sbBlue),
               ),
             ),
           ),
-
-          const SizedBox(height: 12),
-
-          // Category List — ✅ onTap di sini sekarang otomatis unfocus TextField
-          SizedBox(
-            height: 40,
+          // Horizontal category list
+          Expanded(
             child: ListView.separated(
+              controller: categoryScrollController,
               scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               itemCount: categories.length,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final CategoryEntity cat = categories[index];
-                final catName = cat.name ?? 'All';
-                final isActive = state.activeCategory == catName;
-                return InkWell(
-                  onTap: () {
-                    viewModel.setActiveCategory(catName);
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isActive ? AppColors.sbBlue : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: isActive
-                          ? null
-                          : Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Center(
-                      child: Text(
-                        catName,
-                        style: TextStyle(
-                          color: isActive ? Colors.white : Colors.grey[700],
-                          fontWeight:
-                              isActive ? FontWeight.bold : FontWeight.normal,
+                final name = categories[index];
+                final active = state.activeCategory == name;
+                return GestureDetector(
+                  onTap: () => controller.onCategoryTap(
+                    index: index,
+                    name: name,
+                    categoryScrollController: categoryScrollController,
+                    productGridController: productGridController,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: active ? AppColors.sbBlue : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: active
+                              ? null
+                              : Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Center(
+                          child: Text(
+                            name,
+                            style: TextStyle(
+                              color: active ? Colors.white : Colors.grey[800],
+                              fontWeight:
+                                  active ? FontWeight.w700 : FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      // fixed-width underline for active item
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        width: active ? 28 : 0,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color:
+                              active ? AppColors.sbOrange : Colors.transparent,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -198,166 +247,161 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
       ),
     );
   }
+}
 
-  Widget _buildProductList({
-    required TransactionPosViewModel viewModel,
-    required List<ProductEntity> filteredProducts,
-  }) {
-    return Expanded(
-      child: filteredProducts.isEmpty
-          ? const Center(child: Text("Produk tidak ditemukan"))
-          : GridView.builder(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: filteredProducts.length,
+class _ContentArea extends StatelessWidget {
+  final TransactionPosState state;
+  final TransactionPosViewModel viewModel;
+  final List<ProductEntity> filteredProducts;
+  final TransactionPosController controller;
+  final ScrollController productGridController;
+
+  const _ContentArea({
+    required this.state,
+    required this.viewModel,
+    required this.filteredProducts,
+    required this.controller,
+    required this.productGridController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // loading -> show loading
+    if (state.isLoading) return const _ContentLoading();
+
+    // compute filtered packets
+    final packetQuery = (state.searchQuery ?? '').toLowerCase();
+    final filteredPackets = state.packets.where((p) {
+      if (packetQuery.isEmpty) return true;
+      return p.name != null && p.name!.toLowerCase().contains(packetQuery);
+    }).toList();
+
+    // empty -> show empty state
+    if (filteredProducts.isEmpty && filteredPackets.isEmpty) {
+      return const _ContentEmpty();
+    }
+
+    // otherwise show content
+    return _ContentData(
+      filteredPackets: filteredPackets,
+      filteredProducts: filteredProducts,
+      viewModel: viewModel,
+      controller: controller,
+      productGridController: productGridController,
+    );
+  }
+}
+
+class _ContentLoading extends StatelessWidget {
+  const _ContentLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(color: AppColors.sbBlue),
+    );
+  }
+}
+
+class _ContentEmpty extends StatelessWidget {
+  const _ContentEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off, size: 56, color: Colors.grey),
+          SizedBox(height: 12),
+          Text('Produk tidak ditemukan', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContentData extends StatelessWidget {
+  final List filteredPackets;
+  final List<ProductEntity> filteredProducts;
+  final TransactionPosViewModel viewModel;
+  final TransactionPosController controller;
+  final ScrollController productGridController;
+
+  const _ContentData({
+    required this.filteredPackets,
+    required this.filteredProducts,
+    required this.viewModel,
+    required this.controller,
+    required this.productGridController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (filteredPackets.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Row(children: [
+              Icon(Icons.layers, color: AppColors.sbBlue),
+              SizedBox(width: 8),
+              Text(
+                'Paket',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              )
+            ]),
+          ),
+          SizedBox(
+            height: 160,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: filteredPackets.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
-                final product = filteredProducts[index];
-
-                return ProductCard(
-                  product: product,
-                  onTap: () {
-                    viewModel.onAddToCart(product);
-                  },
+                final pkt = filteredPackets[index];
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  child: PacketCard(
+                    packet: pkt,
+                    onTap: () => controller.showPacketSelection(
+                        packet: pkt, products: viewModel.cachedProducts),
+                  ),
                 );
               },
             ),
-    );
-  }
-
-  Widget _buildCartBottomButton({
-    required TransactionPosState state,
-    required TransactionPosViewModel viewModel,
-  }) {
-    if (state.details.isNotEmpty) {
-      return Positioned(
-        bottom: 24,
-        left: 16,
-        right: 16,
-        child: GestureDetector(
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            _controller.onShowCartSheet();
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.sbBlue,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.sbBlue.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // --- BAGIAN KIRI (RESPONSIVE) ---
-                Expanded(
-                  child: Row(
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          const Icon(
-                            Icons.shopping_cart_outlined, // Icon Relevan
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                          // Badge Total Item di Atas Kanan Icon
-                          Positioned(
-                            right: -5,
-                            top: -8,
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: AppColors.sbOrange, // Warna Badge
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.sbBlue,
-                                  width: 1,
-                                ),
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  "${viewModel.getCartCount}",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Total",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Text(
-                              viewModel.getCartTotal,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // --- BAGIAN KANAN (DITAMBAHKAN ICON & BADGE) ---
-                const Row(
-                  children: [
-                    // Teks Asli
-                    Text(
-                      "Keranjang",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Icon(
-                      size: 16,
-                      color: Colors.white,
-                      Icons.arrow_forward_ios,
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
+          const SizedBox(height: 8),
+        ],
+        Expanded(
+          child: filteredProducts.isEmpty
+              ? const Center(child: Text("Produk tidak ditemukan"))
+              : GridView.builder(
+                  controller: productGridController,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12),
+                  itemCount: filteredProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = filteredProducts[index];
+                    return ProductCard(
+                      product: product,
+                      onTap: () => controller.onProductTap(product: product),
+                    );
+                  },
+                ),
         ),
-      );
-    }
-    return const SizedBox.shrink();
+      ],
+    );
   }
 }

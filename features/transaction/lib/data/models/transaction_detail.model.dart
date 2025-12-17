@@ -7,6 +7,9 @@ class TransactionDetailModel {
   final int? productId;
   final String? productName;
   final int? productPrice;
+  final int? packetId;
+  final String? packetName;
+  final int? packetPrice;
   final int? qty;
   final int? subtotal;
   final DateTime? createdAt;
@@ -22,6 +25,9 @@ class TransactionDetailModel {
     this.productId,
     this.productName,
     this.productPrice,
+    this.packetId,
+    this.packetName,
+    this.packetPrice,
     this.qty,
     this.subtotal,
     this.createdAt,
@@ -38,6 +44,9 @@ class TransactionDetailModel {
     int? productId,
     String? productName,
     int? productPrice,
+    int? packetId,
+    String? packetName,
+    int? packetPrice,
     int? qty,
     int? subtotal,
     DateTime? createdAt,
@@ -53,6 +62,9 @@ class TransactionDetailModel {
       productId: productId ?? this.productId,
       productName: productName ?? this.productName,
       productPrice: productPrice ?? this.productPrice,
+      packetId: packetId ?? this.packetId,
+      packetName: packetName ?? this.packetName,
+      packetPrice: packetPrice ?? this.packetPrice,
       qty: qty ?? this.qty,
       subtotal: subtotal ?? this.subtotal,
       createdAt: createdAt ?? this.createdAt,
@@ -70,6 +82,9 @@ class TransactionDetailModel {
       productId: json['product_id'],
       productName: json['product_name'],
       productPrice: json['product_price'],
+      packetId: json['packet_id'],
+      packetName: json['packet_name'],
+      packetPrice: json['packet_price'],
       qty: json['qty'],
       subtotal: json['subtotal'],
       createdAt: json['created_at'] != null
@@ -95,6 +110,9 @@ class TransactionDetailModel {
         'product_id': productId,
         'product_name': productName,
         'product_price': productPrice,
+        'packet_id': packetId,
+        'packet_name': packetName,
+        'packet_price': packetPrice,
         'qty': qty,
         'subtotal': subtotal,
         'created_at': createdAt?.toIso8601String(),
@@ -111,6 +129,9 @@ class TransactionDetailModel {
         'product_id': productId,
         'product_name': productName,
         'product_price': productPrice,
+        'packet_id': packetId,
+        'packet_name': packetName,
+        'packet_price': packetPrice,
         'qty': qty,
         'subtotal': subtotal,
         'created_at': createdAt?.toIso8601String(),
@@ -145,6 +166,9 @@ class TransactionDetailModel {
       productId: toInt(map['product_id']),
       productName: map['product_name'] as String?,
       productPrice: toInt(map['product_price']),
+      packetId: toInt(map['packet_id']),
+      packetName: map['packet_name'] as String?,
+      packetPrice: toInt(map['packet_price']),
       qty: toInt(map['qty']),
       subtotal: toInt(map['subtotal']),
       createdAt: toDate(map['created_at']),

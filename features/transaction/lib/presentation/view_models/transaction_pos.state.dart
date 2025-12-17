@@ -1,6 +1,7 @@
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
+import 'package:product/domain/entities/packet.entity.dart';
 
 enum ETypeCart {
   main,
@@ -42,6 +43,7 @@ class TransactionPosState {
   final String activeCategory;
   final TransactionEntity? transaction;
   final CustomerEntity? selectedCustomer;
+  final List<PacketEntity> packets;
   final List<TransactionDetailEntity> details;
 
   TransactionPosState({
@@ -62,7 +64,9 @@ class TransactionPosState {
     this.isPaid = false,
     this.showErrorSnackbar = false,
     List<TransactionDetailEntity>? details,
-  }) : details = details ?? const [];
+    List<PacketEntity>? packets,
+  })  : details = details ?? const [],
+        packets = packets ?? const [];
 
   TransactionPosState copyWith({
     String? error,
@@ -81,11 +85,13 @@ class TransactionPosState {
     TransactionEntity? transaction,
     CustomerEntity? selectedCustomer,
     List<TransactionDetailEntity>? details,
+    List<PacketEntity>? packets,
     bool? isPaid,
   }) {
     return TransactionPosState(
       error: error ?? this.error,
       details: details ?? this.details,
+      packets: packets ?? this.packets,
       isLoading: isLoading ?? this.isLoading,
       orderNote: orderNote ?? this.orderNote,
       orderType: orderType ?? this.orderType,
@@ -116,6 +122,7 @@ class TransactionPosState {
       isLoading: false,
       activeCategory: "All",
       details: const [],
+      packets: const [],
       // reset UI state to defaults
       orderType: EOrderType.dineIn,
       ojolProvider: '',
@@ -151,6 +158,7 @@ extension TransactionPosStateClearX on TransactionPosState {
       isLoading: resetIsLoading ? false : isLoading,
       activeCategory: resetActiveCategory ? "All" : activeCategory,
       details: clearDetails ? const [] : details,
+      packets: clearDetails ? const [] : packets,
     );
   }
 }

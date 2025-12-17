@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/domain/entities/packet.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
@@ -9,10 +10,87 @@ import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:product/domain/usecases/get_products.usecase.dart';
+import 'package:product/domain/repositories/packet.repository.dart';
+import 'package:product/domain/repositories/product.repository.dart';
+import 'package:product/presentation/screens/packet_selection.sheet.dart'
+    show SelectedPacketItem;
+import 'package:product/domain/usecases/get_packets.usecase.dart';
 import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
 import 'package:transaction/data/dummy/order_type_dummy.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
+
+// No-op fallback implementations used for tests or legacy instantiation
+class _FakePacketRepository implements PacketRepository {
+  @override
+  Future<Either<Failure, List<PacketEntity>>> getPackets(
+      {String? query, bool? isOffline}) async {
+    return const Right(<PacketEntity>[]);
+  }
+
+  @override
+  Future<Either<Failure, PacketEntity>> getPacket(int id,
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
+  Future<Either<Failure, PacketEntity>> createPacket(PacketEntity packet,
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
+  Future<Either<Failure, PacketEntity>> updatePacket(PacketEntity packet,
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
+  Future<Either<Failure, bool>> deletePacket(int id, {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+}
+
+class _NoopGetPackets extends GetPackets {
+  _NoopGetPackets() : super(_FakePacketRepository());
+}
+
+class _FakeProductRepository implements ProductRepository {
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getProducts(
+      {String? query, bool? isOffline}) async {
+    return const Right(<ProductEntity>[]);
+  }
+
+  @override
+  Future<Either<Failure, ProductEntity>> getProduct(int id,
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
+  Future<Either<Failure, ProductEntity>> createProduct(ProductEntity product,
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
+  Future<Either<Failure, ProductEntity>> updateProduct(ProductEntity product,
+      {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+
+  @override
+  Future<Either<Failure, bool>> deleteProduct(int id, {bool? isOffline}) async {
+    return const Left(UnknownFailure());
+  }
+}
+
+class _NoopGetProducts extends GetProducts {
+  _NoopGetProducts() : super(_FakeProductRepository());
+}
 
 class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final CreateTransaction _createTransaction;
@@ -32,8 +110,10 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     this._createTransaction,
     this._updateTransaction,
     this._deleteTransaction,
-    this._getTransactionActive,
-  ) : super(TransactionPosState()) {
+    this._getTransactionActive, [
+    GetPackets? getPackets,
+    GetProducts? getProducts,
+  ]) : super(TransactionPosState()) {
     // initialize persistence service and load existing transaction from local DB
     _persistence = TransactionPersistence(
       _createTransaction,
@@ -42,6 +122,61 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       _logger,
     );
     _loadLocalTransaction();
+    _getPacketsUsecase = getPackets ?? _NoopGetPackets();
+    _getProductsUsecase = getProducts ?? _NoopGetProducts();
+    unawaited(getPacketsList());
+    unawaited(_loadProductsAndCategories());
+  }
+
+  late final GetPackets _getPacketsUsecase;
+  late final GetProducts _getProductsUsecase;
+  List<ProductEntity> _cachedProducts = [];
+  List<ProductEntity> get cachedProducts => _cachedProducts;
+
+  Future<void> _loadProductsAndCategories() async {
+    try {
+      final res = await _getProductsUsecase(isOffline: true);
+      res.fold((f) {
+        _logger.info('no products loaded');
+        _cachedProducts = [];
+      }, (list) {
+        _cachedProducts = list;
+        if (state.activeCategory.isEmpty) {
+          state = state.copyWith(activeCategory: 'All');
+        }
+      });
+    } catch (e, st) {
+      _logger.warning('load products/categories error: $e', e, st);
+    }
+  }
+
+  List<String> get availableCategories {
+    final set = <String>{'Packet'};
+    for (final p in _cachedProducts) {
+      final n = p.category?.name;
+      if (n != null && n.isNotEmpty) set.add(n);
+    }
+    return set.toList();
+  }
+
+  /// Categories ordered for UI: always 'All' first, then 'Packet', then others.
+  List<String> get orderedCategories {
+    final others =
+        availableCategories.where((c) => c.toLowerCase() != 'packet').toList();
+    return <String>['All', 'Packet', ...others];
+  }
+
+  Future<void> getPacketsList({String? query}) async {
+    try {
+      final res = await _getPacketsUsecase(isOffline: true, query: query);
+      res.fold((f) {
+        _logger.warning('getPacketsList failed: $f');
+      }, (list) {
+        state = state.copyWith(packets: list);
+      });
+    } catch (e, st) {
+      _logger.warning('getPacketsList exception: $e', e, st);
+    }
   }
 
   // ------------------ Getters ------------------
@@ -346,6 +481,86 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     // persist to DB first, update state after success
     await _persistence.persistAndUpdateState(
         () => state, (s) => state = s, updated);
+  }
+
+  // Menambahkan packet ke keranjang; jika sudah ada maka menambah kuantitas.
+  Future<void> onAddPacketToCart({required PacketEntity packet}) async {
+    final index = state.details.indexWhere((d) => d.packetId == packet.id);
+    List<TransactionDetailEntity> updated;
+    if (index != -1) {
+      updated = List<TransactionDetailEntity>.from(state.details);
+      final old = updated[index];
+      final newQty = (old.qty ?? 0) + 1;
+      updated[index] = old.copyWith(
+        qty: newQty,
+        subtotal: (old.packetPrice ?? packet.price ?? 0) * newQty,
+      );
+    } else {
+      final newDetail = TransactionDetailEntity(
+        packetId: packet.id,
+        packetName: packet.name,
+        packetPrice: packet.price,
+        qty: 1,
+        subtotal: packet.price,
+        transactionId: state.transaction?.id,
+      );
+      updated = List<TransactionDetailEntity>.from(state.details)
+        ..add(newDetail);
+    }
+
+    await _persistence.persistAndUpdateState(
+        () => state, (s) => state = s, updated);
+  }
+
+  // Add multiple transaction details (e.g., selected items from a packet)
+  Future<void> onAddPacketItems(
+      List<TransactionDetailEntity> detailsToAdd) async {
+    final updated = List<TransactionDetailEntity>.from(state.details);
+
+    for (final d in detailsToAdd) {
+      final index = updated.indexWhere((e) => e.productId == d.productId);
+      if (index != -1) {
+        final old = updated[index];
+        final newQty = (old.qty ?? 0) + (d.qty ?? 1);
+        updated[index] = old.copyWith(
+          qty: newQty,
+          subtotal: (old.productPrice ?? d.productPrice ?? 0) * newQty,
+        );
+      } else {
+        updated.add(d);
+      }
+    }
+
+    await _persistence.persistAndUpdateState(
+        () => state, (s) => state = s, updated);
+  }
+
+  // Create TransactionDetailEntity from packet selection (productId + qty)
+  Future<void> addPacketSelection({
+    required PacketEntity packet,
+    required List<SelectedPacketItem> selectedItems,
+  }) async {
+    final details = <TransactionDetailEntity>[];
+    for (final s in selectedItems) {
+      final pid = s.productId;
+      final qty = s.qty;
+      final prod = _cachedProducts.firstWhere((p) => p.id == pid,
+          orElse: () => ProductEntity(id: pid));
+      final price = prod.price?.toInt() ?? 0;
+      details.add(TransactionDetailEntity(
+        transactionId: state.transaction?.id ?? 0,
+        productId: prod.id,
+        productName: prod.name,
+        productPrice: price,
+        packetId: packet.id,
+        packetName: packet.name,
+        qty: qty,
+        subtotal: (price * qty).toInt(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+    }
+    if (details.isNotEmpty) await onAddPacketItems(details);
   }
 
   // Menyimpan/transaksi final (onStore) dengan memaksa status menjadi

@@ -1,6 +1,8 @@
 import 'package:core/core.dart';
-import 'package:product/data/dummies/inventory.data.dart';
+import 'package:product/data/dummies/inventory.dummy.dart';
 import 'package:product/data/models/inventory.model.dart';
+import 'package:product/presentation/screens/product_management.screen.dart';
+import 'package:product/presentation/screens/packet_management.screen.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -51,11 +53,82 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       backgroundColor: sbBg,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildInventoryList(),
-          ],
+        child: DefaultTabController(
+          length: 2,
+          child: Column(
+            children: [
+              _buildHeader(),
+              const TabBar(
+                indicatorColor: Colors.blue,
+                labelColor: Colors.black87,
+                tabs: [
+                  Tab(text: 'Items'),
+                  Tab(text: 'Paket'),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    // Items tab: reuse inventory list and add button
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ProductManagementScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.add),
+                                label: const Text('Tambah Item'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: _buildInventoryList()),
+                      ],
+                    ),
+
+                    // Packet tab: show packet management screen inside tab
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const PacketManagementScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.add),
+                                label: const Text('Tambah Paket'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Expanded(child: PacketManagementScreen()),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

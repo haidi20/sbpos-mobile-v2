@@ -9,6 +9,9 @@ class TransactionDetailEntity {
   final int? productId;
   final String? productName;
   final int? productPrice;
+  final int? packetId;
+  final String? packetName;
+  final int? packetPrice;
   final int? qty;
   final int? subtotal;
   final DateTime? createdAt;
@@ -22,6 +25,9 @@ class TransactionDetailEntity {
     this.productId,
     this.productName,
     this.productPrice,
+    this.packetId,
+    this.packetName,
+    this.packetPrice,
     this.qty,
     this.subtotal,
     this.createdAt,
@@ -36,6 +42,9 @@ class TransactionDetailEntity {
     int? productId,
     String? productName,
     int? productPrice,
+    int? packetId,
+    String? packetName,
+    int? packetPrice,
     int? qty,
     int? subtotal,
     DateTime? createdAt,
@@ -49,6 +58,9 @@ class TransactionDetailEntity {
       productId: productId ?? this.productId,
       productName: productName ?? this.productName,
       productPrice: productPrice ?? this.productPrice,
+      packetId: packetId ?? this.packetId,
+      packetName: packetName ?? this.packetName,
+      packetPrice: packetPrice ?? this.packetPrice,
       qty: qty ?? this.qty,
       subtotal: subtotal ?? this.subtotal,
       createdAt: createdAt ?? this.createdAt,
@@ -65,6 +77,9 @@ class TransactionDetailEntity {
       productId: model.productId,
       productName: model.productName,
       productPrice: model.productPrice,
+      packetId: model.packetId,
+      packetName: model.packetName,
+      packetPrice: model.packetPrice,
       qty: model.qty,
       subtotal: model.subtotal,
       createdAt: model.createdAt,
@@ -81,6 +96,9 @@ class TransactionDetailEntity {
       productId: productId,
       productName: productName,
       productPrice: productPrice,
+      packetId: packetId,
+      packetName: packetName,
+      packetPrice: packetPrice,
       qty: qty,
       subtotal: subtotal,
       createdAt: createdAt,
@@ -104,6 +122,9 @@ class TransactionDetailEntity {
       productId: product.id,
       productName: product.name,
       productPrice: intPrice,
+      packetId: null,
+      packetName: null,
+      packetPrice: null,
       qty: effectiveQty,
       subtotal: (intPrice ?? 0) * effectiveQty,
       note: note,

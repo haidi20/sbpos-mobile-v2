@@ -1,34 +1,28 @@
 import 'package:core/core.dart';
-import 'package:product/data/dummies/product.data.dart';
-import 'package:product/data/dummies/category.data.dart';
+import 'package:product/data/dummies/category.dummy.dart';
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/presentation/components/product_management_card.dart';
-import 'package:product/presentation/screens/product_management_form_screen.dart';
+import 'package:product/presentation/screens/product_management_form.screen.dart';
+import 'package:product/presentation/providers/product.provider.dart';
 
 // --- 4. MAIN SCREEN ---
 
-class ProductManagementScreen extends StatefulWidget {
+class ProductManagementScreen extends ConsumerStatefulWidget {
   const ProductManagementScreen({super.key});
 
   @override
-  State<ProductManagementScreen> createState() =>
+  ConsumerState<ProductManagementScreen> createState() =>
       _ProductManagementScreenState();
 }
 
-class _ProductManagementScreenState extends State<ProductManagementScreen> {
+class _ProductManagementScreenState
+    extends ConsumerState<ProductManagementScreen> {
   // State
   String _activeCategory = "All";
   // initialProducts is a list of ProductEntity; convert to ProductEntity
-  final List<ProductEntity> _products = initialProducts.toList();
+  // initialProducts removed; use viewmodel state
 
-  // Filter Logic
-  List<ProductEntity> get _filteredProducts {
-    return _products.where((p) {
-      if (_activeCategory == "All") return true;
-      final name = p.category?.name ?? '';
-      return name == _activeCategory;
-    }).toList();
-  }
+  // Filter Logic is based on viewmodel products (see getter below)
 
   // Show Add/Edit Modal
   void _showProductForm(BuildContext context) {
@@ -184,5 +178,24 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
         },
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // load products from viewmodel
+      ref.read(productManagementViewModelProvider.notifier).getProducts();
+    });
+  }
+
+  List<ProductEntity> get _filteredProducts {
+    final vm = ref.watch(productManagementViewModelProvider);
+    final products = vm.products;
+    return products.where((p) {
+      if (_activeCategory == "All") return true;
+      final name = p.category?.name ?? '';
+      return name == _activeCategory;
+    }).toList();
   }
 }

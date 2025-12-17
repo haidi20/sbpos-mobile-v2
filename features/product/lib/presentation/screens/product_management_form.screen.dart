@@ -1,11 +1,20 @@
 import 'package:core/core.dart';
-import 'package:product/data/dummies/category.data.dart';
+import 'package:product/data/dummies/category.dummy.dart';
+import 'package:product/presentation/providers/product.provider.dart';
 
-class ProductFormSheet extends StatelessWidget {
+class ProductFormSheet extends ConsumerWidget {
   const ProductFormSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(productManagementViewModelProvider.notifier);
+
+    final name = notifier.draft.name ?? '';
+    final price =
+        notifier.draft.price != null ? notifier.draft.price!.toString() : '';
+    final selectedCategory = notifier.draft.category?.name ??
+        categories.firstWhere((c) => c.name != 'All').name;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -25,9 +34,9 @@ class ProductFormSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tambah Produk Baru',
-            style: TextStyle(
+          Text(
+            notifier.draft.id == null ? 'Tambah Produk Baru' : 'Edit Produk',
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -45,7 +54,7 @@ class ProductFormSheet extends StatelessWidget {
               border: Border.all(
                 style: BorderStyle.solid,
                 color: Colors.grey.shade300,
-              ), // Dashed border not native, solid used
+              ),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,18 +79,28 @@ class ProductFormSheet extends StatelessWidget {
 
           // Inputs
           const FormLabel('Nama Produk'),
-          const FormInput(hint: 'Contoh: Kopi Susu'),
+          TextFormField(
+            initialValue: name,
+            onChanged: (v) => notifier.setDraftField('name', v),
+            decoration: _inputDecor(hint: 'Contoh: Kopi Susu'),
+          ),
 
           const SizedBox(height: 16),
 
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FormLabel('Harga'),
-                    FormInput(hint: '0', isNumber: true),
+                    const FormLabel('Harga'),
+                    TextFormField(
+                      initialValue: price,
+                      keyboardType: TextInputType.number,
+                      onChanged: (v) => notifier.setDraftField(
+                          'price', double.tryParse(v) ?? 0.0),
+                      decoration: _inputDecor(hint: '0'),
+                    ),
                   ],
                 ),
               ),
@@ -100,7 +119,7 @@ class ProductFormSheet extends StatelessWidget {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           isExpanded: true,
-                          value: 'Coffee',
+                          value: selectedCategory,
                           items: categories
                               .where((c) => c.name != 'All')
                               .map(
@@ -115,7 +134,11 @@ class ProductFormSheet extends StatelessWidget {
                                 ),
                               )
                               .toList(),
-                          onChanged: (val) {},
+                          onChanged: (val) {
+                            final cat =
+                                categories.firstWhere((c) => c.name == val);
+                            notifier.setDraftField('category', cat);
+                          },
                         ),
                       ),
                     ),
@@ -152,7 +175,10 @@ class ProductFormSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () async {
+                    await notifier.onSaveOrUpdate();
+                    if (context.mounted) Navigator.pop(context);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.sbBlue,
                     foregroundColor: Colors.white,
@@ -181,6 +207,23 @@ class ProductFormSheet extends StatelessWidget {
   }
 }
 
+InputDecoration _inputDecor({required String hint}) => InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      contentPadding: const EdgeInsets.all(12),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Colors.blue,
+          width: 2,
+        ),
+      ),
+    );
+
 class FormLabel extends StatelessWidget {
   final String label;
   const FormLabel(this.label, {super.key});
@@ -195,37 +238,6 @@ class FormLabel extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.bold,
           color: Colors.grey.shade500,
-        ),
-      ),
-    );
-  }
-}
-
-class FormInput extends StatelessWidget {
-  final String hint;
-  final bool isNumber;
-
-  const FormInput({super.key, required this.hint, this.isNumber = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.all(12),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Colors.blue,
-            width: 2,
-          ),
         ),
       ),
     );

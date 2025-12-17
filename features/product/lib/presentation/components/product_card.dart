@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, curly_braces_in_flow_control_structures
+
 import 'package:core/core.dart';
 import 'package:product/domain/entities/product.entity.dart';
 
@@ -114,13 +116,39 @@ class ProductCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              formatRupiah(product.price ?? 0),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: AppColors.sbOrange,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formatRupiah((product.price ?? 0).toDouble()),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppColors.sbOrange,
+                  ),
+                ),
+                // Stock indicator
+                if (product.qty != null)
+                  Builder(builder: (context) {
+                    final stock = (product.qty ?? 0).toInt();
+                    Color clr = Colors.green;
+                    if (stock <= 5)
+                      clr = Colors.redAccent;
+                    else if (stock <= 10) clr = Colors.orange;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: clr.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Stok: $stock',
+                        style: TextStyle(color: clr, fontSize: 11),
+                      ),
+                    );
+                  }),
+              ],
             ),
           ],
         ),
