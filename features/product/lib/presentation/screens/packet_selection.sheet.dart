@@ -75,17 +75,17 @@ class _PacketSelectionSheetState extends ConsumerState<PacketSelectionSheet> {
                       (p) => p.id == it.productId,
                       orElse: () => ProductEntity(id: it.productId ?? 0));
                   final pid = prod.id ?? 0;
-                    final viewModel =
+                  final viewModel =
                       ref.read(packetManagementViewModelProvider.notifier);
-                    final isSelected = viewModel.isSelected(pid);
-                    final price = prod.price?.toInt() ?? 0;
-                    final qty = viewModel.qtyFor(pid, it.qty ?? 1);
-                    final lineSubtotal = price * qty;
+                  final isSelected = viewModel.isSelected(pid);
+                  final price = prod.price?.toInt() ?? 0;
+                  final qty = viewModel.qtyFor(pid, it.qty ?? 1);
+                  final lineSubtotal = price * qty;
 
                   return ListTile(
                     leading: Checkbox(
                         value: isSelected,
-                        onChanged: (v) => notifier.toggleSelected(pid)),
+                        onChanged: (v) => viewModel.toggleSelected(pid)),
                     title: Text(prod.name ?? 'Item'),
                     subtitle: Text('Harga: ${formatRupiah(price.toDouble())}'),
                     trailing: SizedBox(
@@ -95,7 +95,7 @@ class _PacketSelectionSheetState extends ConsumerState<PacketSelectionSheet> {
                           children: [
                             IconButton(
                                 icon: const Icon(Icons.remove_circle_outline),
-                                onPressed: () => notifier.decrementQty(pid)),
+                                onPressed: () => viewModel.decrementQty(pid)),
                             Text(
                               '$qty',
                               style:
@@ -103,7 +103,7 @@ class _PacketSelectionSheetState extends ConsumerState<PacketSelectionSheet> {
                             ),
                             IconButton(
                                 icon: const Icon(Icons.add_circle_outline),
-                                onPressed: () => notifier.incrementQty(pid)),
+                                onPressed: () => viewModel.incrementQty(pid)),
                             const SizedBox(width: 8),
                             Text(
                               formatRupiah(lineSubtotal.toDouble()),
@@ -149,12 +149,12 @@ class _PacketSelectionSheetState extends ConsumerState<PacketSelectionSheet> {
                     child: ElevatedButton(
                       onPressed: () {
                         final viewModel = ref
-                          .read(packetManagementViewModelProvider.notifier);
+                            .read(packetManagementViewModelProvider.notifier);
                         final selected = <SelectedPacketItem>[];
                         for (final pid in viewModel.selectedIds) {
                           final q = viewModel.qtyFor(pid, 1);
                           selected
-                            .add(SelectedPacketItem(productId: pid, qty: q));
+                              .add(SelectedPacketItem(productId: pid, qty: q));
                         }
                         Navigator.of(context).pop(selected);
                       },

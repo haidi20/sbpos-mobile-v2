@@ -159,11 +159,11 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     return set.toList();
   }
 
-  /// Categories ordered for UI: always 'All' first, then 'Packet', then others.
+  /// Categories ordered for UI: always 'Semua' first, then 'Paket', then others.
   List<String> get orderedCategories {
     final others =
-        availableCategories.where((c) => c.toLowerCase() != 'packet').toList();
-    return <String>['All', 'Packet', ...others];
+        availableCategories.where((c) => c.toLowerCase() != 'paket').toList();
+    return <String>['Semua', 'Paket', ...others];
   }
 
   Future<void> getPacketsList({String? query}) async {

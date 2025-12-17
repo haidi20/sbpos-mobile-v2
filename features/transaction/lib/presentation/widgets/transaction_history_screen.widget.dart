@@ -5,10 +5,12 @@ import 'package:transaction/presentation/components/transaction_history.card.dar
 
 class TransactionHistoryHeader extends StatelessWidget {
   final ValueChanged<String> onSearch;
+  final ValueChanged<DateTime?>? onDateSelected;
 
   const TransactionHistoryHeader({
     super.key,
     required this.onSearch,
+    this.onDateSelected,
   });
 
   @override
@@ -43,7 +45,28 @@ class TransactionHistoryHeader extends StatelessWidget {
                     Icons.filter_list,
                     color: AppColors.sbBlue,
                   ),
-                  onPressed: () {},
+                  onPressed: () async {
+                    if (onDateSelected == null) return;
+                    final now = DateTime.now();
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: now,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(now.year + 2),
+                      builder: (ctx, child) => Theme(
+                        data: Theme.of(ctx).copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: AppColors.sbBlue,
+                            onPrimary: Colors.white,
+                            onSurface: Colors.black87,
+                          ),
+                        ),
+                        child: child!,
+                      ),
+                    );
+                    // allow clearing selection by passing null via dialog? For now pass picked
+                    onDateSelected!(picked);
+                  },
                 ),
               ),
             ],

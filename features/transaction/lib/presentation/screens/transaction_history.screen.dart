@@ -40,7 +40,10 @@ class _TransactionHistoryScreenState
         child: Column(
           children: [
             // extracted header widget
-            TransactionHistoryHeader(onSearch: viewModel.setSearchQuery),
+            TransactionHistoryHeader(
+              onSearch: viewModel.setSearchQuery,
+              onDateSelected: (d) => viewModel.setSelectedDate(d),
+            ),
 
             // date tabs
             TransactionHistoryTabTime(

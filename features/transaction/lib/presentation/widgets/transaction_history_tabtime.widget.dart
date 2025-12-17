@@ -6,18 +6,12 @@ class TransactionHistoryTabTime extends StatefulWidget {
   final DateTime? selectedDate;
   final DateSelectedCallback onSelected;
   final int daysCount;
-  final double alignment;
-  final Duration scrollDuration;
-  final Curve scrollCurve;
 
   const TransactionHistoryTabTime({
     super.key,
     required this.selectedDate,
     required this.onSelected,
     this.daysCount = 7,
-    this.alignment = 0.7,
-    this.scrollDuration = const Duration(milliseconds: 280),
-    this.scrollCurve = Curves.easeInOut,
   });
 
   @override
@@ -26,54 +20,97 @@ class TransactionHistoryTabTime extends StatefulWidget {
 }
 
 class _TransactionHistoryTabTimeState extends State<TransactionHistoryTabTime> {
-  late final ScrollController _ctrl;
+  final ScrollController _ctrl = ScrollController();
   final List<GlobalKey> _itemKeys = [];
-  final GlobalKey _rowKey = GlobalKey();
-  double _underlineLeft = 0;
-  double _underlineWidth = 0;
+
+  double _indicatorLeft = 0;
+  double _indicatorTop = 0;
+  double _indicatorWidth = 0;
+  bool _showIndicator = false;
+  Color _indicatorColor = Colors.orange;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = ScrollController();
-    // scroll to right (end) so "today" is visible
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_ctrl.hasClients) {
-        _ctrl.jumpTo(_ctrl.position.maxScrollExtent);
-      }
-      // position underline for initial selected tab
-      _updateUnderlineForSelected();
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant TransactionHistoryTabTime oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedDate != oldWidget.selectedDate) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _updateUnderlineForSelected();
-      });
-    }
+    _ctrl.addListener(_updateIndicator);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateIndicator());
   }
 
   @override
   void dispose() {
+    _ctrl.removeListener(_updateIndicator);
     _ctrl.dispose();
     super.dispose();
   }
 
+  List<DateTime> _generateDays() {
+    final today = DateTime.now();
+    return List.generate(widget.daysCount, (i) {
+      final diff = widget.daysCount - 1 - i;
+      return DateTime(today.year, today.month, today.day)
+          .subtract(Duration(days: diff));
+    });
+  }
+
+  void _updateIndicator() {
+    if (!mounted) return;
+    final days = _generateDays();
+
+    int activeIndex = -1;
+    if (widget.selectedDate != null) {
+      for (var i = 0; i < days.length; i++) {
+        final d = days[i];
+        if (widget.selectedDate!.year == d.year &&
+            widget.selectedDate!.month == d.month &&
+            widget.selectedDate!.day == d.day) {
+          activeIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (activeIndex < 0 || activeIndex >= _itemKeys.length) {
+      if (_showIndicator) setState(() => _showIndicator = false);
+      return;
+    }
+
+    final keyContext = _itemKeys[activeIndex].currentContext;
+    final rootBox = context.findRenderObject() as RenderBox?;
+    if (keyContext == null || rootBox == null) {
+      if (_showIndicator) setState(() => _showIndicator = false);
+      return;
+    }
+
+    final box = keyContext.findRenderObject() as RenderBox?;
+    if (box == null) {
+      if (_showIndicator) setState(() => _showIndicator = false);
+      return;
+    }
+
+    final topLeft = box.localToGlobal(Offset.zero, ancestor: rootBox);
+    final width = box.size.width;
+
+    // position indicator just below the item's content so it's close to the text
+    final left = topLeft.dx;
+    final top = topLeft.dy + box.size.height - 6;
+
+    final isSpecialList = widget.daysCount == 7;
+    final specialIndex = isSpecialList ? (days.length - 1) : -1;
+    final isSpecialActive = activeIndex == specialIndex && specialIndex >= 0;
+
+    setState(() {
+      _indicatorLeft = left;
+      _indicatorTop = top;
+      _indicatorWidth = width;
+      _indicatorColor = isSpecialActive ? AppColors.sbBlue : Colors.orange;
+      _showIndicator = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final days = List.generate(widget.daysCount, (i) {
-      // produce from older -> today
-      final diff = widget.daysCount - 1 - i;
-      final d = DateTime(today.year, today.month, today.day)
-          .subtract(Duration(days: diff));
-      return d;
-    });
+    final days = _generateDays();
 
-    // ensure we have keys for each day item
     while (_itemKeys.length < days.length) {
       _itemKeys.add(GlobalKey());
     }
@@ -81,130 +118,93 @@ class _TransactionHistoryTabTimeState extends State<TransactionHistoryTabTime> {
     return SizedBox(
       height: 64,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Positioned.fill(
-            child: SingleChildScrollView(
-              controller: _ctrl,
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Container(
-                key: _rowKey,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  children: List.generate(days.length, (idx) {
-                    final d = days[idx];
-                    final isActive = widget.selectedDate != null &&
-                        widget.selectedDate!.year == d.year &&
-                        widget.selectedDate!.month == d.month &&
-                        widget.selectedDate!.day == d.day;
+          SingleChildScrollView(
+            controller: _ctrl,
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: List.generate(days.length, (idx) {
+                final d = days[idx];
+                final isActive = widget.selectedDate != null &&
+                    widget.selectedDate!.year == d.year &&
+                    widget.selectedDate!.month == d.month &&
+                    widget.selectedDate!.day == d.day;
+                final isSpecial =
+                    widget.daysCount == 7 && idx == days.length - 1;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Container(
-                        key: _itemKeys[idx],
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            widget.onSelected(d);
-                            final ctx = _itemKeys[idx].currentContext;
-                            if (!mounted || ctx == null) return;
-                            // small scroll to center the tapped tab
-                            Scrollable.ensureVisible(ctx,
-                                duration: widget.scrollDuration,
-                                alignment: widget.alignment,
-                                curve: widget.scrollCurve);
-                            // update underline after layout
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              _updateUnderlineForIndex(idx);
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 6),
-                            child: Text(
-                              d.toDisplayDate(),
-                              style: TextStyle(
-                                color: isActive
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    key: _itemKeys[idx],
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () async {
+                        if (isSpecial) {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: widget.selectedDate ?? DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now(),
+                          );
+                          if (picked != null) widget.onSelected(picked);
+                          _updateIndicator();
+                          return;
+                        }
+                        widget.onSelected(d);
+                        final ctx = _itemKeys[idx].currentContext;
+                        if (!mounted || ctx == null) return;
+                        Scrollable.ensureVisible(ctx,
+                            duration: const Duration(milliseconds: 280),
+                            alignment: 0.7,
+                            curve: Curves.easeInOut);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 6),
+                        child: Text(
+                          d.toDisplayDate(),
+                          style: TextStyle(
+                            color: isSpecial
+                                ? Colors.orange
+                                : (isActive
                                     ? AppColors.sbBlue
-                                    : AppColors.gray700,
-                                fontWeight: isActive
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
+                                    : AppColors.gray700),
+                            fontWeight:
+                                isActive ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: 14,
                           ),
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          if (_showIndicator)
+            Positioned(
+              left: _indicatorLeft,
+              top: _indicatorTop,
+              child: Container(
+                width: _indicatorWidth,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: _indicatorColor,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-          ),
-
-          // underline
-          AnimatedPositioned(
-            duration: widget.scrollDuration,
-            curve: widget.scrollCurve,
-            left: _underlineLeft,
-            bottom: 6,
-            child: AnimatedContainer(
-              duration: widget.scrollDuration,
-              curve: widget.scrollCurve,
-              width: _underlineWidth,
-              height: 2,
-              decoration: BoxDecoration(
-                color: AppColors.sbBlue,
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  void _updateUnderlineForSelected() {
-    final today = DateTime.now();
-    final days = List.generate(widget.daysCount, (i) {
-      final diff = widget.daysCount - 1 - i;
-      return DateTime(today.year, today.month, today.day)
-          .subtract(Duration(days: diff));
-    });
-
-    final sel = widget.selectedDate;
-    if (sel == null) return;
-    final idx = days.indexWhere(
-        (d) => d.year == sel.year && d.month == sel.month && d.day == sel.day);
-    if (idx >= 0) _updateUnderlineForIndex(idx);
-  }
-
-  void _updateUnderlineForIndex(int idx) {
-    if (_itemKeys.length <= idx) return;
-    final itemCtx = _itemKeys[idx].currentContext;
-    final rowCtx = _rowKey.currentContext;
-    if (itemCtx == null || rowCtx == null) return;
-    try {
-      final renderItem = itemCtx.findRenderObject();
-      final renderRow = rowCtx.findRenderObject();
-      if (renderItem is! RenderBox || renderRow is! RenderBox) return;
-      final itemBox = renderItem;
-      final rowBox = renderRow;
-      final global = itemBox.localToGlobal(Offset.zero);
-      final local = rowBox.globalToLocal(global);
-      final left = local.dx;
-      final width = itemBox.size.width;
-      if (!mounted) return;
-      setState(() {
-        _underlineLeft = left;
-        _underlineWidth = width;
-      });
-    } catch (e, st) {
-      try {
-        Logger('TransactionHistoryTabTime')
-            .warning('Failed to update underline', e, st);
-      } catch (_) {}
-    }
+  @override
+  void didUpdateWidget(covariant TransactionHistoryTabTime oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateIndicator());
   }
 }

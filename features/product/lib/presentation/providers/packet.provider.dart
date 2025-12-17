@@ -9,22 +9,22 @@ import 'package:product/presentation/providers/product_repository.provider.dart'
 
 final packetGetPacketsProvider = Provider<GetPackets>((ref) {
   final repo = ref.watch(packetRepositoryProvider);
-  return GetPackets(repo!);
+  return GetPackets(repo);
 });
 
 final packetCreatePacketProvider = Provider<CreatePacket>((ref) {
   final repo = ref.watch(packetRepositoryProvider);
-  return CreatePacket(repo!);
+  return CreatePacket(repo);
 });
 
 final packetUpdatePacketProvider = Provider<UpdatePacket>((ref) {
   final repo = ref.watch(packetRepositoryProvider);
-  return UpdatePacket(repo!);
+  return UpdatePacket(repo);
 });
 
 final packetDeletePacketProvider = Provider<DeletePacket>((ref) {
   final repo = ref.watch(packetRepositoryProvider);
-  return DeletePacket(repo!);
+  return DeletePacket(repo);
 });
 
 final packetManagementViewModelProvider =

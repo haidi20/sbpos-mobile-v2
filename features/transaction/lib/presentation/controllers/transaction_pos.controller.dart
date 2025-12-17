@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+// view model is accessed via provider at runtime
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/presentation/screens/packet_selection.sheet.dart'
@@ -12,14 +12,13 @@ import 'package:transaction/presentation/view_models/transaction_pos.state.dart'
 class TransactionPosController {
   final WidgetRef ref;
   final BuildContext context;
-  final TransactionPosViewModel viewModel;
   final TextEditingController searchController = TextEditingController();
-
-  TransactionPosController(this.ref, this.context)
-      : viewModel = ref.read(transactionPosViewModelProvider.notifier);
+  TransactionPosController(this.ref, this.context);
 
   void onShowCartSheet() {
-    viewModel.setTypeCart(ETypeCart.main);
+    ref
+        .read(transactionPosViewModelProvider.notifier)
+        .setTypeCart(ETypeCart.main);
 
     showModalBottomSheet(
       context: context,
@@ -30,20 +29,22 @@ class TransactionPosController {
   }
 
   // Called when the search text changes (UI delegates to controller)
-  void onSearchChanged({required String val}) => viewModel.setSearchQuery(val);
+  void onSearchChanged({required String val}) =>
+      ref.read(transactionPosViewModelProvider.notifier).setSearchQuery(val);
 
   // Show filter popup and apply results to viewModel
   Future<void> showFilterPopup() async {
     final currentState = ref.read(transactionPosViewModelProvider);
+    final vm = ref.read(transactionPosViewModelProvider.notifier);
     final res = await showFilterProductsPopup(
       context,
       initialIncludePacket: false,
-      categories: viewModel.availableCategories,
+      categories: vm.availableCategories,
       initialCategoryName: currentState.activeCategory,
     );
     if (res != null) {
-      viewModel.setActiveCategory(res.categoryName ?? 'Packet');
-      if (res.includePacket) await viewModel.getPacketsList();
+      vm.setActiveCategory(res.categoryName ?? 'Packet');
+      if (res.includePacket) await vm.getPacketsList();
     }
   }
 
@@ -54,7 +55,7 @@ class TransactionPosController {
     required ScrollController productGridController,
     required ScrollController categoryScrollController,
   }) {
-    viewModel.setActiveCategory(name);
+    ref.read(transactionPosViewModelProvider.notifier).setActiveCategory(name);
 
     // scroll category bar to keep selection visible
     const itemWidth = 110.0;
@@ -67,7 +68,8 @@ class TransactionPosController {
 
     // scroll product grid to first product of category
     if (productGridController.hasClients) {
-      final all = viewModel.getFilteredProducts(viewModel.cachedProducts);
+      final vm = ref.read(transactionPosViewModelProvider.notifier);
+      final all = vm.getFilteredProducts(vm.cachedProducts);
       final idx = all.indexWhere((p) => (p.category?.name ?? 'All') == name);
       if (idx != -1) {
         final screenW = MediaQuery.of(context).size.width;
@@ -93,14 +95,16 @@ class TransactionPosController {
       builder: (_) => PacketSelectionSheet(packet: packet, products: products),
     );
     if (selected != null && selected.isNotEmpty) {
-      await viewModel.addPacketSelection(
-          packet: packet, selectedItems: selected);
+      await ref
+          .read(transactionPosViewModelProvider.notifier)
+          .addPacketSelection(packet: packet, selectedItems: selected);
     }
   }
 
   // Product tap: delegate to viewModel
-  Future<void> onProductTap({required ProductEntity product}) async =>
-      await viewModel.onAddToCart(product);
+  Future<void> onProductTap({required ProductEntity product}) async => await ref
+      .read(transactionPosViewModelProvider.notifier)
+      .onAddToCart(product);
 
   void dispose() {
     try {

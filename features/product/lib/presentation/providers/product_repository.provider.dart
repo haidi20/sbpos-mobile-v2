@@ -5,6 +5,7 @@ import 'package:product/data/datasources/packet_local.datasource.dart';
 import 'package:product/data/datasources/packet_remote.datasouece.dart';
 import 'package:product/domain/repositories/product.repository.dart';
 import 'package:product/domain/repositories/packet.repository.dart';
+import 'package:product/data/repositories/packet_fallback.repository.dart';
 
 /// Placeholder provider for remote datasource. Override in the app composition
 /// root with a concrete implementation that implements `ProductRemoteDataSource`.
@@ -32,4 +33,8 @@ final packetRemoteDataSourceProvider =
 final packetLocalDataSourceProvider =
     Provider<PacketLocalDataSource?>((ref) => null);
 
-final packetRepositoryProvider = Provider<PacketRepository?>((ref) => null);
+final packetRepositoryProvider = Provider<PacketRepository>((ref) {
+  // Provide a safe fallback implementation when the app composition root
+  // does not override the packet repository provider.
+  return PacketRepositoryFallback();
+});

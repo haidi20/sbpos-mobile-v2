@@ -27,58 +27,56 @@ class _PacketManagementScreenState
     final state = ref.watch(packetManagementViewModelProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Paket'),
-      ),
+      backgroundColor: AppColors.sbBg,
       body: SafeArea(
         child: Column(
           children: [
-            PacketManagementHeader(
-              state: state,
-              onSearch: notifier.setSearchQuery,
-              onAdd: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const PacketManagementFormScreen()),
-                );
-                if (!mounted) return;
-                notifier.getPackets();
-              },
-            ),
-            if (state.loading) const LinearProgressIndicator(),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.all(12),
-                itemCount: state.packets.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final p = state.packets[index];
-                  return PacketListItem(
-                    packet: p,
-                    onEdit: () async {
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: notifier.setSearchQuery,
+                      decoration:
+                          const InputDecoration(hintText: 'Cari paket...'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () async {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) =>
-                                PacketManagementFormScreen(packet: p)),
+                            builder: (_) => const PacketManagementFormScreen()),
                       );
                       if (!mounted) return;
                       notifier.getPackets();
                     },
-                    onDelete: () async {
-                      final ok = await notifier.onDeletePacketById(p.id);
-                      if (!ok) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Gagal hapus')));
-                      } else {
-                        notifier.getPackets();
-                      }
-                    },
-                  );
-                },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Tambah'),
+                  ),
+                ],
               ),
+            ),
+
+            if (state.loading) const LinearProgressIndicator(),
+
+            // Content area: loading / empty / data
+            Expanded(
+              child: Builder(builder: (context) {
+                if (state.loading) {
+                  return const _PacketManagementLoading();
+                }
+                if (state.packets.isEmpty) {
+                  return const _PacketManagementEmpty();
+                }
+                return _PacketManagementDataList(
+                  packets: state.packets,
+                  notifier: notifier,
+                );
+              }),
             ),
           ],
         ),
@@ -87,38 +85,83 @@ class _PacketManagementScreenState
   }
 }
 
-class PacketManagementHeader extends StatelessWidget {
-  final dynamic state;
-  final void Function(String) onSearch;
-  final VoidCallback onAdd;
+// PacketManagementHeader removed; header inlined in the screen build
 
-  const PacketManagementHeader(
-      {super.key,
-      required this.state,
-      required this.onSearch,
-      required this.onAdd});
+class _PacketManagementLoading extends StatelessWidget {
+  const _PacketManagementLoading();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: TextField(
-              onChanged: onSearch,
-              decoration: const InputDecoration(hintText: 'Cari paket...'),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton.icon(
-            onPressed: onAdd,
-            icon: const Icon(Icons.add),
-            label: const Text('Tambah'),
-          ),
-        ],
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: CircularProgressIndicator(),
       ),
+    );
+  }
+}
+
+class _PacketManagementEmpty extends StatelessWidget {
+  const _PacketManagementEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inventory_2_outlined,
+                size: 48, color: Colors.grey.shade400),
+            const SizedBox(height: 12),
+            Text('Belum ada paket.',
+                style: TextStyle(color: Colors.grey.shade600)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PacketManagementDataList extends StatelessWidget {
+  final List packets;
+  final dynamic notifier;
+
+  const _PacketManagementDataList(
+      {required this.packets, required this.notifier});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: packets.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final p = packets[index];
+        return PacketListItem(
+          packet: p,
+          onEdit: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => PacketManagementFormScreen(packet: p)),
+            );
+            if (!Navigator.of(context).mounted) return;
+            notifier.getPackets();
+          },
+          onDelete: () async {
+            final ok = await notifier.onDeletePacketById(p.id);
+            if (!ok) {
+              if (!Navigator.of(context).mounted) return;
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(content: Text('Gagal hapus')));
+            } else {
+              notifier.getPackets();
+            }
+          },
+        );
+      },
     );
   }
 }
@@ -149,5 +192,3 @@ class PacketListItem extends StatelessWidget {
     );
   }
 }
-
-// import removed (already imported at top)

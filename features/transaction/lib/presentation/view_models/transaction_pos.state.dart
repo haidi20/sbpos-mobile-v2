@@ -54,7 +54,7 @@ class TransactionPosState {
     this.orderNote = "",
     this.selectedCustomer,
     this.isLoading = false,
-    this.activeCategory = "All",
+    this.activeCategory = "Semua",
     this.typeCart = ETypeCart.main,
     this.orderType = EOrderType.dineIn,
     this.ojolProvider = '',

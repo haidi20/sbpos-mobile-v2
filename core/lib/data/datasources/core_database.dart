@@ -3,6 +3,8 @@ import 'package:outlet/data/datasources/db/outlet.table.dart';
 import 'package:core/data/datasources/db/auth_user.table.dart';
 import 'package:customer/data/datasources/db/customer.table.dart';
 import 'package:product/data/datasources/db/product.table.dart';
+import 'package:product/data/datasources/db/packet.table.dart';
+import 'package:product/data/datasources/db/packet_item.table.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 
@@ -50,6 +52,16 @@ class CoreDatabase {
           } catch (e, stack) {
             _logger.warning('Failed to ensure tables on open', e, stack);
           }
+
+          // Ensure required columns exist for known tables. This is a safe,
+          // best-effort fix for older DB files that were created before
+          // new columns (e.g. `is_paid`) were added to the schema. We try to
+          // add missing columns with ALTER TABLE so existing data is preserved.
+          try {
+            await _ensureColumns(db);
+          } catch (e, stack) {
+            _logger.warning('Failed to ensure table columns on open', e, stack);
+          }
         },
       );
 
@@ -63,7 +75,9 @@ class CoreDatabase {
   void _onCreate(Database db, int version) async {
     try {
       await db.execute(OutletTable.createTableQuery);
+      await db.execute(PacketTable.createTableQuery);
       await db.execute(ProductTable.createTableQuery);
+      await db.execute(PacketItemTable.createTableQuery);
       await db.execute(CustomerTable.createTableQuery);
       await db.execute(AuthUserTable.createTableQuery);
       await db.execute(TransactionTable.createTableQuery);
@@ -79,6 +93,8 @@ class CoreDatabase {
     final queries = [
       AuthUserTable.createTableQuery,
       OutletTable.createTableQuery,
+      PacketTable.createTableQuery,
+      PacketItemTable.createTableQuery,
       TransactionTable.createTableQuery,
       TransactionDetailTable.createTableQuery,
       CustomerTable.createTableQuery,
@@ -124,6 +140,34 @@ class CoreDatabase {
         // Log and continue: avoid failing entire upgrade on single migration
         _logger.warning('Migration to v$v failed', e, stack);
       }
+    }
+  }
+
+  /// Ensure specific columns exist on tables. This is defensive and idempotent:
+  /// it checks `PRAGMA table_info(...)` and adds columns if they're missing.
+  Future<void> _ensureColumns(Database db) async {
+    try {
+      // Helper to check if a column exists in a table
+      Future<bool> columnExists(String table, String column) async {
+        final rows = await db.rawQuery('PRAGMA table_info($table)');
+        for (final r in rows) {
+          final name = r['name']?.toString();
+          if (name == column) return true;
+        }
+        return false;
+      }
+
+      // transactions.is_paid
+      const txTable = TransactionTable.tableName;
+      const isPaidCol = TransactionTable.colIsPaid;
+      final hasIsPaid = await columnExists(txTable, isPaidCol);
+      if (!hasIsPaid) {
+        _logger.info('Adding missing column `$isPaidCol` to table `$txTable`');
+        await db.execute(
+            'ALTER TABLE $txTable ADD COLUMN $isPaidCol INTEGER NOT NULL DEFAULT 0');
+      }
+    } catch (e, stack) {
+      _logger.warning('Error ensuring columns', e, stack);
     }
   }
 }

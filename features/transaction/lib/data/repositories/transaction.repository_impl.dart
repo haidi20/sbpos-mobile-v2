@@ -7,6 +7,7 @@ import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
 import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
+import 'package:transaction/data/dummy/transaction.dummy.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final TransactionRemoteDataSource remote;
@@ -83,11 +84,39 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<Either<Failure, List<TransactionEntity>>> _fallbackToLocal({
     Failure fallbackFailure = const NetworkFailure(),
   }) async {
-    final localEntities = await _getLocalEntities();
-    if (localEntities.isNotEmpty) {
-      return Right(localEntities);
+    // Try seeding local DB if empty, then read again
+    try {
+      final localEntities = await _getLocalEntities();
+      if (localEntities.isNotEmpty) {
+        return Right(localEntities);
+      }
+      // attempt to seed sample transactions and re-read
+      await _ensureSeededLocal();
+      final reloaded = await _getLocalEntities();
+      if (reloaded.isNotEmpty) return Right(reloaded);
+    } catch (e, st) {
+      _logger.fine('Fallback local read/seed failed: $e', e, st);
     }
     return Left(fallbackFailure);
+  }
+
+  /// Ensure local DB has some sample transactions when empty.
+  /// Useful for fallback/offline scenarios so UI shows data.
+  Future<void> _ensureSeededLocal() async {
+    try {
+      final existing = await local.getTransactions();
+      if (existing.isEmpty) {
+        for (final t in transactionList) {
+          try {
+            await local.insertSyncTransaction(t);
+          } catch (e, st) {
+            _logger.warning('Failed seeding transaction local: $e', e, st);
+          }
+        }
+      }
+    } catch (e, st) {
+      _logger.warning('Error checking/seeding local transactions: $e', e, st);
+    }
   }
 
   @override

@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/presentation/components/packet_card.dart';
 import 'package:product/presentation/components/product_card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
@@ -19,6 +18,8 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
   final ScrollController _categoryScrollController = ScrollController();
   final ScrollController _productGridController = ScrollController();
   late final TransactionPosController _controller;
+  final FocusNode _appBarSearchFocus = FocusNode();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
     _categoryScrollController.dispose();
     _productGridController.dispose();
     _controller.dispose();
+    _appBarSearchFocus.dispose();
     super.dispose();
   }
 
@@ -38,18 +40,65 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
-    final filteredProducts =
-        viewModel.getFilteredProducts(viewModel.cachedProducts);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('POS')),
+      appBar: AppBar(
+        title: _isSearching
+            ? Row(
+                children: [
+                  const Icon(Icons.search, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller.searchController,
+                      focusNode: _appBarSearchFocus,
+                      onChanged: (v) => _controller.onSearchChanged(val: v),
+                      decoration: const InputDecoration(
+                        hintText: 'Cari produk...',
+                        border: InputBorder.none,
+                        isCollapsed: true,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : const Text('POS Produk'),
+        leading: _isSearching
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _isSearching = false;
+                  });
+                  // clear search and reset filter
+                  try {
+                    _controller.searchController.clear();
+                    _controller.onSearchChanged(val: '');
+                  } catch (_) {}
+                },
+              )
+            : null,
+        actions: _isSearching
+            ? null
+            : [
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                    });
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      try {
+                        _appBarSearchFocus.requestFocus();
+                      } catch (_) {}
+                    });
+                  },
+                ),
+              ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: _SearchBar(controller: _controller),
-            ),
             _CategoryBar(
               controller: _controller,
               categoryScrollController: _categoryScrollController,
@@ -59,9 +108,6 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
             ),
             Expanded(
               child: _ContentArea(
-                state: state,
-                viewModel: viewModel,
-                filteredProducts: filteredProducts,
                 controller: _controller,
                 productGridController: _productGridController,
               ),
@@ -77,44 +123,8 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
 // Private, testable widgets extracted from TransactionPosScreen
 // -----------------------------------------------------------------------------
 
-class _SearchBar extends StatelessWidget {
-  final TransactionPosController controller;
-
-  const _SearchBar({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        IconButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: TextField(
-            controller: controller.searchController,
-            onChanged: (val) => controller.onSearchChanged(val: val),
-            decoration: InputDecoration(
-              hintText: 'Cari produk...',
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          onPressed: () => controller.showFilterPopup(),
-          icon: const Icon(Icons.filter_list, color: AppColors.sbBlue),
-        ),
-      ],
-    );
-  }
-}
+// Note: `_SearchBar` was previously declared here but is not used; removed
+// to keep analyzer clean. The AppBar now uses an inline search `TextField`.
 
 class _CategoryBar extends StatelessWidget {
   final TransactionPosController controller;
@@ -149,21 +159,28 @@ class _CategoryBar extends StatelessWidget {
                 onPressed: () async {
                   final selected = await showModalBottomSheet<String>(
                     context: context,
+                    isScrollControlled: true,
                     builder: (ctx) {
                       return SafeArea(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: categories.map((name) {
-                            final active = state.activeCategory == name;
-                            return ListTile(
-                              title: Text(name),
-                              leading: active
-                                  ? const Icon(Icons.check,
-                                      color: AppColors.sbBlue)
-                                  : null,
-                              onTap: () => Navigator.of(ctx).pop(name),
-                            );
-                          }).toList(),
+                        child: SizedBox(
+                          // constrain max height to half screen to avoid overflow
+                          height: MediaQuery.of(ctx).size.height * 0.5,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: categories.length,
+                            itemBuilder: (context, i) {
+                              final name = categories[i];
+                              final active = state.activeCategory == name;
+                              return ListTile(
+                                title: Text(name),
+                                leading: active
+                                    ? const Icon(Icons.check,
+                                        color: AppColors.sbBlue)
+                                    : null,
+                                onTap: () => Navigator.of(ctx).pop(name),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
@@ -208,7 +225,7 @@ class _CategoryBar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: active ? AppColors.sbBlue : Colors.white,
+                          color: active ? Colors.grey[300] : Colors.white,
                           borderRadius: BorderRadius.circular(18),
                           border: active
                               ? null
@@ -218,7 +235,8 @@ class _CategoryBar extends StatelessWidget {
                           child: Text(
                             name,
                             style: TextStyle(
-                              color: active ? Colors.white : Colors.grey[800],
+                              color:
+                                  active ? Colors.grey[600] : Colors.grey[800],
                               fontWeight:
                                   active ? FontWeight.w700 : FontWeight.w500,
                             ),
@@ -232,8 +250,7 @@ class _CategoryBar extends StatelessWidget {
                         width: active ? 28 : 0,
                         height: 3,
                         decoration: BoxDecoration(
-                          color:
-                              active ? AppColors.sbOrange : Colors.transparent,
+                          color: active ? AppColors.sbBlue : Colors.transparent,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -249,27 +266,26 @@ class _CategoryBar extends StatelessWidget {
   }
 }
 
-class _ContentArea extends StatelessWidget {
-  final TransactionPosState state;
-  final TransactionPosViewModel viewModel;
-  final List<ProductEntity> filteredProducts;
+class _ContentArea extends ConsumerWidget {
   final TransactionPosController controller;
   final ScrollController productGridController;
 
   const _ContentArea({
-    required this.state,
-    required this.viewModel,
-    required this.filteredProducts,
     required this.controller,
     required this.productGridController,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(transactionPosViewModelProvider);
+    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+
     // loading -> show loading
     if (state.isLoading) return const _ContentLoading();
 
-    // compute filtered packets
+    // compute filteredProducts and packets from viewModel/state
+    final filteredProducts =
+        viewModel.getFilteredProducts(viewModel.cachedProducts);
     final packetQuery = (state.searchQuery ?? '').toLowerCase();
     final filteredPackets = state.packets.where((p) {
       if (packetQuery.isEmpty) return true;
@@ -283,9 +299,6 @@ class _ContentArea extends StatelessWidget {
 
     // otherwise show content
     return _ContentData(
-      filteredPackets: filteredPackets,
-      filteredProducts: filteredProducts,
-      viewModel: viewModel,
       controller: controller,
       productGridController: productGridController,
     );
@@ -297,8 +310,10 @@ class _ContentLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.sbBlue),
+    return const SizedBox.expand(
+      child: Center(
+        child: CircularProgressIndicator(color: AppColors.sbBlue),
+      ),
     );
   }
 }
@@ -308,36 +323,44 @@ class _ContentEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.search_off, size: 56, color: Colors.grey),
-          SizedBox(height: 12),
-          Text('Produk tidak ditemukan', style: TextStyle(color: Colors.grey)),
-        ],
+    return const SizedBox.expand(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off, size: 56, color: Colors.grey),
+            SizedBox(height: 12),
+            Text('Produk tidak ditemukan',
+                style: TextStyle(color: Colors.grey)),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ContentData extends StatelessWidget {
-  final List filteredPackets;
-  final List<ProductEntity> filteredProducts;
-  final TransactionPosViewModel viewModel;
+class _ContentData extends ConsumerWidget {
   final TransactionPosController controller;
   final ScrollController productGridController;
 
   const _ContentData({
-    required this.filteredPackets,
-    required this.filteredProducts,
-    required this.viewModel,
     required this.controller,
     required this.productGridController,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(transactionPosViewModelProvider);
+    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+
+    final filteredProducts =
+        viewModel.getFilteredProducts(viewModel.cachedProducts);
+    final packetQuery = (state.searchQuery ?? '').toLowerCase();
+    final filteredPackets = state.packets.where((p) {
+      if (packetQuery.isEmpty) return true;
+      return p.name != null && p.name!.toLowerCase().contains(packetQuery);
+    }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -387,10 +410,11 @@ class _ContentData extends StatelessWidget {
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12),
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
                   itemCount: filteredProducts.length,
                   itemBuilder: (context, index) {
                     final product = filteredProducts[index];
