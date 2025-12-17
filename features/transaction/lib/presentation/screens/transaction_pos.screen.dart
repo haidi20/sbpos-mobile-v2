@@ -1,9 +1,6 @@
 import 'package:core/core.dart';
-import 'package:product/presentation/components/packet_card.dart';
-import 'package:product/presentation/components/product_card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/widgets/transaction_pos_screen.widget.dart';
 import 'package:transaction/presentation/controllers/transaction_pos.controller.dart';
 
 class TransactionPosScreen extends ConsumerStatefulWidget {
@@ -15,26 +12,27 @@ class TransactionPosScreen extends ConsumerStatefulWidget {
 }
 
 class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
-  final ScrollController _categoryScrollController = ScrollController();
-  final ScrollController _productGridController = ScrollController();
+  bool _isSearching = false;
+
   late final TransactionPosController _controller;
   final FocusNode _appBarSearchFocus = FocusNode();
-  bool _isSearching = false;
-  bool _didRefreshOnVisible = false;
+  final ScrollController _categoryScrollController = ScrollController();
+  final ScrollController _productGridController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _controller = TransactionPosController(ref, context);
+    _controller.init();
   }
 
   @override
   void dispose() {
-    _categoryScrollController.dispose();
-    _productGridController.dispose();
+    super.dispose();
     _controller.dispose();
     _appBarSearchFocus.dispose();
-    super.dispose();
+    _productGridController.dispose();
+    _categoryScrollController.dispose();
   }
 
   @override
@@ -45,14 +43,10 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
     // Trigger refresh when this route becomes visible (each access).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final route = ModalRoute.of(context);
-      if (route != null && route.isCurrent && !_didRefreshOnVisible) {
-        unawaited(viewModel.refreshProductsAndPackets());
-        _didRefreshOnVisible = true;
-      }
-      if (route != null && !route.isCurrent) {
-        // reset flag so next time it becomes current we refresh again
-        _didRefreshOnVisible = false;
-      }
+      // load data setiap akses layar
+      Future.microtask(() async {
+        await _controller.maybeRefreshOnVisible(route?.isCurrent ?? false);
+      });
     });
 
     return Scaffold(
@@ -76,7 +70,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                   ),
                 ],
               )
-            : const Text('POS Produk'),
+            : const Text('POS'),
         leading: _isSearching
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -111,294 +105,37 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
               ],
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _CategoryBar(
-              controller: _controller,
-              categoryScrollController: _categoryScrollController,
-              productGridController: _productGridController,
-              viewModel: viewModel,
+            Column(
+              children: [
+                CategoryBar(
+                  controller: _controller,
+                  categoryScrollController: _categoryScrollController,
+                  productGridController: _productGridController,
+                  viewModel: viewModel,
+                  state: state,
+                ),
+                Expanded(
+                  child: ContentArea(
+                    controller: _controller,
+                    productGridController: _productGridController,
+                  ),
+                ),
+              ],
+            ),
+            // cart bottom button (overlaid)
+            CartBottomButton(
               state: state,
-            ),
-            Expanded(
-              child: _ContentArea(
-                controller: _controller,
-                productGridController: _productGridController,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// -----------------------------------------------------------------------------
-// Private, testable widgets extracted from TransactionPosScreen
-// -----------------------------------------------------------------------------
-
-// Note: `_SearchBar` was previously declared here but is not used; removed
-// to keep analyzer clean. The AppBar now uses an inline search `TextField`.
-
-class _CategoryBar extends StatelessWidget {
-  final TransactionPosController controller;
-  final ScrollController categoryScrollController;
-  final ScrollController productGridController;
-  final TransactionPosViewModel viewModel;
-  final TransactionPosState state;
-
-  const _CategoryBar({
-    required this.controller,
-    required this.categoryScrollController,
-    required this.productGridController,
-    required this.viewModel,
-    required this.state,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Categories ordering is provided by the ViewModel
-    final categories = viewModel.orderedCategories;
-
-    return SizedBox(
-      height: 56,
-      child: Row(
-        children: [
-          // Left filter button opens a modal to select categories
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
-            child: Material(
-              type: MaterialType.transparency,
-              child: IconButton(
-                onPressed: () async {
-                  final selected = await showModalBottomSheet<String>(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (ctx) {
-                      return SafeArea(
-                        child: SizedBox(
-                          // constrain max height to half screen to avoid overflow
-                          height: MediaQuery.of(ctx).size.height * 0.5,
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: categories.length,
-                            itemBuilder: (context, i) {
-                              final name = categories[i];
-                              final active = state.activeCategory == name;
-                              return ListTile(
-                                title: Text(name),
-                                leading: active
-                                    ? const Icon(Icons.check,
-                                        color: AppColors.sbBlue)
-                                    : null,
-                                onTap: () => Navigator.of(ctx).pop(name),
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                  if (selected != null) {
-                    final idx = categories.indexOf(selected);
-                    controller.onCategoryTap(
-                      index: idx,
-                      name: selected,
-                      categoryScrollController: categoryScrollController,
-                      productGridController: productGridController,
-                    );
-                  }
-                },
-                icon: const Icon(Icons.filter_list, color: AppColors.sbBlue),
-              ),
-            ),
-          ),
-          // Horizontal category list
-          Expanded(
-            child: ListView.separated(
-              controller: categoryScrollController,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: categories.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final name = categories[index];
-                final active = state.activeCategory == name;
-                return GestureDetector(
-                  onTap: () => controller.onCategoryTap(
-                    index: index,
-                    name: name,
-                    categoryScrollController: categoryScrollController,
-                    productGridController: productGridController,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: active ? Colors.grey[300] : Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          border: active
-                              ? null
-                              : Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Center(
-                          child: Text(
-                            name,
-                            style: TextStyle(
-                              color:
-                                  active ? Colors.grey[600] : Colors.grey[800],
-                              fontWeight:
-                                  active ? FontWeight.w700 : FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      // fixed-width underline for active item
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        width: active ? 28 : 0,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: active ? AppColors.sbBlue : Colors.transparent,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+              viewModel: viewModel,
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                _controller.onShowCartSheet();
               },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ContentArea extends ConsumerWidget {
-  final TransactionPosController controller;
-  final ScrollController productGridController;
-
-  const _ContentArea({
-    required this.controller,
-    required this.productGridController,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(transactionPosViewModelProvider);
-    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
-
-    // loading -> show loading
-    if (state.isLoading) return const _ContentLoading();
-
-    // get combined content from VM (packets + products)
-    final combined = viewModel.getCombinedContent();
-
-    // loading -> show loading
-    if (state.isLoading) return const _ContentLoading();
-
-    // empty -> show empty state
-    if (combined.isEmpty) return const _ContentEmpty();
-
-    // otherwise show content (rendered by _ContentData)
-    return _ContentData(
-      controller: controller,
-      productGridController: productGridController,
-    );
-  }
-}
-
-class _ContentLoading extends StatelessWidget {
-  const _ContentLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.expand(
-      child: Center(
-        child: CircularProgressIndicator(color: AppColors.sbBlue),
-      ),
-    );
-  }
-}
-
-class _ContentEmpty extends StatelessWidget {
-  const _ContentEmpty();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.expand(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 56,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Produk tidak ditemukan',
-              style: TextStyle(color: Colors.grey),
-            ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ContentData extends ConsumerWidget {
-  final TransactionPosController controller;
-  final ScrollController productGridController;
-
-  const _ContentData({
-    required this.controller,
-    required this.productGridController,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // final state = ref.watch(transactionPosViewModelProvider);
-    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
-    // Get combined list from ViewModel (packets first, then products)
-    final combined = viewModel.getCombinedContent();
-
-    if (combined.isEmpty) {
-      return const _ContentEmpty();
-    }
-
-    return ListView.separated(
-      controller: productGridController,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-      itemCount: combined.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final item = combined[index];
-        if (item.isPacket) {
-          final pkt = item.packet!;
-          return SizedBox(
-            height: 140,
-            child: PacketCard(
-              packet: pkt,
-              onTap: () => controller.showPacketSelection(
-                  packet: pkt, products: viewModel.cachedProducts),
-            ),
-          );
-        } else {
-          final product = item.product!;
-          return ProductCard(
-            product: product,
-            onTap: () => controller.onProductTap(product: product),
-          );
-        }
-      },
     );
   }
 }

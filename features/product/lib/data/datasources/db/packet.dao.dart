@@ -79,9 +79,20 @@ class PacketDao {
           whereArgs: [id],
           limit: 1,
         );
+
+        // Fetch items using the transaction to avoid acquiring a separate DB lock
+        final itemRows = await txn.query(
+          PacketItemTable.tableName,
+          where: '${PacketItemTable.colPacketId} = ?',
+          whereArgs: [id],
+        );
+        final itemModels =
+            itemRows.map((r) => PacketItemModel.fromDbLocal(r)).toList();
+
         final model = PacketModel.fromDbLocal(
-            inserted.first as Map<String, dynamic>,
-            items: await _getItemsForPacket(id));
+          inserted.first as Map<String, dynamic>,
+          items: itemModels,
+        );
         _logInfo('insertPacket: success id=${model.id}');
         return model;
       });

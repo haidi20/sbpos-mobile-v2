@@ -180,7 +180,13 @@ class CustomerListScreen extends HookConsumerWidget {
           final filteredCustomer = items[index];
           return CustomerListTileCard(
             customer: filteredCustomer,
-            onTapCallback: (customer) => transactionPosVm.setCustomer(customer),
+            onTapCallback: (customer) {
+              // set selected customer in transaction VM then close the sheet
+              transactionPosVm.setCustomer(customer);
+              try {
+                Navigator.of(context).pop();
+              } catch (_) {}
+            },
             onLongPressCallback: (customer) =>
                 showCustomerActionSheet(context, vm, customer),
           );

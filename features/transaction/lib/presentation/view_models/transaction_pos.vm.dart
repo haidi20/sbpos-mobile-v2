@@ -20,8 +20,8 @@ import 'package:transaction/presentation/view_models/transaction_pos.calculation
 import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
 import 'package:transaction/domain/entitties/content_item.entity.dart';
 
-// Product/Paket usecases are supplied by the composition root (providers)
-// and injected into this ViewModel. Don't create fake repositories here.
+// Usecase Product/Paket disediakan oleh composition root (provider)
+// dan diinjeksi ke ViewModel ini. Jangan membuat repository palsu di sini.
 
 class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final CreateTransaction _createTransaction;
@@ -34,7 +34,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   List<ProductEntity> get cachedProducts => _cachedProducts;
   final _logger = Logger('TransactionPosViewModel');
   late final TransactionPersistence _persistence;
-  // Debounce timers for note updates
+  // Timer debounce untuk pembaruan catatan (note)
   Timer? _orderNoteDebounce;
   final Map<int, Timer> _itemNoteDebounces = {};
 
@@ -46,22 +46,27 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     GetPackets? getPackets,
     GetProducts? getProducts,
   ]) : super(TransactionPosState()) {
-    // initialize persistence service and load existing transaction from local DB
+    // Inisialisasi layanan persistensi dan muat transaksi lokal dari database
     _persistence = TransactionPersistence(
       _createTransaction,
       _updateTransaction,
       _deleteTransaction,
       _logger,
     );
-    unawaited(_persistence.loadLocalTransaction(
-      _getTransactionActive,
-      () => state,
-      (s) => state = s,
-    ));
     _getPacketsUsecase = getPackets;
     _getProductsUsecase = getProducts;
-    unawaited(getPacketsList());
-    unawaited(_loadProductsAndCategories());
+
+    // Load local transaction and initial data
+    // pemanggilan async di konstruktor secara berurutan
+    (() async {
+      await _persistence.loadLocalTransaction(
+        _getTransactionActive,
+        () => state,
+        (s) => state = s,
+      );
+      await getPacketsList();
+      await _loadProductsAndCategories();
+    })();
   }
 
   Future<void> _loadProductsAndCategories() async {
@@ -125,13 +130,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }
   }
 
-  /// Public convenience method to refresh both packets and products (offline).
+  /// Metode publik untuk menyegarkan paket dan produk secara offline.
   Future<void> refreshProductsAndPackets({String? packetQuery}) async {
     await getPacketsList(query: packetQuery);
     await _loadProductsAndCategories();
   }
 
-  // ------------------ Getters ------------------
+  // ------------------ Pengambil (Getters) ------------------
   // Mengembalikan daftar `TransactionDetailEntity` yang sudah difilter
   // berdasarkan `searchQuery` dan `activeCategory` untuk tampilan UI.
   List<TransactionDetailEntity> get getFilteredDetails {
@@ -227,7 +232,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }).toList();
   }
 
-  // Filter paket using current state.searchQuery
+  // Filter paket menggunakan `state.searchQuery` saat ini
   List<PacketEntity> getFilteredPackets([String? query]) {
     final packetQuery = (query ?? state.searchQuery ?? '').toLowerCase();
     return state.packets.where((p) {
@@ -236,8 +241,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }).toList();
   }
 
-  // Combined content item model for UI: either a packet or a product
-  // The combined list is packets first, then products (both filtered).
+  // Menggabungkan item konten untuk UI: bisa berupa paket atau produk.
+  // Urutan: paket terlebih dulu, kemudian produk (keduanya sudah difilter).
   List<ContentItemEntity> getCombinedContent() {
     final packets = getFilteredPackets();
     final products = getFilteredProducts(_cachedProducts);
@@ -250,6 +255,35 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       out.add(ContentItemEntity.product(prod));
     }
     return out;
+  }
+
+  /// Returns the index of the first product in the filtered product list
+  /// that matches the given category `name`. Returns -1 when not found.
+  int indexOfFirstProductForCategory(String name) {
+    final all = getFilteredProducts(_cachedProducts);
+    return calcIndexOfFirstProductForCategory(all, name);
+  }
+
+  /// Compute vertical scroll target (in pixels) for a product index.
+  /// Uses the same layout assumptions as the UI grid: horizontal
+  /// padding 16 on each side (total 32), crossAxisSpacing `spacing`, and
+  /// `columns` columns with `childAspectRatio`.
+  double computeScrollTargetForIndex(
+    int index,
+    double screenWidth, {
+    int columns = 2,
+    double horizontalPadding = 32.0,
+    double spacing = 12.0,
+    double childAspectRatio = 0.75,
+  }) {
+    return calcComputeScrollTargetForIndex(
+      index,
+      screenWidth,
+      columns: columns,
+      horizontalPadding: horizontalPadding,
+      spacing: spacing,
+      childAspectRatio: childAspectRatio,
+    );
   }
 
 // (ContentItem moved to file bottom to keep it top-level)
@@ -456,9 +490,10 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
     // _logger.info("adding to cart, total items: ${updated.length}");
 
-    // persist to DB first, update state after success
-    await _persistence.persistAndUpdateState(
-        () => state, (s) => state = s, updated);
+    // Update state segera untuk UI responsif, tapi persist hanya di background
+    // tanpa memaksa refresh state dari persistence.
+    state = state.copyWith(details: updated);
+    unawaited(_persistence.persistOnly(state, updated));
   }
 
   // Menambahkan packet ke keranjang; jika sudah ada maka menambah kuantitas.

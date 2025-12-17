@@ -15,19 +15,22 @@ class AuthController {
   late final AuthViewModel _authViewModel =
       ref.read(authViewModelProvider.notifier);
 
-  final TextEditingController emailController =
-      TextEditingController(text: 'kasir@hadi.com');
-  final TextEditingController passwordController =
-      TextEditingController(text: 'hadi55');
+  // final TextEditingController emailController =
+  //     TextEditingController(text: 'kasir@hadi.com');
+  // final TextEditingController passwordController =
+  //     TextEditingController(text: 'hadi55');
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   void onLogin() {
-    final email = emailController.text;
-    final password = passwordController.text;
+    // final email = emailController.text;
+    // final password = passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      showErrorSnackBar(context, 'Email dan password harus diisi');
-      return;
-    }
+    // if (email.isEmpty || password.isEmpty) {
+    //   showErrorSnackBar(context, 'Email dan password harus diisi');
+    //   return;
+    // }
 
     context.go(AppRoutes.dashboard);
 

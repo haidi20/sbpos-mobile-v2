@@ -4,6 +4,7 @@ import 'package:product/domain/repositories/packet.repository.dart';
 import 'package:product/data/datasources/packet_local.datasource.dart';
 import 'package:product/data/models/packet.model.dart';
 import 'package:product/data/models/packet_item.model.dart';
+import 'package:product/data/dummies/packet.dummy.dart';
 
 class PacketRepositoryImpl implements PacketRepository {
   final PacketLocalDataSource local;
@@ -17,11 +18,49 @@ class PacketRepositoryImpl implements PacketRepository {
     return localResp.map((m) => m.toEntity()).toList();
   }
 
+  Future<void> _ensureSeededLocal() async {
+    try {
+      final existing = await local.getPackets(limit: 1);
+      if (existing.isEmpty) {
+        for (final p in initialPackets) {
+          final model = PacketModel(
+            id: p.id,
+            idServer: p.idServer,
+            name: p.name,
+            price: p.price,
+            isActive: p.isActive,
+            items: p.items
+                ?.map((i) => PacketItemModel(
+                      id: i.id,
+                      packetId: i.packetId,
+                      productId: i.productId,
+                      qty: i.qty,
+                      subtotal: i.subtotal,
+                    ))
+                .toList(),
+          );
+          try {
+            await local.insertPacket(model,
+                items: model.items?.map((it) => it.toInsertDbLocal()).toList());
+          } catch (_) {
+            // ignore individual insert errors
+          }
+        }
+      }
+    } catch (e, st) {
+      _logger.warning('Gagal cek/seed packet lokal: $e', e, st);
+    }
+  }
+
   @override
   Future<Either<Failure, List<PacketEntity>>> getPackets(
       {String? query, bool? isOffline}) async {
     try {
-      final local = await _getLocalEntities();
+      var local = await _getLocalEntities();
+      if (local.isEmpty) {
+        await _ensureSeededLocal();
+        local = await _getLocalEntities();
+      }
       return Right(local);
     } catch (e, st) {
       _logger.severe('Error getPackets', e, st);

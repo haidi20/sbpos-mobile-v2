@@ -1,0 +1,363 @@
+import 'package:core/core.dart';
+import 'package:product/presentation/components/packet_card.dart';
+import 'package:product/presentation/components/product_card.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/controllers/transaction_pos.controller.dart';
+
+// Public widgets extracted from TransactionPosScreen
+
+class CartBottomButton extends StatelessWidget {
+  final TransactionPosState state;
+  final TransactionPosViewModel viewModel;
+  final VoidCallback onTap;
+
+  const CartBottomButton({
+    super.key,
+    required this.state,
+    required this.viewModel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.details.isEmpty) return const SizedBox.shrink();
+
+    return Positioned(
+      bottom: 24,
+      left: 16,
+      right: 16,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: AppColors.sbBlue,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.sbBlue.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                        Positioned(
+                          right: -5,
+                          top: -8,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: AppColors.sbOrange,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.sbBlue,
+                                width: 1,
+                              ),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                "${viewModel.getCartCount}",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Total",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            viewModel.getCartTotal,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Row(
+                children: [
+                  Text(
+                    "Keranjang",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(
+                    size: 16,
+                    color: Colors.white,
+                    Icons.arrow_forward_ios,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CategoryBar extends StatelessWidget {
+  final TransactionPosController controller;
+  final ScrollController categoryScrollController;
+  final ScrollController productGridController;
+  final TransactionPosViewModel viewModel;
+  final TransactionPosState state;
+
+  const CategoryBar({
+    super.key,
+    required this.controller,
+    required this.categoryScrollController,
+    required this.productGridController,
+    required this.viewModel,
+    required this.state,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = viewModel.orderedCategories;
+
+    return SizedBox(
+      height: 56,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8),
+            child: Material(
+              type: MaterialType.transparency,
+              child: IconButton(
+                onPressed: () async {
+                  // delegate popup logic to controller to keep widget pure
+                  await controller.showFilterPopup();
+                },
+                icon: const Icon(Icons.filter_list, color: AppColors.sbBlue),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.separated(
+              controller: categoryScrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: categories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final name = categories[index];
+                final active = state.activeCategory == name;
+                return GestureDetector(
+                  onTap: () => controller.onCategoryTap(
+                    index: index,
+                    name: name,
+                    categoryScrollController: categoryScrollController,
+                    productGridController: productGridController,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: active ? Colors.grey[300] : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: active
+                              ? null
+                              : Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Center(
+                          child: Text(
+                            name,
+                            style: TextStyle(
+                              color:
+                                  active ? Colors.grey[600] : Colors.grey[800],
+                              fontWeight:
+                                  active ? FontWeight.w700 : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        width: active ? 28 : 0,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: active ? AppColors.sbBlue : Colors.transparent,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ContentArea extends ConsumerWidget {
+  final TransactionPosController controller;
+  final ScrollController productGridController;
+
+  const ContentArea({
+    super.key,
+    required this.controller,
+    required this.productGridController,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(transactionPosViewModelProvider);
+    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+
+    if (state.isLoading) return const _ContentLoading();
+
+    final combined = viewModel.getCombinedContent();
+
+    if (state.isLoading) return const _ContentLoading();
+
+    if (combined.isEmpty) return const _ContentEmpty();
+
+    return _ContentData(
+      controller: controller,
+      productGridController: productGridController,
+    );
+  }
+}
+
+class _ContentLoading extends StatelessWidget {
+  const _ContentLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.expand(
+      child: Center(
+        child: CircularProgressIndicator(color: AppColors.sbBlue),
+      ),
+    );
+  }
+}
+
+class _ContentEmpty extends StatelessWidget {
+  const _ContentEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.expand(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 56,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Produk tidak ditemukan',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContentData extends ConsumerWidget {
+  final TransactionPosController controller;
+  final ScrollController productGridController;
+
+  const _ContentData({
+    required this.controller,
+    required this.productGridController,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+    final combined = viewModel.getCombinedContent();
+
+    if (combined.isEmpty) {
+      return const _ContentEmpty();
+    }
+
+    return GridView.builder(
+      controller: productGridController,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: combined.length,
+      itemBuilder: (context, index) {
+        final item = combined[index];
+        if (item.isPacket) {
+          final pkt = item.packet!;
+          return PacketCard(
+            packet: pkt,
+            onTap: () => controller.showPacketSelection(
+                packet: pkt, products: viewModel.cachedProducts),
+          );
+        } else {
+          final product = item.product!;
+          return ProductCard(
+            product: product,
+            onTap: () => unawaited(controller.onProductTap(product: product)),
+          );
+        }
+      },
+    );
+  }
+}

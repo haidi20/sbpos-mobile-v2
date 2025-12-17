@@ -1,41 +1,68 @@
 import 'package:core/core.dart';
-import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
-// view model is accessed via provider at runtime
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
+import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/widgets/filter_products_transaction.widget.dart';
 import 'package:product/presentation/screens/packet_selection.sheet.dart'
     show PacketSelectionSheet, SelectedPacketItem;
-import 'package:transaction/presentation/widgets/filter_products_transaction.widget.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class TransactionPosController {
   final WidgetRef ref;
   final BuildContext context;
   final TextEditingController searchController = TextEditingController();
+  // Konstruktor controller: menyimpan referensi `ref` (Provider) dan
+  // `context` (untuk memicu UI seperti dialog/sheet).
+  // Flag internal untuk melacak visibilitas dan status sheet agar UI tetap sederhana
+  bool _didRefreshOnVisible = false;
+  bool _isCartSheetOpen = false;
+  late final TransactionPosViewModel _vm;
+  late TransactionPosState _state;
+
   TransactionPosController(this.ref, this.context);
 
-  void onShowCartSheet() {
-    ref
-        .read(transactionPosViewModelProvider.notifier)
-        .setTypeCart(ETypeCart.main);
+  // Initialize viewmodel and initial state. Caller should call
+  // `attachListeners()` after widget build to start listening updates.
+  void init() {
+    _vm = ref.read(transactionPosViewModelProvider.notifier);
+    _state = ref.read(transactionPosViewModelProvider);
+  }
 
+  /// Dipanggil oleh screen saat visibilitas route berubah (post-frame).
+  /// Memastikan `refreshProductsAndPackets` hanya dijalankan sekali per
+  /// kali visibilitas muncul.
+  Future<void> maybeRefreshOnVisible(bool isCurrent) async {
+    if (isCurrent && !_didRefreshOnVisible) {
+      await _vm.refreshProductsAndPackets();
+      _didRefreshOnVisible = true;
+    }
+    if (!isCurrent) {
+      _didRefreshOnVisible = false;
+    }
+  }
+
+  void onShowCartSheet() {
+    // Prevent duplicate openings
+    if (_isCartSheetOpen) return;
+    _isCartSheetOpen = true;
+    _vm.setTypeCart(ETypeCart.main);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const CartBottomSheet(),
-    );
+    ).whenComplete(() => _isCartSheetOpen = false);
   }
 
-  // Called when the search text changes (UI delegates to controller)
-  void onSearchChanged({required String val}) =>
-      ref.read(transactionPosViewModelProvider.notifier).setSearchQuery(val);
+  // Dipanggil saat teks pencarian berubah (UI mendelegasikan ke controller)
+  void onSearchChanged({required String val}) => _vm.setSearchQuery(val);
 
-  // Show filter popup and apply results to viewModel
+  // Tampilkan popup filter dan terapkan hasilnya ke ViewModel
   Future<void> showFilterPopup() async {
-    final currentState = ref.read(transactionPosViewModelProvider);
-    final vm = ref.read(transactionPosViewModelProvider.notifier);
+    final currentState = _state;
+    final vm = _vm;
     final res = await showFilterProductsPopup(
       context,
       initialIncludePacket: false,
@@ -48,16 +75,16 @@ class TransactionPosController {
     }
   }
 
-  // Handle category tap: set active category and perform scrolling animations
+  // Tangani ketukan kategori: set active category dan lakukan animasi scroll
   void onCategoryTap({
     required int index,
     required String name,
     required ScrollController productGridController,
     required ScrollController categoryScrollController,
   }) {
-    ref.read(transactionPosViewModelProvider.notifier).setActiveCategory(name);
+    _vm.setActiveCategory(name);
 
-    // scroll category bar to keep selection visible
+    // Scroll bar kategori agar pilihan tetap terlihat
     const itemWidth = 110.0;
     final target = (index * (itemWidth + 8)) - 8;
     if (categoryScrollController.hasClients) {
@@ -66,26 +93,23 @@ class TransactionPosController {
           duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
 
-    // scroll product grid to first product of category
+    // Scroll grid produk ke produk pertama pada kategori — delegasikan
+    // perhitungan indeks/offset ke ViewModel agar kepatuhan MVVM lebih ketat.
     if (productGridController.hasClients) {
-      final vm = ref.read(transactionPosViewModelProvider.notifier);
-      final all = vm.getFilteredProducts(vm.cachedProducts);
-      final idx = all.indexWhere((p) => (p.category?.name ?? 'All') == name);
+      final vm = _vm;
+      final idx = vm.indexOfFirstProductForCategory(name);
       if (idx != -1) {
         final screenW = MediaQuery.of(context).size.width;
-        final pItemWidth = (screenW - 32 - 12) / 2;
-        final childHeight = pItemWidth / 0.75;
-        final rowHeight = childHeight + 12;
-        final row = (idx / 2).floor();
-        final prodTarget = (row * rowHeight)
-            .clamp(0.0, productGridController.position.maxScrollExtent);
+        final rawTarget = vm.computeScrollTargetForIndex(idx, screenW);
+        final prodTarget = rawTarget.clamp(
+            0.0, productGridController.position.maxScrollExtent);
         productGridController.animateTo(prodTarget,
             duration: const Duration(milliseconds: 400), curve: Curves.easeOut);
       }
     }
   }
 
-  // Show packet selection sheet and forward selected items to viewModel
+  // Tampilkan sheet pemilihan paket dan teruskan item terpilih ke ViewModel
   Future<void> showPacketSelection(
       {required PacketEntity packet,
       required List<ProductEntity> products}) async {
@@ -95,17 +119,16 @@ class TransactionPosController {
       builder: (_) => PacketSelectionSheet(packet: packet, products: products),
     );
     if (selected != null && selected.isNotEmpty) {
-      await ref
-          .read(transactionPosViewModelProvider.notifier)
-          .addPacketSelection(packet: packet, selectedItems: selected);
+      await _vm.addPacketSelection(packet: packet, selectedItems: selected);
     }
   }
 
-  // Product tap: delegate to viewModel
-  Future<void> onProductTap({required ProductEntity product}) async => await ref
-      .read(transactionPosViewModelProvider.notifier)
-      .onAddToCart(product);
+  // Ketuk produk: delegasikan aksi ke ViewModel
+  Future<void> onProductTap({required ProductEntity product}) async =>
+      await _vm.onAddToCart(product);
 
+  // Bersihkan resource saat controller tidak lagi dipakai (dispose)
+  // Disini hanya melepaskan `searchController`.
   void dispose() {
     try {
       searchController.dispose();

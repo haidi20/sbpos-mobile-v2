@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/domain/entities/category.entity.dart';
 
 void main() {
   group('transaction_pos.calculations', () {
@@ -57,6 +59,36 @@ void main() {
         TransactionDetailEntity(productPrice: 1000, qty: 2), // 2000
       ];
       expect(calculateChangeValue(3000, details), 3000 - 2200);
+    });
+
+    test('calcIndexOfFirstProductForCategory returns correct index', () {
+      final p1 = ProductEntity(
+          id: 1, name: 'A', category: CategoryEntity(name: 'Food'));
+      final p2 = ProductEntity(
+          id: 2, name: 'B', category: CategoryEntity(name: 'Drink'));
+      final p3 = ProductEntity(
+          id: 3, name: 'C', category: CategoryEntity(name: 'Food'));
+      final list = [p1, p2, p3];
+
+      expect(calcIndexOfFirstProductForCategory(list, 'Drink'), 1);
+      expect(calcIndexOfFirstProductForCategory(list, 'Food'), 0);
+      expect(calcIndexOfFirstProductForCategory(list, 'Unknown'), -1);
+    });
+
+    test('calcComputeScrollTargetForIndex computes expected pixel offset', () {
+      // Use a sample screen width and default layout params
+      final screenW = 360.0;
+      // index 0 -> row 0 -> offset 0
+      final t0 = calcComputeScrollTargetForIndex(0, screenW);
+      expect(t0, 0);
+
+      // index 2 -> row 1 -> offset > 0
+      final t2 = calcComputeScrollTargetForIndex(2, screenW);
+      // compute expected manually
+      final pItemWidth = (screenW - 32.0 - 12.0) / 2.0;
+      final childHeight = pItemWidth / 0.75;
+      final expectedRowHeight = childHeight + 12.0;
+      expect(t2, closeTo(expectedRowHeight, 0.0001));
     });
   });
 }

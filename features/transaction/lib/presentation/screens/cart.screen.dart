@@ -38,13 +38,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        buildHeader(
+        CartHeader(
           viewModel: viewModel,
           stateTransaction: stateTransaction,
           onClearCart: _controller.onClearCart,
         ),
-        buildCustomerCard(
-          context: context,
+        CustomerCard(
           viewModel: viewModel,
           state: stateTransaction,
         ),
@@ -63,15 +62,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               controller: _scrollController,
               physics: const ClampingScrollPhysics(),
               children: [
-                buildOrderList(
+                OrderListWidget(
                   viewModel: viewModel,
                   stateTransaction: stateTransaction,
                   controller: _controller,
                   orderNoteController: _controller.orderNoteController,
                   readOnly: widget.readOnly,
                 ),
-                buildSummaryBottom(
-                  context: context,
+                SummaryBottomWidget(
                   viewModel: viewModel,
                   controller: _controller,
                   readOnly: widget.readOnly,

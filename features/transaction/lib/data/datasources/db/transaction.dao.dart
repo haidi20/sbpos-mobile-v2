@@ -131,7 +131,8 @@ class TransactionDao {
 
   Future<TransactionModel> insertTransaction(Map<String, dynamic> tx) async {
     try {
-      return await database.transaction((txn) async {
+      final sw = Stopwatch()..start();
+      final result = await database.transaction((txn) async {
         // Pastikan record yang di-insert pertama kali memiliki `synced_at` = NULL
         tx[TransactionTable.colSyncedAt] = null;
         final cleanedTx = Map<String, dynamic>.from(tx)
@@ -151,6 +152,12 @@ class TransactionDao {
         _logInfo('insertTransaction: success id=${model.id}');
         return model;
       });
+      sw.stop();
+      if (sw.elapsedMilliseconds > 200) {
+        _logInfo(
+            'insertTransaction: transaction duration=${sw.elapsedMilliseconds}ms id=${result.id}');
+      }
+      return result;
     } catch (e, s) {
       _logSevere('Error insertTransaction: $e', e, s);
       rethrow;
@@ -301,40 +308,51 @@ class TransactionDao {
   Future<List<TransactionDetailModel>> insertDetails(
       List<Map<String, dynamic>> details) async {
     try {
-      return await database.transaction((txn) async {
-        List<TransactionDetailModel> inserted = [];
+      final sw = Stopwatch()..start();
+      final result = await database.transaction((txn) async {
+        if (details.isEmpty) return <TransactionDetailModel>[];
+
+        // All incoming details are assumed to belong to the same transaction id.
+        final txId = details.first[TransactionDetailTable.colTransactionId];
+
+        // Prefetch existing details for this transaction in one query to avoid
+        // per-item SELECTs which prolong transaction time and increase lock risk.
+        final existingRows = await txn.query(
+          TransactionDetailTable.tableName,
+          where: '${TransactionDetailTable.colTransactionId} = ?',
+          whereArgs: [txId],
+        );
+
+        // Build lookup maps for quick existing-row detection by packet_id or product_id
+        final Map<int, Map<String, Object?>> byPacket = {};
+        final Map<int, Map<String, Object?>> byProduct = {};
+        for (var r in existingRows) {
+          final packet = r[TransactionDetailTable.colPacketId] as int?;
+          final prod = r[TransactionDetailTable.colProductId] as int?;
+          final id = r[TransactionDetailTable.colId] as int?;
+          if (packet != null && id != null) byPacket[packet] = r;
+          if (prod != null && id != null) byProduct[prod] = r;
+        }
+
+        final batch = txn.batch();
+
+        // Prepare batch operations (updates or inserts)
         for (var d in details) {
-          final txId = d[TransactionDetailTable.colTransactionId];
           final prodId = d[TransactionDetailTable.colProductId];
           final packetId = d[TransactionDetailTable.colPacketId];
 
-          // check existing detail: prefer packet_id when present, otherwise product_id
-          List<Map<String, Object?>> existing = [];
+          Map<String, Object?>? existing;
           if (packetId != null) {
-            existing = await txn.query(
-              TransactionDetailTable.tableName,
-              where:
-                  '${TransactionDetailTable.colTransactionId} = ? AND ${TransactionDetailTable.colPacketId} = ?',
-              whereArgs: [txId, packetId],
-              limit: 1,
-            );
-          } else {
-            existing = await txn.query(
-              TransactionDetailTable.tableName,
-              where:
-                  '${TransactionDetailTable.colTransactionId} = ? AND ${TransactionDetailTable.colProductId} = ?',
-              whereArgs: [txId, prodId],
-              limit: 1,
-            );
+            existing = byPacket[packetId];
+          } else if (prodId != null) {
+            existing = byProduct[prodId as int];
           }
 
-          if (existing.isNotEmpty) {
+          if (existing != null) {
             // update existing: sum qty and recompute subtotal
-            final existingModel =
-                TransactionDetailModel.fromDbLocal(existing.first);
+            final existingModel = TransactionDetailModel.fromDbLocal(existing);
             final existingQty = existingModel.qty ?? 0;
             final incomingQty = (d[TransactionDetailTable.colQty] as int?) ?? 0;
-            // determine price from packet_price if packetId present, otherwise product_price
             final price = (packetId != null
                     ? (d[TransactionDetailTable.colPacketPrice] as int?)
                     : (d[TransactionDetailTable.colProductPrice] as int?)) ??
@@ -349,43 +367,46 @@ class TransactionDao {
               TransactionDetailTable.colUpdatedAt:
                   DateTime.now().toIso8601String(),
             };
-            // if incoming payload contains a note, include it in the update
             if (d.containsKey(TransactionDetailTable.colNote) &&
                 d[TransactionDetailTable.colNote] != null) {
               updateMap[TransactionDetailTable.colNote] =
                   d[TransactionDetailTable.colNote];
             }
-            await txn.update(
+
+            batch.update(
               TransactionDetailTable.tableName,
               updateMap,
               where: '${TransactionDetailTable.colId} = ?',
-              whereArgs: [existingModel.id],
+              whereArgs: [existing[TransactionDetailTable.colId]],
             );
-
-            final updatedRow = await txn.query(
-              TransactionDetailTable.tableName,
-              where: '${TransactionDetailTable.colId} = ?',
-              whereArgs: [existingModel.id],
-              limit: 1,
-            );
-            inserted.add(TransactionDetailModel.fromDbLocal(updatedRow.first));
           } else {
             final cleaned = Map<String, dynamic>.from(d)
               ..removeWhere((k, v) => v == null);
-            final id =
-                await txn.insert(TransactionDetailTable.tableName, cleaned);
-            final result = await txn.query(
-              TransactionDetailTable.tableName,
-              where: '${TransactionDetailTable.colId} = ?',
-              whereArgs: [id],
-              limit: 1,
-            );
-            inserted.add(TransactionDetailModel.fromDbLocal(result.first));
+            batch.insert(TransactionDetailTable.tableName, cleaned);
           }
         }
+
+        // Commit batch; using noResult: true reduces memory for result payload
+        await batch.commit(noResult: true);
+
+        // Re-query final rows for this transaction and return models.
+        final finalRows = await txn.query(
+          TransactionDetailTable.tableName,
+          where: '${TransactionDetailTable.colTransactionId} = ?',
+          whereArgs: [txId],
+        );
+        final inserted = finalRows
+            .map((e) => TransactionDetailModel.fromDbLocal(e))
+            .toList();
         _logInfo('insertDetails: success count=${inserted.length}');
         return inserted;
       });
+      sw.stop();
+      if (sw.elapsedMilliseconds > 200) {
+        _logInfo(
+            'insertDetails: transaction duration=${sw.elapsedMilliseconds}ms rows=${result.length}');
+      }
+      return result;
     } catch (e, s) {
       _logSevere('Error insertDetails: $e', e, s);
       rethrow;
