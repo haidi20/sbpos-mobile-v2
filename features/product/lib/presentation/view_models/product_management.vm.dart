@@ -28,6 +28,19 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
 
   // Getters
   String? get searchQuery => state.searchQuery;
+  String get activeCategory => state.activeCategory;
+
+  List<ProductEntity> get filteredProducts {
+    final q = (state.searchQuery ?? '').toLowerCase().trim();
+    return state.products.where((p) {
+      if (state.activeCategory != 'All') {
+        final name = p.category?.name ?? '';
+        if (name != state.activeCategory) return false;
+      }
+      if (q.isEmpty) return true;
+      return (p.name ?? '').toLowerCase().contains(q);
+    }).toList();
+  }
 
   // Setters
   void setIsForm(bool v) => state = state.copyWith(isForm: v);
@@ -35,6 +48,9 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
   void setDraftProduct(ProductEntity p) => _draft = p;
 
   void setSearchQuery(String q) => state = state.copyWith(searchQuery: q);
+
+  void setActiveCategory(String cat) =>
+      state = state.copyWith(activeCategory: cat);
 
   void setDraftField(String field, dynamic value) {
     switch (field) {
@@ -114,6 +130,22 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
     } catch (e) {
       state = state.copyWith(error: e.toString());
       return false;
+    }
+  }
+
+  /// Restore (recreate) a product entity locally. Used for undo after delete.
+  Future<void> restoreProduct(ProductEntity product) async {
+    try {
+      final res = await _createProductUsecase(
+          product.copyWith(createdAt: DateTime.now()),
+          isOffline: true);
+      res.fold((f) {
+        state = state.copyWith(error: f.message);
+      }, (created) {
+        state = state.copyWith(products: [...state.products, created]);
+      });
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
     }
   }
 

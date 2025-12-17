@@ -1,7 +1,9 @@
 import 'package:core/core.dart';
 import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/presentation/providers/product.provider.dart';
+import 'package:product/presentation/controllers/product_management.controller.dart';
 
-class ProductManagementCard extends StatelessWidget {
+class ProductManagementCard extends ConsumerWidget {
   final bool isActive;
   final ProductEntity product;
   final Color sbBlue = AppColors.sbBlue;
@@ -14,7 +16,8 @@ class ProductManagementCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.read(productManagementViewModelProvider.notifier);
     return Container(
       height: 110,
       decoration: BoxDecoration(
@@ -115,14 +118,71 @@ class ProductManagementCard extends StatelessWidget {
                           icon: Icons.edit_outlined,
                           color: sbBlue,
                           bgColor: Colors.blue.shade50,
-                          onTap: () {},
+                          onTap: () async {
+                            vm.setDraftProduct(product);
+                            final controller =
+                                ProductManagementController(ref, context);
+                            await controller.showProductForm();
+                            // reload products after edit
+                            await vm.getProducts();
+                          },
                         ),
                         const SizedBox(height: 8),
                         _actionButton(
                           icon: Icons.delete_outline,
                           color: Colors.red,
                           bgColor: Colors.red.shade50,
-                          onTap: () {},
+                          onTap: () async {
+                            final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                      title: const Text('Hapus produk'),
+                                      content: const Text(
+                                          'Yakin ingin menghapus produk ini?'),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context)
+                                                    .pop(false),
+                                            child: const Text('Batal')),
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(true),
+                                            child: const Text('Hapus')),
+                                      ],
+                                    ));
+
+                            if (confirmed ?? false) {
+                              final vm = ref.read(
+                                  productManagementViewModelProvider.notifier);
+                              final result =
+                                  await vm.onDeleteProductById(product.id);
+                              if (!result) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content:
+                                            Text('Gagal menghapus produk')));
+                              } else {
+                                // show undo snackbar with action
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Produk dihapus'),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      onPressed: () async {
+                                        await vm.restoreProduct(product);
+                                        await vm.getProducts();
+                                      },
+                                    ),
+                                  ),
+                                );
+                                // reload list to reflect deletion
+                                await vm.getProducts();
+                              }
+                            }
+                          },
                         ),
                       ],
                     )

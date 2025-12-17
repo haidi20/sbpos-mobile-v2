@@ -2,8 +2,8 @@ import 'package:core/core.dart';
 import 'package:product/data/dummies/category.dummy.dart';
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/presentation/components/product_management_card.dart';
-import 'package:product/presentation/screens/product_management_form.screen.dart';
 import 'package:product/presentation/providers/product.provider.dart';
+import 'package:product/presentation/controllers/product_management.controller.dart';
 
 // --- 4. MAIN SCREEN ---
 
@@ -17,41 +17,64 @@ class ProductManagementScreen extends ConsumerStatefulWidget {
 
 class _ProductManagementScreenState
     extends ConsumerState<ProductManagementScreen> {
-  // State
-  String _activeCategory = "All";
   // initialProducts is a list of ProductEntity; convert to ProductEntity
   // initialProducts removed; use viewmodel state
 
   // Filter Logic is based on viewmodel products (see getter below)
 
-  // Show Add/Edit Modal
-  void _showProductForm(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Agar keyboard tidak menutupi form
-      backgroundColor: Colors.transparent,
-      builder: (context) => const ProductFormSheet(),
-    );
-  }
+  // UI-only: controller handles modal and actions.
 
   @override
   Widget build(BuildContext context) {
+    final controller = ProductManagementController(ref, context);
+    final vmState = ref.watch(productManagementViewModelProvider);
     return Scaffold(
       backgroundColor: AppColors.sbBg,
       body: SafeArea(
         child: Column(
           children: [
             // --- HEADER (Sticky) ---
-            _buildHeader(),
+            _ProductManagementHeader(
+              activeCategory: vmState.activeCategory,
+              onCategoryChanged: (v) => controller.setActiveCategory(v),
+              onAddPressed: () => controller.showProductForm(),
+            ),
             // --- PRODUCT LIST ---
-            _buildProductList(),
+            _ProductListWidget(products: _filteredProducts),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = ProductManagementController(ref, context);
+      controller.loadProducts();
+    });
+  }
+
+  List<ProductEntity> get _filteredProducts {
+    final vm = ref.watch(productManagementViewModelProvider.notifier);
+    return vm.filteredProducts;
+  }
+}
+
+class _ProductManagementHeader extends StatelessWidget {
+  final String activeCategory;
+  final ValueChanged<String> onCategoryChanged;
+  final VoidCallback onAddPressed;
+
+  const _ProductManagementHeader({
+    required this.activeCategory,
+    required this.onCategoryChanged,
+    required this.onAddPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: AppColors.sbBg,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -73,7 +96,7 @@ class _ProductManagementScreenState
                     color: Colors.black87),
               ),
               ElevatedButton.icon(
-                onPressed: () => _showProductForm(context),
+                onPressed: onAddPressed,
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Tambah'),
                 style: ElevatedButton.styleFrom(
@@ -95,29 +118,21 @@ class _ProductManagementScreenState
           const SizedBox(height: 16),
 
           // Categories Row
-          // Bungkus dengan SizedBox atau Container yang memiliki height pasti
-          // karena ListView horizontal membutuhkan height constraint.
           SizedBox(
             height: 40, // Sesuaikan tinggi chip/tab
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
-              // Padding untuk awal dan akhir list (agar tidak mepet layar)
               padding: const EdgeInsets.symmetric(horizontal: 16),
-
-              // Memberikan jarak antar item secara otomatis
               separatorBuilder: (context, index) => const SizedBox(width: 8),
-
-              // Agar scroll terasa mulus (opsional: BouncingScrollPhysics untuk efek iOS)
               physics: const BouncingScrollPhysics(),
-
               itemBuilder: (context, index) {
                 final cat = categories[index];
                 final catName = cat.name ?? 'All';
-                final isActive = _activeCategory == catName;
+                final isActive = activeCategory == catName;
 
                 return InkWell(
-                  onTap: () => setState(() => _activeCategory = catName),
+                  onTap: () => onCategoryChanged(catName),
                   borderRadius: BorderRadius.circular(8),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
@@ -128,8 +143,7 @@ class _ProductManagementScreenState
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isActive ? AppColors.sbBlue : Colors.transparent,
-                        width:
-                            1.5, // Sedikit ditebalkan agar border lebih jelas
+                        width: 1.5,
                       ),
                       boxShadow: isActive
                           ? [
@@ -141,7 +155,7 @@ class _ProductManagementScreenState
                             ]
                           : [],
                     ),
-                    alignment: Alignment.center, // Pastikan teks di tengah
+                    alignment: Alignment.center,
                     child: Text(
                       catName,
                       style: TextStyle(
@@ -160,15 +174,21 @@ class _ProductManagementScreenState
       ),
     );
   }
+}
 
-  Widget _buildProductList() {
+class _ProductListWidget extends StatelessWidget {
+  final List<ProductEntity> products;
+  const _ProductListWidget({required this.products});
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: _filteredProducts.length,
+        itemCount: products.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          final product = _filteredProducts[index];
+          final product = products[index];
           final isActive = product.isActive ?? false;
 
           return ProductManagementCard(
@@ -178,24 +198,5 @@ class _ProductManagementScreenState
         },
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // load products from viewmodel
-      ref.read(productManagementViewModelProvider.notifier).getProducts();
-    });
-  }
-
-  List<ProductEntity> get _filteredProducts {
-    final vm = ref.watch(productManagementViewModelProvider);
-    final products = vm.products;
-    return products.where((p) {
-      if (_activeCategory == "All") return true;
-      final name = p.category?.name ?? '';
-      return name == _activeCategory;
-    }).toList();
   }
 }

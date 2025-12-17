@@ -1,55 +1,22 @@
 import 'package:core/core.dart';
-import 'package:product/data/dummies/inventory.dummy.dart';
-import 'package:product/data/models/inventory.model.dart';
+import 'package:product/presentation/view_models/inventory.state.dart';
 import 'package:product/presentation/screens/product_management.screen.dart';
 import 'package:product/presentation/screens/packet_management.screen.dart';
+import 'package:product/presentation/view_models/inventory.vm.dart';
+import 'package:product/presentation/widgets/inventory_list.widget.dart';
+// Riverpod types are re-exported from core
 
-class InventoryScreen extends StatefulWidget {
+class InventoryScreen extends ConsumerWidget {
   const InventoryScreen({super.key});
 
   @override
-  State<InventoryScreen> createState() => _InventoryScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.read(inventoryViewModelProvider.notifier);
+    final state = ref.watch(inventoryViewModelProvider);
+    const sbBlue = AppColors.sbBlue;
+    const sbOrange = AppColors.sbOrange;
+    const sbBg = AppColors.sbBg;
 
-class _InventoryScreenState extends State<InventoryScreen> {
-  // State
-  final List<InventoryItem> _items = List.from(inventoryList);
-  String _searchQuery = "";
-  String _filter = 'all';
-
-  // Colors (Matching the theme)
-  final Color sbBlue = AppColors.sbBlue;
-  final Color sbOrange = AppColors.sbOrange;
-  final Color sbBg = AppColors.sbBg;
-
-  // Logic: Adjust Stock
-  void _handleStockAdjust(int id, int delta) {
-    setState(() {
-      final index = _items.indexWhere((item) => item.id == id);
-      if (index != -1) {
-        int newStock = _items[index].stock + delta;
-        _items[index].stock = newStock < 0 ? 0 : newStock;
-      }
-    });
-  }
-
-  // Logic: Computed Properties
-  List<InventoryItem> get _filteredItems {
-    return _items.where((item) {
-      final matchesSearch =
-          item.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesFilter =
-          _filter == 'low' ? item.stock <= item.minStock : true;
-      return matchesSearch && matchesFilter;
-    }).toList();
-  }
-
-  int get _lowStockCount => _items.where((i) => i.stock <= i.minStock).length;
-
-  // Helper: build stock adjust button (moved into state as requested)
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: sbBg,
       body: SafeArea(
@@ -57,7 +24,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           length: 2,
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(context, state, vm, sbBlue, sbOrange),
               const TabBar(
                 indicatorColor: Colors.blue,
                 labelColor: Colors.black87,
@@ -93,7 +60,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             ],
                           ),
                         ),
-                        Expanded(child: _buildInventoryList()),
+                        Expanded(
+                            child: InventoryList(
+                                state: state, vm: vm, sbBlue: sbBlue)),
                       ],
                     ),
 
@@ -134,9 +103,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, InventoryState state,
+      InventoryViewModel vm, Color sbBlue, Color sbOrange) {
     return Container(
-      color: sbBg,
+      color: AppColors.sbBg,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
         children: [
@@ -149,7 +119,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   color: Colors.black87,
                 ),
                 onPressed: () {
-                  context.pop();
+                  Navigator.of(context).pop();
                 },
                 tooltip: 'Kembali',
               ),
@@ -179,15 +149,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _filter = 'all'),
+                  onTap: () => vm.setFilter('all'),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _filter == 'all' ? sbBlue : Colors.white,
+                      color: state.filter == 'all' ? sbBlue : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _filter == 'all' ? sbBlue : Colors.grey.shade200,
+                        color: state.filter == 'all'
+                            ? sbBlue
+                            : Colors.grey.shade200,
                       ),
                     ),
                     child: Row(
@@ -200,18 +172,18 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               'Total Item',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: _filter == 'all'
+                                color: state.filter == 'all'
                                     ? Colors.blue.shade100
                                     : Colors.grey.shade500,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${_items.length}',
+                              '${state.items.length}',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: _filter == 'all'
+                                color: state.filter == 'all'
                                     ? Colors.white
                                     : Colors.black87,
                               ),
@@ -220,7 +192,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ),
                         Icon(
                           Icons.inventory_2_outlined,
-                          color: _filter == 'all'
+                          color: state.filter == 'all'
                               ? Colors.blue.shade200
                               : Colors.grey.shade400,
                         ),
@@ -232,18 +204,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _filter = 'low'),
+                  onTap: () => vm.setFilter('low'),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _filter == 'low'
+                      color: state.filter == 'low'
                           ? Colors.orange.shade50
                           : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color:
-                            _filter == 'low' ? sbOrange : Colors.grey.shade200,
+                        color: state.filter == 'low'
+                            ? sbOrange
+                            : Colors.grey.shade200,
                       ),
                     ),
                     child: Row(
@@ -259,7 +232,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '$_lowStockCount',
+                              '${vm.lowStockCount}',
                               style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -277,7 +250,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
           const SizedBox(height: 16),
           TextField(
-            onChanged: (val) => setState(() => _searchQuery = val),
+            onChanged: vm.setSearchQuery,
             decoration: InputDecoration(
               hintText: 'Cari nama barang...',
               hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
@@ -302,167 +275,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildInventoryList() {
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
-      itemCount: _filteredItems.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final item = _filteredItems[index];
-        final isLow = item.stock <= item.minStock;
-
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade100),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                          image: DecorationImage(
-                            image: NetworkImage(item.image),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      if (isLow)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(
-                              child: Icon(Icons.error_outline,
-                                  size: 20, color: Colors.red),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.black87),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isLow
-                                  ? Colors.red.shade50
-                                  : Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${item.stock} ${item.unit}',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isLow ? Colors.red : Colors.green),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Min: ${item.minStock}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade400),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    _buildStockBtn(
-                      icon: Icons.remove,
-                      onTap: () => _handleStockAdjust(item.id, -1),
-                    ),
-                    const SizedBox(width: 4),
-                    _buildStockBtn(
-                      icon: Icons.add,
-                      onTap: () => _handleStockAdjust(item.id, 1),
-                      isBlue: true,
-                      color: sbBlue,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStockBtn({
-    required IconData icon,
-    required VoidCallback onTap,
-    bool isBlue = false,
-    Color? color,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: isBlue ? color : Colors.white,
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            )
-          ],
-        ),
-        child: Icon(
-          icon,
-          size: 16,
-          color: isBlue ? Colors.white : Colors.grey.shade600,
-        ),
       ),
     );
   }

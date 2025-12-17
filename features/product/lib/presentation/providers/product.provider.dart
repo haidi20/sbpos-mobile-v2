@@ -2,6 +2,7 @@ import 'package:core/core.dart';
 import 'package:product/domain/usecases/get_products.usecase.dart';
 import 'package:product/domain/usecases/create_product.usecase.dart';
 import 'package:product/domain/usecases/update_product.usecase.dart';
+import 'package:product/domain/usecases/get_product.usecase.dart';
 import 'package:product/domain/usecases/delete_product.usecase.dart';
 import 'package:product/presentation/view_models/product_management.vm.dart';
 import 'package:product/presentation/view_models/product_management.state.dart';
@@ -30,6 +31,11 @@ final productUpdateProductProvider = Provider<UpdateProduct>((ref) {
 final productDeleteProductProvider = Provider<DeleteProduct>((ref) {
   final repo = ref.watch(productRepositoryProvider);
   return DeleteProduct(repo!);
+});
+
+final productGetProductProvider = Provider<GetProduct>((ref) {
+  final repo = ref.watch(productRepositoryProvider);
+  return GetProduct(repo!);
 });
 
 final productManagementViewModelProvider =

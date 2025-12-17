@@ -11,8 +11,6 @@ import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart'
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:product/domain/usecases/get_products.usecase.dart';
-import 'package:product/domain/repositories/packet.repository.dart';
-import 'package:product/domain/repositories/product.repository.dart';
 import 'package:product/presentation/screens/packet_selection.sheet.dart'
     show SelectedPacketItem;
 import 'package:product/domain/usecases/get_packets.usecase.dart';
@@ -20,92 +18,26 @@ import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
 import 'package:transaction/data/dummy/order_type_dummy.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
+import 'package:transaction/domain/entitties/content_item.entity.dart';
 
-// No-op fallback implementations used for tests or legacy instantiation
-class _FakePacketRepository implements PacketRepository {
-  @override
-  Future<Either<Failure, List<PacketEntity>>> getPackets(
-      {String? query, bool? isOffline}) async {
-    return const Right(<PacketEntity>[]);
-  }
-
-  @override
-  Future<Either<Failure, PacketEntity>> getPacket(int id,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, PacketEntity>> createPacket(PacketEntity packet,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, PacketEntity>> updatePacket(PacketEntity packet,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, bool>> deletePacket(int id, {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-}
-
-class _NoopGetPackets extends GetPackets {
-  _NoopGetPackets() : super(_FakePacketRepository());
-}
-
-class _FakeProductRepository implements ProductRepository {
-  @override
-  Future<Either<Failure, List<ProductEntity>>> getProducts(
-      {String? query, bool? isOffline}) async {
-    return const Right(<ProductEntity>[]);
-  }
-
-  @override
-  Future<Either<Failure, ProductEntity>> getProduct(int id,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, ProductEntity>> createProduct(ProductEntity product,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, ProductEntity>> updateProduct(ProductEntity product,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, bool>> deleteProduct(int id, {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-}
-
-class _NoopGetProducts extends GetProducts {
-  _NoopGetProducts() : super(_FakeProductRepository());
-}
+// Product/Paket usecases are supplied by the composition root (providers)
+// and injected into this ViewModel. Don't create fake repositories here.
 
 class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   final CreateTransaction _createTransaction;
   final UpdateTransaction _updateTransaction;
   final DeleteTransaction _deleteTransaction;
   final GetTransactionActive _getTransactionActive;
+  late final GetPackets? _getPacketsUsecase;
+  late final GetProducts? _getProductsUsecase;
+  List<ProductEntity> _cachedProducts = [];
+  List<ProductEntity> get cachedProducts => _cachedProducts;
   final _logger = Logger('TransactionPosViewModel');
   late final TransactionPersistence _persistence;
   // Debounce timers for note updates
   Timer? _orderNoteDebounce;
   final Map<int, Timer> _itemNoteDebounces = {};
 
-  // Membuat `TransactionPosViewModel` dan memulai pemuatan transaksi lokal.
-  // Memanggil `_loadLocalTransaction()` saat inisialisasi untuk mengisi state
-  // dari data transaksi yang tersimpan secara offline jika ada.
   TransactionPosViewModel(
     this._createTransaction,
     this._updateTransaction,
@@ -121,20 +53,28 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       _deleteTransaction,
       _logger,
     );
-    _loadLocalTransaction();
-    _getPacketsUsecase = getPackets ?? _NoopGetPackets();
-    _getProductsUsecase = getProducts ?? _NoopGetProducts();
+    unawaited(_persistence.loadLocalTransaction(
+      _getTransactionActive,
+      () => state,
+      (s) => state = s,
+    ));
+    _getPacketsUsecase = getPackets;
+    _getProductsUsecase = getProducts;
     unawaited(getPacketsList());
     unawaited(_loadProductsAndCategories());
   }
 
-  late final GetPackets _getPacketsUsecase;
-  late final GetProducts _getProductsUsecase;
-  List<ProductEntity> _cachedProducts = [];
-  List<ProductEntity> get cachedProducts => _cachedProducts;
-
   Future<void> _loadProductsAndCategories() async {
     try {
+      if (_getProductsUsecase == null) {
+        _logger.info('no products usecase provided');
+        _cachedProducts = [];
+        if (state.activeCategory.isEmpty) {
+          state = state.copyWith(activeCategory: 'Semua');
+        }
+        return;
+      }
+
       final res = await _getProductsUsecase(isOffline: true);
       res.fold((f) {
         _logger.info('no products loaded');
@@ -142,7 +82,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       }, (list) {
         _cachedProducts = list;
         if (state.activeCategory.isEmpty) {
-          state = state.copyWith(activeCategory: 'All');
+          state = state.copyWith(activeCategory: 'Semua');
         }
       });
     } catch (e, st) {
@@ -151,7 +91,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   List<String> get availableCategories {
-    final set = <String>{'Packet'};
+    final set = <String>{'Paket'};
     for (final p in _cachedProducts) {
       final n = p.category?.name;
       if (n != null && n.isNotEmpty) set.add(n);
@@ -168,6 +108,12 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
   Future<void> getPacketsList({String? query}) async {
     try {
+      if (_getPacketsUsecase == null) {
+        _logger.info('no packets usecase provided');
+        state = state.copyWith(packets: []);
+        return;
+      }
+
       final res = await _getPacketsUsecase(isOffline: true, query: query);
       res.fold((f) {
         _logger.warning('getPacketsList failed: $f');
@@ -177,6 +123,12 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     } catch (e, st) {
       _logger.warning('getPacketsList exception: $e', e, st);
     }
+  }
+
+  /// Public convenience method to refresh both packets and products (offline).
+  Future<void> refreshProductsAndPackets({String? packetQuery}) async {
+    await getPacketsList(query: packetQuery);
+    await _loadProductsAndCategories();
   }
 
   // ------------------ Getters ------------------
@@ -189,7 +141,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     return state.details.where((item) {
       final matchesQuery =
           item.productName?.toLowerCase().contains(query) ?? false;
-      final matchesCategory = category == "All" ||
+      final matchesCategory = category == "Semua" ||
           (item.note?.toLowerCase() == category.toLowerCase());
       return matchesQuery && matchesCategory;
     }).toList();
@@ -268,13 +220,39 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
     return products.where((p) {
       final matchesCategory =
-          category == "All" || (p.category?.name ?? '') == category;
+          category == "Semua" || (p.category?.name ?? '') == category;
       final matchesSearch = searchQuery.isEmpty ||
           (p.name != null && p.name!.toLowerCase().contains(searchQuery));
       return matchesCategory && matchesSearch;
     }).toList();
   }
 
+  // Filter paket using current state.searchQuery
+  List<PacketEntity> getFilteredPackets([String? query]) {
+    final packetQuery = (query ?? state.searchQuery ?? '').toLowerCase();
+    return state.packets.where((p) {
+      if (packetQuery.isEmpty) return true;
+      return p.name != null && p.name!.toLowerCase().contains(packetQuery);
+    }).toList();
+  }
+
+  // Combined content item model for UI: either a packet or a product
+  // The combined list is packets first, then products (both filtered).
+  List<ContentItemEntity> getCombinedContent() {
+    final packets = getFilteredPackets();
+    final products = getFilteredProducts(_cachedProducts);
+
+    final List<ContentItemEntity> out = [];
+    for (final pkt in packets) {
+      out.add(ContentItemEntity.packet(pkt));
+    }
+    for (final prod in products) {
+      out.add(ContentItemEntity.product(prod));
+    }
+    return out;
+  }
+
+// (ContentItem moved to file bottom to keep it top-level)
   // Pilih `EOrderType` berdasarkan `id` string dari UI.
   void selectOrderTypeById(String id) {
     final type = id == 'dine_in'
@@ -622,35 +600,5 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // Reset seluruh state POS ke kondisi awal.
   void onClearAll() {
     state = TransactionPosState.cleared();
-  }
-
-  // ------------------ Helper Privat ------------------
-  // Persist detail yang sudah diupdate (dan opsional: catatan) ke DB lokal terlebih dahulu,
-  // lalu update state hanya jika penyimpanan berhasil.
-  // Helper privat yang melakukan persist (create/update/delete) pada
-  // transaksi dan detailnya ke database lokal, lalu memperbarui state
-  // ketika operasi sukses. Parameter `orderNote` dan `forceStatus`
-  // dapat dipakai untuk menimpa nilai saat persist.
-
-  // attempt to load existing transaction from local db using isOffline=true
-  // Mencoba memuat transaksi aktif dari database lokal pada saat
-  // inisialisasi ViewModel. Jika ditemukan, state akan diisi dengan data itu.
-  Future<void> _loadLocalTransaction() async {
-    _logger.info('_loadLocalTransaction: starting load from local DB...');
-    try {
-      // fetch the single active/latest transaction (created desc, limit 1)
-      final res = await _getTransactionActive.call(isOffline: true);
-      res.fold((f) {
-        // silently ignore failures for init
-        _logger
-            .info('_loadLocalTransaction: no existing local transaction found');
-      }, (tx) {
-        _logger.info(
-            'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
-        state = state.copyWith(transaction: tx, details: tx.details ?? []);
-      });
-    } catch (e) {
-      // ignore init load errors
-    }
   }
 }

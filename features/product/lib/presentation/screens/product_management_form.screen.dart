@@ -1,19 +1,30 @@
 import 'package:core/core.dart';
 import 'package:product/data/dummies/category.dummy.dart';
 import 'package:product/presentation/providers/product.provider.dart';
+import 'package:product/presentation/controllers/product_management.controller.dart';
 
-class ProductFormSheet extends ConsumerWidget {
-  const ProductFormSheet({super.key});
+class ProductFormSheet extends ConsumerStatefulWidget {
+  final ProductManagementController controller;
+  const ProductFormSheet({super.key, required this.controller});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(productManagementViewModelProvider.notifier);
+  ConsumerState<ProductFormSheet> createState() => _ProductFormSheetState();
+}
 
-    final name = notifier.draft.name ?? '';
-    final price =
-        notifier.draft.price != null ? notifier.draft.price!.toString() : '';
-    final selectedCategory = notifier.draft.category?.name ??
+class _ProductFormSheetState extends ConsumerState<ProductFormSheet> {
+  String? localSelectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    // initialize local selected category from controller or default
+    localSelectedCategory = widget.controller.selectedCategory ??
         categories.firstWhere((c) => c.name != 'All').name;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notifier = ref.read(productManagementViewModelProvider.notifier);
 
     return Container(
       decoration: const BoxDecoration(
@@ -80,8 +91,7 @@ class ProductFormSheet extends ConsumerWidget {
           // Inputs
           const FormLabel('Nama Produk'),
           TextFormField(
-            initialValue: name,
-            onChanged: (v) => notifier.setDraftField('name', v),
+            controller: widget.controller.nameController,
             decoration: _inputDecor(hint: 'Contoh: Kopi Susu'),
           ),
 
@@ -95,10 +105,8 @@ class ProductFormSheet extends ConsumerWidget {
                   children: [
                     const FormLabel('Harga'),
                     TextFormField(
-                      initialValue: price,
+                      controller: widget.controller.priceController,
                       keyboardType: TextInputType.number,
-                      onChanged: (v) => notifier.setDraftField(
-                          'price', double.tryParse(v) ?? 0.0),
                       decoration: _inputDecor(hint: '0'),
                     ),
                   ],
@@ -119,7 +127,7 @@ class ProductFormSheet extends ConsumerWidget {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           isExpanded: true,
-                          value: selectedCategory,
+                          value: localSelectedCategory,
                           items: categories
                               .where((c) => c.name != 'All')
                               .map(
@@ -135,9 +143,8 @@ class ProductFormSheet extends ConsumerWidget {
                               )
                               .toList(),
                           onChanged: (val) {
-                            final cat =
-                                categories.firstWhere((c) => c.name == val);
-                            notifier.setDraftField('category', cat);
+                            setState(() => localSelectedCategory = val);
+                            widget.controller.selectedCategory = val;
                           },
                         ),
                       ),
@@ -176,7 +183,7 @@ class ProductFormSheet extends ConsumerWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () async {
-                    await notifier.onSaveOrUpdate();
+                    await widget.controller.saveFromForm();
                     if (context.mounted) Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(

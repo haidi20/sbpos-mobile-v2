@@ -4,6 +4,7 @@ import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
+import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class TransactionPersistence {
@@ -150,6 +151,29 @@ class TransactionPersistence {
     } catch (e, st) {
       _logger.severe('PersistAndUpdateState failed', e, st);
       setState(getState().copyWith(isLoading: false));
+    }
+  }
+
+  /// Load the active local transaction (isOffline=true) and apply it to state.
+  Future<void> loadLocalTransaction(
+    GetTransactionActive getTransactionActive,
+    TransactionPosState Function() getState,
+    void Function(TransactionPosState) setState,
+  ) async {
+    _logger.info('loadLocalTransaction: starting load from local DB...');
+    try {
+      final res = await getTransactionActive.call(isOffline: true);
+      res.fold((f) {
+        _logger
+            .info('loadLocalTransaction: no existing local transaction found');
+      }, (tx) {
+        _logger.info(
+            'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
+        setState(
+            getState().copyWith(transaction: tx, details: tx.details ?? []));
+      });
+    } catch (e, st) {
+      _logger.warning('loadLocalTransaction failed', e, st);
     }
   }
 }

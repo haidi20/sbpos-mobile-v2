@@ -46,10 +46,9 @@ class _TransactionHistoryScreenState
             ),
 
             // date tabs
-            TransactionHistoryTabTime(
-              selectedDate: state.selectedDate,
-              onSelected: (d) => viewModel.setSelectedDate(d),
-              daysCount: 7,
+            TransactionHistoryTabtime(
+              daysToShow: 7,
+              onDateSelected: (d) => viewModel.setSelectedDate(d),
             ),
 
             // --- LIST ---

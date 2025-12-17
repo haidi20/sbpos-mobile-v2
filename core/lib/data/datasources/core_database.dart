@@ -166,6 +166,15 @@ class CoreDatabase {
         await db.execute(
             'ALTER TABLE $txTable ADD COLUMN $isPaidCol INTEGER NOT NULL DEFAULT 0');
       }
+
+      // products.image
+      const prodTable = ProductTable.tableName;
+      const imageCol = ProductTable.colImage;
+      final hasImage = await columnExists(prodTable, imageCol);
+      if (!hasImage) {
+        _logger.info('Adding missing column `$imageCol` to table `$prodTable`');
+        await db.execute('ALTER TABLE $prodTable ADD COLUMN $imageCol TEXT');
+      }
     } catch (e, stack) {
       _logger.warning('Error ensuring columns', e, stack);
     }

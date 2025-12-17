@@ -9,10 +9,6 @@ import 'package:transaction/presentation/view_models/transaction_pos.state.dart'
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:product/presentation/providers/packet.provider.dart';
 import 'package:product/presentation/providers/product.provider.dart';
-import 'package:product/data/datasources/product_local.datasource.dart';
-import 'package:product/domain/repositories/product.repository.dart';
-import 'package:product/domain/entities/product.entity.dart';
-import 'package:product/domain/usecases/get_products.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/providers/transaction_repository.provider.dart';
@@ -54,10 +50,6 @@ final transactionPosViewModelProvider =
   final updateTxn = ref.watch(updateTransaction);
   final deleteTxn = ref.watch(deleteTransaction);
   final getTxnActive = ref.watch(getTransactionActive);
-  // Some composition roots (tests, isolated screens) may not provide
-  // product repositories/providers. Read the product-related providers
-  // defensively and fall back to `null` so `TransactionPosViewModel` can
-  // use its internal noop implementations.
   final packetsProvider = (() {
     try {
       return ref.watch(packetGetPacketsProvider);
@@ -70,15 +62,7 @@ final transactionPosViewModelProvider =
     try {
       return ref.watch(productGetProductsProvider);
     } catch (_) {
-      // If the app composition root didn't provide product usecases/repositories,
-      // provide a lightweight local-only fallback that reads from local DB so
-      // the POS screen still has products to display.
-      try {
-        final local = ProductLocalDataSource();
-        return GetProducts(_LocalProductRepository(local));
-      } catch (_) {
-        return null;
-      }
+      return null;
     }
   })();
 
@@ -99,51 +83,4 @@ final transactionHistoryViewModelProvider =
   return TransactionHistoryViewModel(getTxn);
 });
 
-// Lightweight local-only product repository fallback used when the app root
-// does not provide a `productRepositoryProvider`. This reads products from
-// local DB (ProductLocalDataSource) and maps them to entities.
-class _LocalProductRepository implements ProductRepository {
-  final ProductLocalDataSource local;
-  _LocalProductRepository(this.local);
-
-  @override
-  Future<Either<Failure, List<ProductEntity>>> getProducts(
-      {String? query, bool? isOffline}) async {
-    try {
-      final models = await local.getProducts();
-      final entities = models.map((m) => ProductEntity.fromModel(m)).toList();
-      return Right(entities);
-    } catch (e) {
-      return const Left(UnknownFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, ProductEntity>> getProduct(int id,
-      {bool? isOffline}) async {
-    try {
-      final m = await local.getProductById(id);
-      if (m != null) return Right(ProductEntity.fromModel(m));
-      return const Left(UnknownFailure());
-    } catch (_) {
-      return const Left(UnknownFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, ProductEntity>> createProduct(ProductEntity product,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, ProductEntity>> updateProduct(ProductEntity product,
-      {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-
-  @override
-  Future<Either<Failure, bool>> deleteProduct(int id, {bool? isOffline}) async {
-    return const Left(UnknownFailure());
-  }
-}
+// No local fallback repository here; the app should provide `productRepositoryProvider`.

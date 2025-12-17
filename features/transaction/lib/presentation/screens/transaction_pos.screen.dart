@@ -20,6 +20,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
   late final TransactionPosController _controller;
   final FocusNode _appBarSearchFocus = FocusNode();
   bool _isSearching = false;
+  bool _didRefreshOnVisible = false;
 
   @override
   void initState() {
@@ -40,6 +41,19 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+
+    // Trigger refresh when this route becomes visible (each access).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final route = ModalRoute.of(context);
+      if (route != null && route.isCurrent && !_didRefreshOnVisible) {
+        unawaited(viewModel.refreshProductsAndPackets());
+        _didRefreshOnVisible = true;
+      }
+      if (route != null && !route.isCurrent) {
+        // reset flag so next time it becomes current we refresh again
+        _didRefreshOnVisible = false;
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -283,21 +297,16 @@ class _ContentArea extends ConsumerWidget {
     // loading -> show loading
     if (state.isLoading) return const _ContentLoading();
 
-    // compute filteredProducts and packets from viewModel/state
-    final filteredProducts =
-        viewModel.getFilteredProducts(viewModel.cachedProducts);
-    final packetQuery = (state.searchQuery ?? '').toLowerCase();
-    final filteredPackets = state.packets.where((p) {
-      if (packetQuery.isEmpty) return true;
-      return p.name != null && p.name!.toLowerCase().contains(packetQuery);
-    }).toList();
+    // get combined content from VM (packets + products)
+    final combined = viewModel.getCombinedContent();
+
+    // loading -> show loading
+    if (state.isLoading) return const _ContentLoading();
 
     // empty -> show empty state
-    if (filteredProducts.isEmpty && filteredPackets.isEmpty) {
-      return const _ContentEmpty();
-    }
+    if (combined.isEmpty) return const _ContentEmpty();
 
-    // otherwise show content
+    // otherwise show content (rendered by _ContentData)
     return _ContentData(
       controller: controller,
       productGridController: productGridController,
@@ -328,10 +337,16 @@ class _ContentEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 56, color: Colors.grey),
+            Icon(
+              Icons.search_off,
+              size: 56,
+              color: Colors.grey,
+            ),
             SizedBox(height: 12),
-            Text('Produk tidak ditemukan',
-                style: TextStyle(color: Colors.grey)),
+            Text(
+              'Produk tidak ditemukan',
+              style: TextStyle(color: Colors.grey),
+            ),
           ],
         ),
       ),
@@ -350,82 +365,40 @@ class _ContentData extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(transactionPosViewModelProvider);
+    // final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+    // Get combined list from ViewModel (packets first, then products)
+    final combined = viewModel.getCombinedContent();
 
-    final filteredProducts =
-        viewModel.getFilteredProducts(viewModel.cachedProducts);
-    final packetQuery = (state.searchQuery ?? '').toLowerCase();
-    final filteredPackets = state.packets.where((p) {
-      if (packetQuery.isEmpty) return true;
-      return p.name != null && p.name!.toLowerCase().contains(packetQuery);
-    }).toList();
+    if (combined.isEmpty) {
+      return const _ContentEmpty();
+    }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (filteredPackets.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Row(children: [
-              Icon(Icons.layers, color: AppColors.sbBlue),
-              SizedBox(width: 8),
-              Text(
-                'Paket',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              )
-            ]),
-          ),
-          SizedBox(
-            height: 160,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredPackets.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final pkt = filteredPackets[index];
-                return SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.45,
-                  child: PacketCard(
-                    packet: pkt,
-                    onTap: () => controller.showPacketSelection(
-                        packet: pkt, products: viewModel.cachedProducts),
-                  ),
-                );
-              },
+    return ListView.separated(
+      controller: productGridController,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      itemCount: combined.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final item = combined[index];
+        if (item.isPacket) {
+          final pkt = item.packet!;
+          return SizedBox(
+            height: 140,
+            child: PacketCard(
+              packet: pkt,
+              onTap: () => controller.showPacketSelection(
+                  packet: pkt, products: viewModel.cachedProducts),
             ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        Expanded(
-          child: filteredProducts.isEmpty
-              ? const Center(child: Text("Produk tidak ditemukan"))
-              : GridView.builder(
-                  controller: productGridController,
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.75,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = filteredProducts[index];
-                    return ProductCard(
-                      product: product,
-                      onTap: () => controller.onProductTap(product: product),
-                    );
-                  },
-                ),
-        ),
-      ],
+          );
+        } else {
+          final product = item.product!;
+          return ProductCard(
+            product: product,
+            onTap: () => controller.onProductTap(product: product),
+          );
+        }
+      },
     );
   }
 }

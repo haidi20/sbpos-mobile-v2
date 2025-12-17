@@ -6,6 +6,7 @@ class ProductManagementState {
   final String? error;
   final bool isForm;
   final String? searchQuery;
+  final String activeCategory;
 
   const ProductManagementState({
     this.loading = false,
@@ -13,6 +14,7 @@ class ProductManagementState {
     this.error,
     this.isForm = false,
     this.searchQuery,
+    this.activeCategory = 'All',
   });
 
   ProductManagementState copyWith({
@@ -21,6 +23,7 @@ class ProductManagementState {
     String? error,
     bool? isForm,
     String? searchQuery,
+    String? activeCategory,
   }) {
     return ProductManagementState(
       loading: loading ?? this.loading,
@@ -28,6 +31,7 @@ class ProductManagementState {
       error: error ?? this.error,
       isForm: isForm ?? this.isForm,
       searchQuery: searchQuery ?? this.searchQuery,
+      activeCategory: activeCategory ?? this.activeCategory,
     );
   }
 

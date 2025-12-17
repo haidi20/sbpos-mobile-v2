@@ -110,7 +110,7 @@ class TransactionPosState {
     );
   }
 
-  // Clear all state back to initial defaults
+  // Clear Semua state back to initial defaults
   factory TransactionPosState.cleared() {
     return TransactionPosState(
       error: null,
@@ -120,7 +120,7 @@ class TransactionPosState {
       orderNote: "",
       selectedCustomer: null,
       isLoading: false,
-      activeCategory: "All",
+      activeCategory: "Semua",
       details: const [],
       packets: const [],
       // reset UI state to defaults
@@ -156,7 +156,7 @@ extension TransactionPosStateClearX on TransactionPosState {
       orderNote: clearOrderNote ? "" : orderNote,
       selectedCustomer: clearSelectedCustomer ? null : selectedCustomer,
       isLoading: resetIsLoading ? false : isLoading,
-      activeCategory: resetActiveCategory ? "All" : activeCategory,
+      activeCategory: resetActiveCategory ? "Semua" : activeCategory,
       details: clearDetails ? const [] : details,
       packets: clearDetails ? const [] : packets,
     );

@@ -31,36 +31,6 @@ class _PacketManagementScreenState
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      onChanged: notifier.setSearchQuery,
-                      decoration:
-                          const InputDecoration(hintText: 'Cari paket...'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const PacketManagementFormScreen()),
-                      );
-                      if (!mounted) return;
-                      notifier.getPackets();
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Tambah'),
-                  ),
-                ],
-              ),
-            ),
-
             if (state.loading) const LinearProgressIndicator(),
 
             // Content area: loading / empty / data
