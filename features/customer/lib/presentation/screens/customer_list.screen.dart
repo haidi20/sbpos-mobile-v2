@@ -53,7 +53,7 @@ class CustomerListScreen extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _buildHeader(vm: vm),
+          _buildHeader(vm: vm, listController: listController),
           const SizedBox(height: 12),
           _buildSearchingBox(listController: listController),
           const SizedBox(height: 12),
@@ -63,6 +63,7 @@ class CustomerListScreen extends HookConsumerWidget {
             context: context,
             transactionPosVm: transactionPosVm,
             scrollController: scrollController,
+            listController: listController,
           ),
         ],
       ),
@@ -71,6 +72,7 @@ class CustomerListScreen extends HookConsumerWidget {
 
   Widget _buildHeader({
     required CustomerViewModel vm,
+    required CustomerListController listController,
   }) {
     return Row(
       children: [
@@ -88,7 +90,7 @@ class CustomerListScreen extends HookConsumerWidget {
             color: AppColors.sbLightBlue,
           ),
           tooltip: 'Tambah Pelanggan Baru',
-          onPressed: () => vm.setIsForm(true),
+          onPressed: () => vm.openFormFromSearch(null),
         ),
       ],
     );
@@ -132,6 +134,7 @@ class CustomerListScreen extends HookConsumerWidget {
     required BuildContext context,
     required ScrollController scrollController,
     required TransactionPosViewModel transactionPosVm,
+    required CustomerListController listController,
   }) {
     final bool isEmptyState = !state.loading && state.customers.isEmpty;
     final items = vm.filteredCustomers;
@@ -157,7 +160,8 @@ class CustomerListScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: 8),
             TextButton.icon(
-              onPressed: () => vm.setIsForm(true),
+              onPressed: () => vm.openFormFromSearch(
+                  listController.searchController.text.trim()),
               icon: const Icon(
                 Icons.add_circle_outline,
                 color: AppColors.sbLightBlue,
@@ -207,7 +211,7 @@ class CustomerListScreen extends HookConsumerWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => vm.setIsForm(true),
+        onTap: () => vm.openFormFromSearch(null),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,

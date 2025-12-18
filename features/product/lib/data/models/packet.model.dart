@@ -6,6 +6,7 @@ class PacketModel {
   final int? idServer;
   final String? name;
   final int? price;
+  final int? discount;
   final bool? isActive;
   final List<PacketItemModel>? items;
   final DateTime? createdAt;
@@ -18,6 +19,7 @@ class PacketModel {
     this.idServer,
     this.name,
     this.price,
+    this.discount,
     this.isActive,
     this.items,
     this.createdAt,
@@ -31,6 +33,7 @@ class PacketModel {
     int? idServer,
     String? name,
     int? price,
+    int? discount,
     bool? isActive,
     List<PacketItemModel>? items,
     DateTime? createdAt,
@@ -43,6 +46,7 @@ class PacketModel {
       idServer: idServer ?? this.idServer,
       name: name ?? this.name,
       price: price ?? this.price,
+      discount: discount ?? this.discount,
       isActive: isActive ?? this.isActive,
       items: items ?? this.items,
       createdAt: createdAt ?? this.createdAt,
@@ -52,12 +56,30 @@ class PacketModel {
     );
   }
 
+  /// Create model from domain/entity
+  factory PacketModel.fromEntity(PacketEntity e) {
+    return PacketModel(
+      id: e.id,
+      idServer: e.idServer,
+      name: e.name,
+      price: e.price,
+      discount: e.discount,
+      isActive: e.isActive,
+      items: e.items?.map((it) => PacketItemModel.fromEntity(it)).toList(),
+      createdAt: e.createdAt,
+      updatedAt: e.updatedAt,
+      deletedAt: e.deletedAt,
+      syncedAt: e.syncedAt,
+    );
+  }
+
   factory PacketModel.fromJson(Map<String, dynamic> json) {
     return PacketModel(
       id: _toInt(json['id']),
       idServer: _toInt(json['id_server'] ?? json['id']),
       name: json['name'] as String?,
       price: _toInt(json['price']),
+      discount: _toInt(json['discount']),
       isActive: _toBool(json['is_active']),
       items: (json['items'] as List<dynamic>?)
           ?.map((i) => PacketItemModel.fromJson(i as Map<String, dynamic>))
@@ -89,6 +111,7 @@ class PacketModel {
       idServer: _toInt(map['id_server']),
       name: map['name'] as String?,
       price: _toInt(map['price']),
+      discount: _toInt(map['discount']),
       isActive: _toBool(map['is_active']),
       items: items,
       createdAt: _toDate(map['created_at']),
@@ -103,6 +126,7 @@ class PacketModel {
         'id_server': idServer,
         'name': name,
         'price': price,
+        'discount': discount,
         'is_active': isActive == null ? null : (isActive! ? 1 : 0),
         'created_at': createdAt?.toIso8601String(),
         'updated_at': updatedAt?.toIso8601String(),
@@ -115,6 +139,7 @@ class PacketModel {
         idServer: idServer,
         name: name,
         price: price,
+        discount: discount,
         isActive: isActive,
         items: items?.map((m) => m.toEntity()).toList(),
         createdAt: createdAt,

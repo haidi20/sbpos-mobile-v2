@@ -8,6 +8,16 @@ import 'package:transaction/presentation/controllers/transaction_pos.controller.
 
 // Public widgets extracted from TransactionPosScreen
 
+class _NoGlowScrollBehavior extends ScrollBehavior {
+  const _NoGlowScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
+
 class CartBottomButton extends StatelessWidget {
   final TransactionPosState state;
   final TransactionPosViewModel viewModel;
@@ -127,9 +137,9 @@ class CartBottomButton extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   Icon(
+                    Icons.arrow_forward_ios,
                     size: 16,
                     color: Colors.white,
-                    Icons.arrow_forward_ios,
                   ),
                 ],
               ),
@@ -141,14 +151,14 @@ class CartBottomButton extends StatelessWidget {
   }
 }
 
-class CategoryBar extends StatelessWidget {
+class CategoryTab extends StatelessWidget {
   final TransactionPosController controller;
   final ScrollController categoryScrollController;
   final ScrollController productGridController;
   final TransactionPosViewModel viewModel;
   final TransactionPosState state;
 
-  const CategoryBar({
+  const CategoryTab({
     super.key,
     required this.controller,
     required this.categoryScrollController,
@@ -167,12 +177,11 @@ class CategoryBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Material(
               type: MaterialType.transparency,
               child: IconButton(
                 onPressed: () async {
-                  // delegate popup logic to controller to keep widget pure
                   await controller.showFilterPopup();
                 },
                 icon: const Icon(Icons.filter_list, color: AppColors.sbBlue),
@@ -181,67 +190,63 @@ class CategoryBar extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-              child: ListView.separated(
-                controller: categoryScrollController,
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemCount: categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final name = categories[index];
-                  final active = state.activeCategory == name;
-                  return GestureDetector(
-                    onTap: () => controller.onCategoryTap(
-                      index: index,
-                      name: name,
-                      categoryScrollController: categoryScrollController,
-                      productGridController: productGridController,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: active ? Colors.grey[300] : Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            border: active
-                                ? null
-                                : Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Center(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: ScrollConfiguration(
+                behavior: const _NoGlowScrollBehavior(),
+                child: ListView.separated(
+                  controller: categoryScrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: categories.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final name = categories[index];
+                    final active = state.activeCategory == name;
+                    return InkWell(
+                      onTap: () => controller.onCategoryTap(
+                        index: index,
+                        name: name,
+                        categoryScrollController: categoryScrollController,
+                        productGridController: productGridController,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             child: Text(
                               name,
-                              style: TextStyle(
-                                color: active
-                                    ? Colors.grey[600]
-                                    : Colors.grey[800],
-                                fontWeight:
-                                    active ? FontWeight.w700 : FontWeight.w500,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: active ? AppColors.sbBlue : null,
+                                  ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          width: active ? 28 : 0,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color:
-                                active ? AppColors.sbBlue : Colors.transparent,
-                            borderRadius: BorderRadius.circular(2),
+                          const SizedBox(height: 4),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 140),
+                            width: 28,
+                            height: 3,
+                            margin: EdgeInsets.only(top: active ? 2 : 0),
+                            decoration: BoxDecoration(
+                              color: active
+                                  ? AppColors.sbBlue
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -263,16 +268,50 @@ class ContentArea extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Resolve viewmodel/state for decision logic.
     final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+    final combined = viewModel.combinedContent;
 
-    if (state.isLoading) return const _ContentLoading();
+    // Ensure ContentArea always returns a scrollable so RefreshIndicator
+    // can work reliably. Use ListView fallback for loading/empty states.
+    if (combined.isLoadingCombined) {
+      return ListView(
+        controller: productGridController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(
+            height: 240,
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.sbBlue),
+            ),
+          )
+        ],
+      );
+    }
 
-    final combined = viewModel.getCombinedContent();
+    if (state.isLoading) {
+      return ListView(
+        controller: productGridController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(
+            height: 240,
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.sbBlue),
+            ),
+          )
+        ],
+      );
+    }
 
-    if (state.isLoading) return const _ContentLoading();
-
-    if (combined.isEmpty) return const _ContentEmpty();
+    if (combined.items.isEmpty) {
+      return ListView(
+        controller: productGridController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [SizedBox(height: 240, child: _ContentEmpty())],
+      );
+    }
 
     return _ContentData(
       controller: controller,
@@ -333,9 +372,9 @@ class _ContentData extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
-    final combined = viewModel.getCombinedContent();
+    final combined = viewModel.combinedContent;
 
-    if (combined.isEmpty) {
+    if (combined.items.isEmpty) {
       return const _ContentEmpty();
     }
 
@@ -348,9 +387,9 @@ class _ContentData extends ConsumerWidget {
         mainAxisSpacing: 12,
         childAspectRatio: 0.75,
       ),
-      itemCount: combined.length,
+      itemCount: combined.items.length,
       itemBuilder: (context, index) {
-        final item = combined[index];
+        final item = combined.items[index];
         if (item.isPacket) {
           final pkt = item.packet!;
           return PacketCard(
@@ -368,6 +407,19 @@ class _ContentData extends ConsumerWidget {
           );
         }
       },
+    );
+  }
+}
+
+class _ContentDataLoading extends StatelessWidget {
+  const _ContentDataLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.expand(
+      child: Center(
+        child: CircularProgressIndicator(color: AppColors.sbBlue),
+      ),
     );
   }
 }

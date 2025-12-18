@@ -7,7 +7,7 @@ import 'package:transaction/presentation/view_models/transaction_pos.state.dart'
 import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
 
 class CartHeader extends StatelessWidget {
-  final VoidCallback onClearCart;
+  final Future<void> Function() onClearCart;
   final TransactionPosViewModel viewModel;
   final TransactionPosState stateTransaction;
 
@@ -36,10 +36,14 @@ class CartHeader extends StatelessWidget {
               ),
               TextButton(
                 // ACTION: Clear Cart
-                onPressed: () {
-                  // Clear active item note to collapse any open input
-                  viewModel.setActiveNoteId(null);
-                  onClearCart();
+                onPressed: () async {
+                  // First, perform clear operation and await completion so
+                  // persistence/deletes happen before we update UI.
+                  await onClearCart();
+
+                  // Then clear active item note in-memory only (no persistence)
+                  // to avoid re-creating transactions from background writes.
+                  unawaited(viewModel.setActiveNoteId(null, persist: false));
                 },
                 child: const Text(
                   'Hapus Semua',
@@ -71,9 +75,9 @@ class CustomerCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: InkWell(
-        onTap: () {
-          // Collapse any active note input before opening picker
-          viewModel.setActiveNoteId(null);
+        onTap: () async {
+          // Collapse any active note input before opening picker (persist in background)
+          unawaited(viewModel.setActiveNoteId(null, background: true));
           CustomerSheet.openCustomerPicker(context);
         },
         borderRadius: BorderRadius.circular(16.0),
@@ -150,10 +154,11 @@ class OrderListWidget extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: viewModel.getFilteredDetails.length + 1,
+      // Show only items already in cart (state.details), not the filtered list
+      itemCount: stateTransaction.details.length,
       itemBuilder: (context, index) {
-        if (index < viewModel.getFilteredDetails.length) {
-          final item = viewModel.getFilteredDetails[index];
+        if (index < stateTransaction.details.length) {
+          final item = stateTransaction.details[index];
           final id = item.productId ?? 0;
 
           controller.itemNoteControllers[id] ??=
@@ -173,7 +178,8 @@ class OrderListWidget extends StatelessWidget {
             productPrice: (item.productPrice ?? 0).toDouble(),
             textController: controller.itemNoteControllers[id]!,
             readOnly: readOnly,
-            onSetActiveNoteId: (pid) => controller.setActiveItemNoteId(pid),
+            onSetActiveNoteId: (pid) =>
+                unawaited(controller.setActiveItemNoteId(pid)),
             onSetItemNote: (pid, value) => viewModel.setItemNote(pid, value),
             onUpdateQuantity: (pid, delta) =>
                 controller.onUpdateQuantity(pid, delta),
@@ -186,7 +192,7 @@ class OrderListWidget extends StatelessWidget {
   }
 }
 
-class SummaryBottomWidget extends StatelessWidget {
+class SummaryBottomWidget extends StatefulWidget {
   final CartScreenController controller;
   final TransactionPosViewModel viewModel;
   final bool readOnly;
@@ -199,7 +205,28 @@ class SummaryBottomWidget extends StatelessWidget {
   });
 
   @override
+  State<SummaryBottomWidget> createState() => _SummaryBottomWidgetState();
+}
+
+class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
+  bool _isEditing = false;
+
+  void _enterEdit() {
+    if (widget.readOnly) return;
+    setState(() => _isEditing = true);
+    widget.controller.orderFocusNode.requestFocus();
+  }
+
+  void _exitEdit() {
+    widget.controller.orderFocusNode.unfocus();
+    setState(() => _isEditing = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = widget.controller;
+    final viewModel = widget.viewModel;
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 24 : 48,
@@ -207,82 +234,96 @@ class SummaryBottomWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Order General Note
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.yellow.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.yellow.shade100),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notes,
-                      size: 16,
-                      color: Colors.yellow.shade700,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Catatan Pesanan',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.yellow.shade700,
-                      ),
-                    ),
-                  ],
+          // Compact header
+          Row(
+            children: [
+              Icon(
+                Icons.notes,
+                size: 16,
+                color: Colors.yellow.shade700,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Catatan Pesanan',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.yellow.shade700,
                 ),
-                const SizedBox(height: 8),
-                if (!readOnly)
-                  TextField(
-                    controller: controller.orderNoteController,
-                    focusNode: controller.orderFocusNode,
-                    maxLines: 3,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      hintText: "Contoh: Bungkus dipisah, Meja nomor 5...",
-                      hintStyle: TextStyle(
-                        color: Colors.grey.shade300,
-                        fontSize: 13,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(8),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.yellow.shade400),
-                      ),
-                    ),
-                    onSubmitted: (_) {
-                      FocusScope.of(context).unfocus();
-                    },
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200)),
-                    child: Text(
-                      controller.orderNoteController.text.isNotEmpty
-                          ? controller.orderNoteController.text
-                          : '-',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Preview or editor
+          GestureDetector(
+            onTap: _isEditing ? null : _enterEdit,
+            child: Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Icon(LucideIcons.edit,
+                      size: 18, color: AppColors.gray600),
+                ),
+                Expanded(
+                  child: _isEditing && !widget.readOnly
+                      ? TextField(
+                          controller: controller.orderNoteController,
+                          focusNode: controller.orderFocusNode,
+                          maxLines: 3,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            hintText:
+                                "Contoh: Bungkus dipisah, Meja nomor 5...",
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade300,
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.all(8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade200),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.yellow.shade400),
+                            ),
+                          ),
+                          onSubmitted: (_) => _exitEdit(),
+                          onEditingComplete: _exitEdit,
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: Colors.grey.shade200, width: 1),
+                          ),
+                          child: Text(
+                            controller.orderNoteController.text.isNotEmpty
+                                ? controller.orderNoteController.text
+                                : 'Catatan Pesanan (opsional)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color:
+                                  controller.orderNoteController.text.isNotEmpty
+                                      ? Colors.black87
+                                      : Colors.grey.shade400,
+                            ),
+                          ),
+                        ),
+                ),
               ],
             ),
           ),
+
           const SizedBox(height: 24),
           // Summary
           ...[
@@ -329,8 +370,6 @@ class SummaryBottomWidget extends StatelessWidget {
     );
   }
 }
-
-// replaced by private widget `_SummaryRow`
 
 class _SummaryRow extends StatelessWidget {
   final String label;

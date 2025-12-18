@@ -6,6 +6,12 @@ import 'package:transaction/presentation/view_models/transaction_pos.state.dart'
 
 class CartScreenController {
   CartScreenController(this.ref, this.context) {
+    // Draggable sheet controller and size notifier
+    sheetController = DraggableScrollableController();
+    _sheetListener = () {
+      sheetSize.value = sheetController.size;
+    };
+    sheetController.addListener(_sheetListener!);
     _stateProductPos = ref.read(transactionPosViewModelProvider);
     _viewModel = ref.read(transactionPosViewModelProvider.notifier);
 
@@ -26,6 +32,11 @@ class CartScreenController {
   }
   final WidgetRef ref;
   final BuildContext context;
+  late final DraggableScrollableController sheetController;
+  VoidCallback? _sheetListener;
+
+  /// Current sheet size (0.0 - 1.0)
+  final ValueNotifier<double> sheetSize = ValueNotifier<double>(1.0);
   late FocusNode _orderFocusNode;
   final Map<int, FocusNode> _itemFocusNodes = {};
   late TextEditingController _orderNoteController;
@@ -52,7 +63,7 @@ class CartScreenController {
   Map<int, FocusNode> get itemFocusNodes => _itemFocusNodes;
 
   /// Set active item note id and manage focus consistently
-  void setActiveItemNoteId(int? id) {
+  Future<void> setActiveItemNoteId(int? id) async {
     // Prevent redundant calls that retrigger input restart
     final currentActive =
         ref.read(transactionPosViewModelProvider).activeNoteId;
@@ -72,7 +83,8 @@ class CartScreenController {
     if (id == null) {
       _logger.info('Set activeNoteId -> null, unfocus all');
       // Update provider first so UI rebuild reflects null immediately
-      _viewModel.setActiveNoteId(null);
+      // Update UI immediately and persist in background.
+      unawaited(_viewModel.setActiveNoteId(null, background: true));
       // Then unfocus to avoid IME restart causing stale reads
       _unfocusAll();
       return;
@@ -80,7 +92,7 @@ class CartScreenController {
 
     _logger.info('Set activeNoteId -> $id, focus that item');
     // Update provider first so dependent widgets see the new active id
-    _viewModel.setActiveNoteId(id);
+    unawaited(_viewModel.setActiveNoteId(id, background: true));
     // Unfocus others then focus target node
     _unfocusAll();
     final node = _itemFocusNodes[id];
@@ -157,7 +169,7 @@ class CartScreenController {
         // Jangan langsung unfocus untuk menghindari restart IME jika item akan segera muncul kembali.
         // Tandai agar difokuskan kembali bila id yang sama ditambahkan di state berikutnya.
         _pendingFocusId = previous.activeNoteId;
-        _viewModel.setActiveNoteId(null);
+        unawaited(_viewModel.setActiveNoteId(null, background: true));
       }
       _itemNoteControllers.removeWhere((id, controller) {
         if (!nextIds.contains(id)) {
@@ -180,7 +192,7 @@ class CartScreenController {
             _logger.info('Restoring focus to re-added item $id');
             final node = _itemFocusNodes[id];
             node?.requestFocus();
-            _viewModel.setActiveNoteId(id);
+            unawaited(_viewModel.setActiveNoteId(id, background: true));
             _pendingFocusId = null;
           }
         }
@@ -231,7 +243,7 @@ class CartScreenController {
     _itemFocusNodes[id]?.requestFocus();
   }
 
-  void onClearCart() async {
+  Future<void> onClearCart() async {
     await _viewModel.onClearCart();
 
     _logger.info("Cart cleared");
@@ -259,6 +271,14 @@ class CartScreenController {
     for (final node in _itemFocusNodes.values) {
       node.dispose();
     }
+    // dispose sheet controller and notifier
+    try {
+      if (_sheetListener != null) {
+        sheetController.removeListener(_sheetListener!);
+      }
+      sheetController.dispose();
+    } catch (_) {}
+    sheetSize.dispose();
   }
 
   void _unfocusAll() {

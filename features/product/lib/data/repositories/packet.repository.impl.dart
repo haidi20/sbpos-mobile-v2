@@ -23,22 +23,7 @@ class PacketRepositoryImpl implements PacketRepository {
       final existing = await local.getPackets(limit: 1);
       if (existing.isEmpty) {
         for (final p in initialPackets) {
-          final model = PacketModel(
-            id: p.id,
-            idServer: p.idServer,
-            name: p.name,
-            price: p.price,
-            isActive: p.isActive,
-            items: p.items
-                ?.map((i) => PacketItemModel(
-                      id: i.id,
-                      packetId: i.packetId,
-                      productId: i.productId,
-                      qty: i.qty,
-                      subtotal: i.subtotal,
-                    ))
-                .toList(),
-          );
+          final model = PacketModel.fromEntity(p);
           try {
             await local.upsertPacket(model,
                 items: model.items?.map((it) => it.toInsertDbLocal()).toList());
@@ -85,11 +70,7 @@ class PacketRepositoryImpl implements PacketRepository {
   Future<Either<Failure, PacketEntity>> createPacket(PacketEntity packet,
       {bool? isOffline}) async {
     try {
-      final model = PacketModel(
-        name: packet.name,
-        price: packet.price,
-        isActive: packet.isActive,
-      );
+      final model = PacketModel.fromEntity(packet);
       final inserted = await local.insertPacket(model,
           items: packet.items
               ?.map((it) => PacketItemModel(
@@ -111,12 +92,7 @@ class PacketRepositoryImpl implements PacketRepository {
   Future<Either<Failure, PacketEntity>> updatePacket(PacketEntity packet,
       {bool? isOffline}) async {
     try {
-      final model = PacketModel(
-        id: packet.id,
-        name: packet.name,
-        price: packet.price,
-        isActive: packet.isActive,
-      );
+      final model = PacketModel.fromEntity(packet);
       final map = model.toInsertDbLocal()..['id'] = packet.id;
       final items = packet.items
           ?.map((it) => PacketItemModel(

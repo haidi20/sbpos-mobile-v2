@@ -29,6 +29,8 @@ enum EPaymentMethod {
 class TransactionPosState {
   final String? error;
   final bool isLoading;
+  final bool isLoadingContent;
+  final bool isLoadingPersistent;
   final String orderNote;
   final int? activeNoteId;
   final String? searchQuery;
@@ -54,6 +56,8 @@ class TransactionPosState {
     this.orderNote = "",
     this.selectedCustomer,
     this.isLoading = false,
+    this.isLoadingContent = false,
+    this.isLoadingPersistent = false,
     this.activeCategory = "Semua",
     this.typeCart = ETypeCart.main,
     this.orderType = EOrderType.dineIn,
@@ -71,6 +75,8 @@ class TransactionPosState {
   TransactionPosState copyWith({
     String? error,
     bool? isLoading,
+    bool? isLoadingContent,
+    bool? isLoadingPersistent,
     EViewMode? viewMode,
     int? cashReceived,
     String? orderNote,
@@ -93,6 +99,8 @@ class TransactionPosState {
       details: details ?? this.details,
       packets: packets ?? this.packets,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingContent: isLoadingContent ?? this.isLoadingContent,
+      isLoadingPersistent: isLoadingPersistent ?? this.isLoadingPersistent,
       orderNote: orderNote ?? this.orderNote,
       orderType: orderType ?? this.orderType,
       ojolProvider: ojolProvider ?? this.ojolProvider,
@@ -120,6 +128,8 @@ class TransactionPosState {
       orderNote: "",
       selectedCustomer: null,
       isLoading: false,
+      isLoadingContent: false,
+      isLoadingPersistent: false,
       activeCategory: "Semua",
       details: const [],
       packets: const [],
@@ -146,6 +156,8 @@ extension TransactionPosStateClearX on TransactionPosState {
     bool clearSelectedCustomer = false,
     bool clearDetails = false,
     bool resetIsLoading = false,
+    bool resetIsLoadingContent = false,
+    bool resetIsLoadingPersistent = false,
     bool resetActiveCategory = false,
   }) {
     return TransactionPosState(
@@ -156,6 +168,9 @@ extension TransactionPosStateClearX on TransactionPosState {
       orderNote: clearOrderNote ? "" : orderNote,
       selectedCustomer: clearSelectedCustomer ? null : selectedCustomer,
       isLoading: resetIsLoading ? false : isLoading,
+      isLoadingContent: resetIsLoadingContent ? false : isLoadingContent,
+      isLoadingPersistent:
+          resetIsLoadingPersistent ? false : isLoadingPersistent,
       activeCategory: resetActiveCategory ? "Semua" : activeCategory,
       details: clearDetails ? const [] : details,
       packets: clearDetails ? const [] : packets,

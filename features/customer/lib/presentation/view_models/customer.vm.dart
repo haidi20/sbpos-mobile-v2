@@ -39,6 +39,24 @@ class CustomerViewModel extends StateNotifier<CustomerState> {
     _draftCustomer = customer;
   }
 
+  /// Open the add-customer form, optionally prefilling from a search query.
+  /// `q` is a raw search string; if it looks like a phone number it will
+  /// prefill `phone`, otherwise it will prefill `name`.
+  void openFormFromSearch(String? q) {
+    final s = (q ?? '').trim();
+    if (s.isEmpty) {
+      setDraftCustomer(const CustomerEntity());
+    } else {
+      final isPhone = RegExp(r'^\+?[0-9]+$').hasMatch(s);
+      if (isPhone) {
+        setDraftCustomer(const CustomerEntity().copyWith(phone: s));
+      } else {
+        setDraftCustomer(const CustomerEntity().copyWith(name: s));
+      }
+    }
+    setIsForm(true);
+  }
+
   // (startAdd/cancelAdd removed — use `setIsForm` directly)
 
   // Mulai mode edit: set draft ke customer terpilih dan buka form

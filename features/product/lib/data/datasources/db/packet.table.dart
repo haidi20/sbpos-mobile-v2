@@ -5,6 +5,7 @@ class PacketTable {
   static const String colIdServer = 'id_server';
   static const String colName = 'name';
   static const String colPrice = 'price';
+  static const String colDiscount = 'discount';
   static const String colIsActive = 'is_active';
   static const String colCreatedAt = 'created_at';
   static const String colUpdatedAt = 'updated_at';
@@ -17,6 +18,7 @@ class PacketTable {
       $colIdServer INTEGER UNIQUE,
       $colName TEXT,
       $colPrice INTEGER,
+      $colDiscount INTEGER,
       $colIsActive INTEGER,
       $colCreatedAt TEXT NULL,
       $colUpdatedAt TEXT NULL,

@@ -20,6 +20,11 @@ class TransactionPersistence {
     this._logger,
   );
 
+  // Guard to ensure local transaction is loaded at most once unless forced.
+  bool _isLoadingLocal = false;
+  bool _didLoadLocal = false;
+  Completer<void>? _loadLocalCompleter;
+
   // Persist dan perbarui state dengan detail transaksi yang diperbarui.
   Future<void> persistAndUpdateState(
     TransactionPosState Function() getState,
@@ -29,7 +34,9 @@ class TransactionPersistence {
     TransactionStatus? forceStatus,
   }) async {
     final currentState = getState();
-    setState(currentState.copyWith(isLoading: true));
+    // mark persistent loading for long-running persistence
+    _logger.fine('persistAndUpdateState: setting isLoadingPersistent=true');
+    setState(currentState.copyWith(isLoadingPersistent: true));
 
     try {
       final totalAmount = updatedDetails.fold<int>(0, (sum, d) {
@@ -41,7 +48,7 @@ class TransactionPersistence {
       // Create new transaction when none exists
       if (currentState.transaction == null) {
         if (updatedDetails.isEmpty) {
-          setState(currentState.copyWith(isLoading: false));
+          setState(currentState.copyWith(isLoadingPersistent: false));
           return;
         }
 
@@ -70,11 +77,15 @@ class TransactionPersistence {
         final res = await _createTransaction.call(txEntity, isOffline: true);
         res.fold((f) {
           _logger.severe('Create transaction failed: $f');
-          setState(currentState.copyWith(isLoading: false));
+          _logger.fine(
+              'persistAndUpdateState: clearing isLoadingPersistent (create failed)');
+          setState(currentState.copyWith(isLoadingPersistent: false));
         }, (created) {
           final updatedDetailsFromServer = created.details ?? updatedDetails;
+          _logger.fine(
+              'persistAndUpdateState: create succeeded, clearing isLoadingPersistent');
           setState(currentState.copyWith(
-            isLoading: false,
+            isLoadingPersistent: false,
             transaction: created,
             details: updatedDetailsFromServer,
           ));
@@ -90,13 +101,16 @@ class TransactionPersistence {
           final res = await _deleteTransaction.call(txId, isOffline: true);
           res.fold((f) {
             _logger.severe('Delete transaction failed: $f');
-            setState(currentState.copyWith(isLoading: false));
+            _logger.fine(
+                'persistAndUpdateState: clearing isLoadingPersistent (delete failed)');
+            setState(currentState.copyWith(isLoadingPersistent: false));
           }, (ok) {
             setState(currentState.clear(
               clearTransaction: true,
               clearDetails: true,
               clearOrderNote: true,
               resetIsLoading: true,
+              resetIsLoadingPersistent: true,
             ));
           });
         } else {
@@ -105,6 +119,7 @@ class TransactionPersistence {
             clearDetails: true,
             clearOrderNote: true,
             resetIsLoading: true,
+            resetIsLoadingPersistent: true,
           ));
         }
 
@@ -140,18 +155,26 @@ class TransactionPersistence {
       final res = await _updateTransaction.call(txEntity, isOffline: true);
       res.fold((f) {
         _logger.severe("Failed to update transaction: $f");
-        setState(currentState.copyWith(isLoading: false));
+        _logger.fine(
+            'persistAndUpdateState: clearing isLoadingPersistent (update failed)');
+        setState(currentState.copyWith(isLoadingPersistent: false));
       }, (updated) {
         final safeDetails =
             (updated.details != null && (updated.details?.isNotEmpty ?? false))
                 ? updated.details!
                 : updatedDetails;
+        _logger.fine(
+            'persistAndUpdateState: update succeeded, clearing isLoadingPersistent');
         setState(currentState.copyWith(
-            transaction: updated, details: safeDetails, isLoading: false));
+            transaction: updated,
+            details: safeDetails,
+            isLoadingPersistent: false));
       });
     } catch (e, st) {
       _logger.severe('PersistAndUpdateState failed', e, st);
-      setState(getState().copyWith(isLoading: false));
+      _logger
+          .fine('persistAndUpdateState: finally clearing isLoadingPersistent');
+      setState(getState().copyWith(isLoadingPersistent: false));
     }
   }
 
@@ -243,12 +266,27 @@ class TransactionPersistence {
 
   // Muat transaksi lokal aktif (isOffline=true) dan terapkan ke state.
   Future<void> loadLocalTransaction(
-    GetTransactionActive getTransactionActive,
-    TransactionPosState Function() getState,
-    void Function(TransactionPosState) setState,
-  ) async {
+      GetTransactionActive getTransactionActive,
+      TransactionPosState Function() getState,
+      void Function(TransactionPosState) setState,
+      {bool force = false}) async {
+    if (_didLoadLocal && !force) {
+      _logger.fine('loadLocalTransaction: already loaded, skipping');
+      return;
+    }
+
+    if (_isLoadingLocal) {
+      _logger.info('loadLocalTransaction: already in progress, awaiting');
+      await _loadLocalCompleter?.future;
+      return;
+    }
+
+    _isLoadingLocal = true;
+    _loadLocalCompleter = Completer<void>();
     _logger.info('loadLocalTransaction: starting load from local DB...');
     try {
+      // indicate persistent loading while fetching from DB
+      setState(getState().copyWith(isLoadingPersistent: true));
       final res = await getTransactionActive.call(isOffline: true);
       res.fold((f) {
         _logger
@@ -261,6 +299,13 @@ class TransactionPersistence {
       });
     } catch (e, st) {
       _logger.warning('loadLocalTransaction failed', e, st);
+    } finally {
+      // clear persistent loading flag
+      setState(getState().copyWith(isLoadingPersistent: false));
+      _didLoadLocal = true;
+      _isLoadingLocal = false;
+      _loadLocalCompleter?.complete();
+      _loadLocalCompleter = null;
     }
   }
 }

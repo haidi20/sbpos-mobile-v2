@@ -207,39 +207,23 @@ class _OrderNotePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200, width: 1),
-          ),
-          child: const Icon(
-            Icons.edit,
-            size: 16,
-            color: AppColors.sbBlue,
-          ),
+        const Icon(
+          Icons.edit,
+          size: 16,
+          color: AppColors.sbBlue,
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200, width: 1),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: text.isNotEmpty ? Colors.black87 : Colors.grey.shade400,
             ),
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 12,
-                color: text.isNotEmpty ? Colors.black87 : Colors.grey.shade400,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

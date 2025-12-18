@@ -18,6 +18,7 @@ import 'package:transaction/data/dummy/order_type_dummy.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
 import 'package:transaction/domain/entitties/content_item.entity.dart';
+import 'package:transaction/domain/entitties/combined_content.entity.dart';
 
 // Usecase Product/Paket disediakan oleh composition root (provider)
 // dan diinjeksi ke ViewModel ini. Jangan membuat repository palsu di sini.
@@ -31,6 +32,15 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   late final GetProducts? _getProductsUsecase;
   List<ProductEntity> _cachedProducts = [];
   List<ProductEntity> get cachedProducts => _cachedProducts;
+  // Cache combined content (packets + products) so UI doesn't recompute repeatedly
+  List<ContentItemEntity> _combinedCache = [];
+
+  // Wrapper that exposes the list and a loading flag so UI can react
+  // to combined-content specific loading state without querying VM internal flags.
+  CombinedContent get combinedContent => CombinedContent(
+        isLoadingCombined: state.isLoadingContent,
+        items: _combinedCache,
+      );
   final _logger = Logger('TransactionPosViewModel');
   late final TransactionPersistence _persistence;
   // Guard to prevent concurrent creation of a pending transaction
@@ -81,11 +91,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       res.fold((f) {
         _logger.info('no products loaded');
         _cachedProducts = [];
+        _rebuildCombinedCache();
       }, (list) {
         _cachedProducts = list;
         if (state.activeCategory.isEmpty) {
           state = state.copyWith(activeCategory: 'Semua');
         }
+        _rebuildCombinedCache();
       });
     } catch (e, st) {
       _logger.warning('load products/categories error: $e', e, st);
@@ -135,8 +147,11 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       final res = await _getPacketsUsecase(isOffline: true, query: query);
       res.fold((f) {
         _logger.warning('getPacketsList failed: $f');
+        state = state.copyWith(packets: []);
+        _rebuildCombinedCache();
       }, (list) {
         state = state.copyWith(packets: list);
+        _rebuildCombinedCache();
       });
     } catch (e, st) {
       _logger.warning('getPacketsList exception: $e', e, st);
@@ -145,8 +160,22 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
   /// Metode publik untuk menyegarkan paket dan produk secara offline.
   Future<void> refreshProductsAndPackets({String? packetQuery}) async {
-    await getPacketsList(query: packetQuery);
-    await _loadProductsAndCategories();
+    // Set content-loading state so UI can show product/packet spinner
+    state = state.copyWith(isLoadingContent: true);
+    try {
+      await getPacketsList(query: packetQuery);
+      await _loadProductsAndCategories();
+
+      // If both packets and products are empty, ensure UI reflects empty
+      // (some screens rely on `state.packets.isEmpty` and `cachedProducts`).
+      if (state.packets.isEmpty && _cachedProducts.isEmpty) {
+        state = state.copyWith(packets: []);
+      }
+    } catch (e, st) {
+      _logger.warning('refreshProductsAndPackets failed: $e', e, st);
+    } finally {
+      state = state.copyWith(isLoadingContent: false);
+    }
   }
 
   // ------------------ Pengambil (Getters) ------------------
@@ -257,17 +286,30 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // Menggabungkan item konten untuk UI: bisa berupa paket atau produk.
   // Urutan: paket terlebih dulu, kemudian produk (keduanya sudah difilter).
   List<ContentItemEntity> getCombinedContent() {
-    final packets = getFilteredPackets();
-    final products = getFilteredProducts(_cachedProducts);
+    // Return cached combined content; cache is rebuilt whenever
+    // packets/products/search/category change.
+    return _combinedCache;
+  }
 
-    final List<ContentItemEntity> out = [];
-    for (final pkt in packets) {
-      out.add(ContentItemEntity.packet(pkt));
+  void _rebuildCombinedCache() {
+    try {
+      final packets = getFilteredPackets();
+      final products = getFilteredProducts(_cachedProducts);
+
+      final List<ContentItemEntity> out = [];
+      for (final pkt in packets) {
+        out.add(ContentItemEntity.packet(pkt));
+      }
+      for (final prod in products) {
+        out.add(ContentItemEntity.product(prod));
+      }
+
+      _combinedCache = out;
+      // Force listeners to rebuild UI since combined content changed.
+      state = state.copyWith();
+    } catch (e, st) {
+      _logger.warning('failed to rebuild combined cache: $e', e, st);
     }
-    for (final prod in products) {
-      out.add(ContentItemEntity.product(prod));
-    }
-    return out;
   }
 
   /// Returns the index of the first product in the filtered product list
@@ -372,9 +414,14 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     _orderNoteDebounce?.cancel();
     _orderNoteDebounce = Timer(const Duration(milliseconds: 500), () {
       final updatedDetails = List<TransactionDetailEntity>.from(state.details);
-      unawaited(_persistence.persistAndUpdateState(
-          () => state, (s) => state = s, updatedDetails,
-          orderNote: state.orderNote));
+      unawaited(
+        _persistence.persistAndUpdateState(
+          () => state,
+          (s) => state = s,
+          updatedDetails,
+          orderNote: state.orderNote,
+        ),
+      );
     });
   }
 
@@ -396,31 +443,59 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     state = state.copyWith(activeCategory: category);
     unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
         List<TransactionDetailEntity>.from(state.details)));
+    _rebuildCombinedCache();
   }
 
   // Set search query
   // Set query pencarian yang digunakan untuk memfilter `details`.
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
+    _rebuildCombinedCache();
   }
 
   // Set Active Note ID
   // Set atau clear `activeNoteId` di state.
-  void setActiveNoteId(int? id) {
+  /// Set the active note id. By default this will persist the change and
+  /// await completion. To update UI immediately and persist in background
+  /// use `background: true`. To only update UI without persistence use
+  /// `persist: false`.
+  Future<void> setActiveNoteId(int? id,
+      {bool persist = true, bool background = false}) async {
     if (id == null) {
+      // Update UI immediately
       state = state.clear(clearActiveNoteId: true);
+
+      if (!persist) return;
 
       // Persist change to local DB; if there are no details left this will
       // delete the local transaction as implemented in persistence helper.
-      unawaited(_persistence.persistAndUpdateState(() => state,
-          (s) => state = s, List<TransactionDetailEntity>.from(state.details)));
+      if (background) {
+        unawaited(_persistence.persistAndUpdateState(
+            () => state,
+            (s) => state = s,
+            List<TransactionDetailEntity>.from(state.details)));
+        return;
+      }
+
+      await _persistence.persistAndUpdateState(() => state, (s) => state = s,
+          List<TransactionDetailEntity>.from(state.details));
 
       return;
     }
+
+    // Non-null id: update state first for responsiveness
     state = state.copyWith(activeNoteId: id);
-    // Persist activeNoteId change so DB reflects latest active note selection
-    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
-        List<TransactionDetailEntity>.from(state.details)));
+
+    if (!persist) return;
+
+    if (background) {
+      unawaited(_persistence.persistAndUpdateState(() => state,
+          (s) => state = s, List<TransactionDetailEntity>.from(state.details)));
+      return;
+    }
+
+    await _persistence.persistAndUpdateState(() => state, (s) => state = s,
+        List<TransactionDetailEntity>.from(state.details));
   }
 
   // Mengatur tipe tampilan cart (`ETypeCart`) di state.
@@ -485,6 +560,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // Menambahkan produk ke keranjang; jika sudah ada maka menambah kuantitas.
   // Perubahan dipersist ke database lewat helper privat.
   Future<void> onAddToCart(ProductEntity product) async {
+    _logger.fine(
+        'onAddToCart: start, isLoading=${state.isLoading}, isLoadingPersistent=${state.isLoadingPersistent}');
     final index = state.details.indexWhere((d) => d.productId == product.id);
     List<TransactionDetailEntity> updated;
     if (index != -1) {
@@ -513,7 +590,11 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
     // Update state segera untuk UI responsif, tapi persist hanya di background
     // tanpa memaksa refresh state dari persistence.
+    _logger.fine(
+        'onAddToCart: updating details locally (count=${updated.length})');
     state = state.copyWith(details: updated);
+    _logger.fine(
+        'onAddToCart: after local update, isLoading=${state.isLoading}, isLoadingPersistent=${state.isLoadingPersistent}');
 
     // If there's no local transaction yet, serialize creation to avoid duplicates.
     if (state.transaction == null) {
@@ -528,8 +609,12 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       _isCreatingTx = true;
       _createTxCompleter = Completer<void>();
       try {
+        _logger
+            .fine('onAddToCart: creating transaction (persistAndUpdateState)');
         await _persistence.persistAndUpdateState(() => state, (s) => state = s,
             List<TransactionDetailEntity>.from(state.details));
+        _logger.fine(
+            'onAddToCart: persistAndUpdateState done, isLoading=${state.isLoading}, isLoadingPersistent=${state.isLoadingPersistent}');
       } finally {
         _isCreatingTx = false;
         _createTxCompleter?.complete();
@@ -539,6 +624,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }
 
     // Otherwise persist in background without forcing a state refresh.
+    _logger.fine('onAddToCart: persisting in background (persistOnly)');
     unawaited(_persistence.persistOnly(state, updated));
   }
 

@@ -45,18 +45,19 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         // No-op: use onTapDown to decide if outside tap
-        _controller.setActiveItemNoteId(null);
+        unawaited(_controller.setActiveItemNoteId(null));
       },
       // Removed global onTapDown clearing to prevent accidental unfocus while typing.
       // Do not clear on pan; avoid unfocus during scroll
       child: DraggableScrollableSheet(
+        controller: _controller.sheetController,
         expand: false,
-        // Buka hampir penuh saat diakses
-        minChildSize: 0.4,
-        initialChildSize: 0.95,
-        // Izinkan penuh saat di-drag
-        // maxChildSize: 1.0,
-        maxChildSize: 0.95,
+        // Buka hampir penuh saat diakses. Izinkan expand penuh agar konten
+        // tidak terpotong saat daftar atau footer tinggi.
+        minChildSize: 0.35,
+        initialChildSize: 1.0,
+        // Izinkan penuh saat di-drag agar tidak memotong konten.
+        maxChildSize: 1.0,
         builder: (context, scrollController) {
           return Container(
             decoration: const BoxDecoration(
@@ -74,18 +75,32 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: 48,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: AppColors.gray300,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
+                    // Show the grab handle only when sheet is not fully expanded.
+                    ValueListenableBuilder<double>(
+                      valueListenable: _controller.sheetSize,
+                      builder: (_, size, __) {
+                        if (size <= 0.9) {
+                          return Column(
+                            children: [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width: 48,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.gray300,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          );
+                        } else {
+                          return const SizedBox(height: 16);
+                        }
+                      },
                     ),
-                    const SizedBox(height: 16),
                     // Terapkan rendering berdasarkan `typeCart` di state
                     Builder(builder: (context) {
                       final state = ref.watch(transactionPosViewModelProvider);

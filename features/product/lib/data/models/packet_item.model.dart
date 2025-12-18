@@ -43,6 +43,20 @@ class PacketItemModel {
     );
   }
 
+  /// Create model from domain/entity
+  factory PacketItemModel.fromEntity(PacketItemEntity e) {
+    return PacketItemModel(
+      id: e.id,
+      packetId: e.packetId,
+      productId: e.productId,
+      qty: e.qty,
+      subtotal: e.subtotal,
+      discount: e.discount,
+      createdAt: e.createdAt,
+      updatedAt: e.updatedAt,
+    );
+  }
+
   factory PacketItemModel.fromDbLocal(Map<String, dynamic> map) {
     return PacketItemModel(
       id: _toInt(map['id']),

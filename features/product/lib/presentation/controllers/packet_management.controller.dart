@@ -26,6 +26,7 @@ class PacketManagementController {
     if (p != null) {
       nameCtrl.text = p.name ?? '';
       priceCtrl.text = p.price?.toString() ?? '';
+      packetDiscountCtrl.text = p.discount?.toString() ?? '';
       isActive = p.isActive ?? true;
       ref.read(packetManagementViewModelProvider.notifier).setDraft(p);
     } else {
@@ -94,6 +95,9 @@ class PacketManagementController {
     final draft = vm.draft.copyWith(
       name: nameCtrl.text.trim(),
       price: int.tryParse(priceCtrl.text.trim()) ?? 0,
+      discount: applyPacketDiscount
+          ? int.tryParse(packetDiscountCtrl.text.trim()) ?? 0
+          : null,
       isActive: isActive,
     );
     vm.setDraft(draft);

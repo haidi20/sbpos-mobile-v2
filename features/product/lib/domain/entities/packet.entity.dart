@@ -5,6 +5,7 @@ class PacketEntity {
   final int? idServer;
   final String? name;
   final int? price;
+  final int? discount;
   final bool? isActive;
   final List<PacketItemEntity>? items;
   final DateTime? createdAt;
@@ -17,6 +18,7 @@ class PacketEntity {
     this.idServer,
     this.name,
     this.price,
+    this.discount,
     this.isActive,
     this.items,
     this.createdAt,
@@ -30,6 +32,7 @@ class PacketEntity {
     int? idServer,
     String? name,
     int? price,
+    int? discount,
     bool? isActive,
     List<PacketItemEntity>? items,
     DateTime? createdAt,
@@ -42,6 +45,7 @@ class PacketEntity {
       idServer: idServer ?? this.idServer,
       name: name ?? this.name,
       price: price ?? this.price,
+      discount: discount ?? this.discount,
       isActive: isActive ?? this.isActive,
       items: items ?? this.items,
       createdAt: createdAt ?? this.createdAt,

@@ -175,6 +175,17 @@ class CoreDatabase {
         _logger.info('Adding missing column `$imageCol` to table `$prodTable`');
         await db.execute('ALTER TABLE $prodTable ADD COLUMN $imageCol TEXT');
       }
+
+      // packets.discount
+      const pktTable = PacketTable.tableName;
+      const discountCol = PacketTable.colDiscount;
+      final hasDiscount = await columnExists(pktTable, discountCol);
+      if (!hasDiscount) {
+        _logger
+            .info('Adding missing column `$discountCol` to table `$pktTable`');
+        await db
+            .execute('ALTER TABLE $pktTable ADD COLUMN $discountCol INTEGER');
+      }
     } catch (e, stack) {
       _logger.warning('Error ensuring columns', e, stack);
     }

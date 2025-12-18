@@ -14,36 +14,78 @@ class TransactionPosController {
   final WidgetRef ref;
   final BuildContext context;
   final TextEditingController searchController = TextEditingController();
+
+  /// AppBar search focus and UI state notifier (so screens remain stateless)
+  late final FocusNode appBarSearchFocus;
+  final ValueNotifier<bool> isSearching = ValueNotifier<bool>(false);
   // Konstruktor controller: menyimpan referensi `ref` (Provider) dan
   // `context` (untuk memicu UI seperti dialog/sheet).
-  // Flag internal untuk melacak visibilitas dan status sheet agar UI tetap sederhana
-  bool _didRefreshOnVisible = false;
+  // Gunakan timestamp untuk mencegah reload segera saat modal sheet
+  // menutup dan membuka kembali. Jika terakhir refresh kurang dari
+  // 2 detik lalu, abaikan refresh.
+  DateTime? _lastRefreshAt;
+  // Jika true maka abaikan satu kali refresh saat route terlihat kembali
+  // (digunakan saat sheet ditutup agar tidak langsung merefresh data).
+  bool _suppressNextRefresh = false;
   bool _isCartSheetOpen = false;
   late final TransactionPosViewModel _vm;
   late TransactionPosState _state;
 
   TransactionPosController(this.ref, this.context);
 
+  /// Enter search mode: set notifier and focus the search input.
+  void enterSearch() {
+    isSearching.value = true;
+    try {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          appBarSearchFocus.requestFocus();
+        } catch (_) {}
+      });
+    } catch (_) {}
+  }
+
+  /// Exit search mode: clear input, reset notifier and notify ViewModel.
+  void exitSearch() {
+    isSearching.value = false;
+    try {
+      searchController.clear();
+      onSearchChanged(val: '');
+      appBarSearchFocus.unfocus();
+    } catch (_) {}
+  }
+
   // Initialize viewmodel and initial state. Caller should call
   // `attachListeners()` after widget build to start listening updates.
   void init() {
     _vm = ref.read(transactionPosViewModelProvider.notifier);
     _state = ref.read(transactionPosViewModelProvider);
+    // initialize appbar focus node used by screens
+    appBarSearchFocus = FocusNode();
   }
 
   /// Dipanggil oleh screen saat visibilitas route berubah (post-frame).
   /// Memastikan `refreshProductsAndPackets` hanya dijalankan sekali per
   /// kali visibilitas muncul.
   Future<void> maybeRefreshOnVisible(bool isCurrent) async {
-    if (isCurrent && !_didRefreshOnVisible) {
+    final now = DateTime.now();
+    if (isCurrent) {
+      // Jika ada flag suppress, gunakan lalu kosongkan.
+      if (_suppressNextRefresh) {
+        _suppressNextRefresh = false;
+        return;
+      }
+      // If we've refreshed very recently (e.g., due to closing a sheet), skip.
+      if (_lastRefreshAt != null &&
+          now.difference(_lastRefreshAt!).inSeconds < 2) {
+        return;
+      }
       // Ensure we load any pending local transaction first to avoid missing
       // an active pending transaction created elsewhere.
       await _vm.ensureLocalPendingTransactionLoaded();
       await _vm.refreshProductsAndPackets();
-      _didRefreshOnVisible = true;
-    }
-    if (!isCurrent) {
-      _didRefreshOnVisible = false;
+      _lastRefreshAt = DateTime.now();
+      return;
     }
   }
 
@@ -57,7 +99,11 @@ class TransactionPosController {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const CartBottomSheet(),
-    ).whenComplete(() => _isCartSheetOpen = false);
+    ).whenComplete(() {
+      _isCartSheetOpen = false;
+      // Tandai untuk mengabaikan satu kali refresh ketika sheet baru ditutup.
+      _suppressNextRefresh = true;
+    });
   }
 
   // Dipanggil saat teks pencarian berubah (UI mendelegasikan ke controller)
@@ -136,6 +182,12 @@ class TransactionPosController {
   void dispose() {
     try {
       searchController.dispose();
+    } catch (_) {}
+    try {
+      appBarSearchFocus.dispose();
+    } catch (_) {}
+    try {
+      isSearching.dispose();
     } catch (_) {}
   }
 }

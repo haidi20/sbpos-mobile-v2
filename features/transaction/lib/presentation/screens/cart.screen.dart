@@ -49,33 +49,30 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         ),
         const SizedBox(height: 24),
         // Bagian ini saja yang scroll saat data banyak
-        // Ensure the ListView has a bounded height when included inside
-        // a bottom sheet / layout with unbounded constraints.
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.6,
-            ),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              controller: _scrollController,
-              physics: const ClampingScrollPhysics(),
-              children: [
-                OrderListWidget(
-                  viewModel: viewModel,
-                  stateTransaction: stateTransaction,
-                  controller: _controller,
-                  orderNoteController: _controller.orderNoteController,
-                  readOnly: widget.readOnly,
-                ),
-                SummaryBottomWidget(
-                  viewModel: viewModel,
-                  controller: _controller,
-                  readOnly: widget.readOnly,
-                ),
-              ],
-            ),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            controller: _scrollController,
+            // When ListView is embedded in an outer scroll (the sheet),
+            // make it shrinkWrap and disable its own scrolling so the
+            // parent scrollable handles the gesture and layout.
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              OrderListWidget(
+                viewModel: viewModel,
+                stateTransaction: stateTransaction,
+                controller: _controller,
+                orderNoteController: _controller.orderNoteController,
+                readOnly: widget.readOnly,
+              ),
+              SummaryBottomWidget(
+                viewModel: viewModel,
+                controller: _controller,
+                readOnly: widget.readOnly,
+              ),
+            ],
           ),
         ),
       ],
