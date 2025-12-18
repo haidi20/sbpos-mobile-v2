@@ -21,6 +21,11 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
     super.initState();
     _controller = TransactionPosController(ref, context);
     _controller.init();
+    // Trigger initial load of products/packets when screen is first shown.
+    // Use a post-frame callback to ensure context is ready.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_controller.maybeRefreshOnVisible(true));
+    });
   }
 
   @override
@@ -35,15 +40,6 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
-
-    // Trigger refresh when this route becomes visible (each access).
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   // final route = ModalRoute.of(context);
-    //   // load data setiap akses layar
-    //   Future.microtask(() async {
-    //     // await _controller.maybeRefreshOnVisible(route?.isCurrent ?? false);
-    //   });
-    // });
 
     return Scaffold(
       appBar: AppBar(

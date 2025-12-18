@@ -55,7 +55,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
         // Buka hampir penuh saat diakses. Izinkan expand penuh agar konten
         // tidak terpotong saat daftar atau footer tinggi.
         minChildSize: 0.35,
-        initialChildSize: 1.0,
+        initialChildSize: 0.9,
         // Izinkan penuh saat di-drag agar tidak memotong konten.
         maxChildSize: 1.0,
         builder: (context, scrollController) {
@@ -66,55 +66,56 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 top: Radius.circular(24),
               ),
             ),
-            // Make the sheet content scrollable using the provided scrollController
-            child: SingleChildScrollView(
-              controller: scrollController,
-              physics: const ClampingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Show the grab handle only when sheet is not fully expanded.
-                    ValueListenableBuilder<double>(
-                      valueListenable: _controller.sheetSize,
-                      builder: (_, size, __) {
-                        if (size <= 0.9) {
-                          return Column(
-                            children: [
-                              Align(
-                                alignment: Alignment.center,
-                                child: Container(
-                                  width: 48,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.gray300,
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                ),
+            // Make the sheet occupy the full available height and allow only
+            // the inner content (the Builder result) to scroll. The grab
+            // handle (top area) stays fixed while the content below scrolls.
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Show the grab handle only when sheet is not fully expanded.
+                  ValueListenableBuilder<double>(
+                    valueListenable: _controller.sheetSize,
+                    builder: (_, size, __) {
+                      if (size <= 0.95) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 15),
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: 48,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: AppColors.gray300,
+                                borderRadius: BorderRadius.circular(3),
                               ),
-                              const SizedBox(height: 16),
-                            ],
-                          );
-                        } else {
-                          return const SizedBox(height: 16);
-                        }
-                      },
-                    ),
-                    // Terapkan rendering berdasarkan `typeCart` di state
-                    Builder(builder: (context) {
+                            ),
+                          ),
+                        );
+                      } else {
+                        return const SizedBox(height: 16);
+                      }
+                    },
+                  ),
+
+                  Expanded(
+                    child: Builder(builder: (context) {
                       final state = ref.watch(transactionPosViewModelProvider);
                       if (state.typeCart == ETypeCart.main) {
-                        return const CartScreen();
+                        return CartScreen(
+                            outerScrollController: scrollController);
                       }
                       if (state.typeCart == ETypeCart.confirm) {
                         // Tampilkan CartScreen dalam mode konfirmasi (hanya baca)
-                        return const CartScreen(readOnly: true);
+                        return CartScreen(
+                            readOnly: true,
+                            outerScrollController: scrollController);
                       }
                       return const CartMethodPaymentScreen();
                     }),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );

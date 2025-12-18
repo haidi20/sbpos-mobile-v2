@@ -320,19 +320,6 @@ class ContentArea extends ConsumerWidget {
   }
 }
 
-class _ContentLoading extends StatelessWidget {
-  const _ContentLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.expand(
-      child: Center(
-        child: CircularProgressIndicator(color: AppColors.sbBlue),
-      ),
-    );
-  }
-}
-
 class _ContentEmpty extends StatelessWidget {
   const _ContentEmpty();
 
@@ -411,15 +398,4 @@ class _ContentData extends ConsumerWidget {
   }
 }
 
-class _ContentDataLoading extends StatelessWidget {
-  const _ContentDataLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.expand(
-      child: Center(
-        child: CircularProgressIndicator(color: AppColors.sbBlue),
-      ),
-    );
-  }
-}
+/* Removed unused _ContentDataLoading widget (was unused private helper). */
