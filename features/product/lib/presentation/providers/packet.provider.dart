@@ -4,6 +4,7 @@ import 'package:product/domain/usecases/create_packet.usecase.dart';
 import 'package:product/domain/usecases/update_packet.usecase.dart';
 import 'package:product/domain/usecases/delete_packet.usecase.dart';
 import 'package:product/presentation/view_models/packet_management.vm.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:product/presentation/view_models/packet_management.state.dart';
 import 'package:product/presentation/providers/product_repository.provider.dart';
 
@@ -34,10 +35,24 @@ final packetManagementViewModelProvider =
   final create = ref.watch(packetCreatePacketProvider);
   final update = ref.watch(packetUpdatePacketProvider);
   final delete = ref.watch(packetDeletePacketProvider);
+  Timer? packetRefreshDebounce;
+
+  Future<void> onAfterCrudWrapper() async {
+    packetRefreshDebounce?.cancel();
+    packetRefreshDebounce = Timer(const Duration(milliseconds: 300), () {
+      final f =
+          ref.read(transactionPosViewModelProvider.notifier).refreshPackets();
+      unawaited(f.catchError((e, st) =>
+          Logger('PacketProvider').warning('refreshPackets failed', e, st)));
+    });
+    return Future.value();
+  }
+
   return PacketManagementViewModel(
     getPacketsUsecase: get,
     createPacketUsecase: create,
     updatePacketUsecase: update,
     deletePacketUsecase: delete,
+    onAfterCrud: onAfterCrudWrapper,
   );
 });

@@ -13,6 +13,7 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
     required CreatePacket createPacketUsecase,
     required UpdatePacket updatePacketUsecase,
     required DeletePacket deletePacketUsecase,
+    this.onAfterCrud,
   })  : _getPacketsUsecase = getPacketsUsecase,
         _createPacketUsecase = createPacketUsecase,
         _updatePacketUsecase = updatePacketUsecase,
@@ -23,6 +24,7 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
   final CreatePacket _createPacketUsecase;
   final UpdatePacket _updatePacketUsecase;
   final DeletePacket _deletePacketUsecase;
+  final Future<void> Function()? onAfterCrud;
   // final _logger = Logger('PacketManagementViewModel');
   // -------------------------
   // Getters (public)
@@ -120,6 +122,13 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
       state =
           state.copyWith(packets: [...state.packets, created], isForm: false);
       _draft = PacketEntity();
+      try {
+        final f = onAfterCrud?.call();
+        if (f != null) {
+          unawaited(f.catchError((e, st) => Logger('PacketManagementVM')
+              .warning('onAfterCrud failed', e, st)));
+        }
+      } catch (_) {}
     });
   }
 
@@ -132,6 +141,9 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
         isForm: false,
       );
       _draft = PacketEntity();
+      try {
+        unawaited(onAfterCrud?.call());
+      } catch (_) {}
     });
   }
 
@@ -146,6 +158,9 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
         if (ok) {
           state = state.copyWith(
               packets: state.packets.where((p) => p.id != id).toList());
+          try {
+            unawaited(onAfterCrud?.call());
+          } catch (_) {}
         }
         return ok;
       });

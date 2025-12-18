@@ -226,6 +226,7 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final viewModel = widget.viewModel;
+    final logger = Logger('SummaryBottomWidget');
 
     return Padding(
       padding: EdgeInsets.only(
@@ -345,8 +346,18 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                viewModel.onShowMethodPayment();
+              onPressed: () async {
+                await viewModel.onShowMethodPayment();
+                logger.info("read only ${widget.readOnly}");
+
+                if (widget.readOnly == false) {
+                  // Tunggu sampai frame berikutnya agar perubahan state/layout
+                  // (typeCart -> confirm/checkout) sudah dirender, lalu lakukan
+                  // scroll agar posisi target tersedia.
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    unawaited(widget.controller.scrollContentBy(25));
+                  });
+                }
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
@@ -356,9 +367,11 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Melanjutkan Pembayaran',
-                style: TextStyle(
+              child: Text(
+                widget.readOnly
+                    ? 'Melanjutkan Pembayaran'
+                    : 'Konfirmasi Pesanan',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

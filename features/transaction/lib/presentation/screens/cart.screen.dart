@@ -6,9 +6,11 @@ import 'package:transaction/presentation/controllers/cart_screen.controller.dart
 class CartScreen extends ConsumerStatefulWidget {
   final bool readOnly;
   final ScrollController? outerScrollController;
-
-  const CartScreen(
-      {super.key, this.readOnly = false, this.outerScrollController});
+  const CartScreen({
+    super.key,
+    this.readOnly = false,
+    this.outerScrollController,
+  });
 
   @override
   ConsumerState<CartScreen> createState() => _CartScreenState();
@@ -25,6 +27,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     _ownsScrollController = widget.outerScrollController == null;
     _scrollController = widget.outerScrollController ?? ScrollController();
     _controller = CartScreenController(ref, context);
+    // Provide the active scroll controller to the controller so it can
+    // perform programmatic scrolling when requested by child widgets.
+    _controller.setContentScrollController(_scrollController);
   }
 
   @override

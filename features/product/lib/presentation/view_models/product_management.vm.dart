@@ -12,6 +12,9 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
     required CreateProduct createProductUsecase,
     required UpdateProduct updateProductUsecase,
     required DeleteProduct deleteProductUsecase,
+    // Optional callback invoked after successful CRUD to notify other VMs
+    // (e.g. TransactionPosViewModel) to refresh their data.
+    this.onAfterCrud,
   })  : _getProductsUsecase = getProductsUsecase,
         _createProductUsecase = createProductUsecase,
         _updateProductUsecase = updateProductUsecase,
@@ -22,6 +25,7 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
   final CreateProduct _createProductUsecase;
   final UpdateProduct _updateProductUsecase;
   final DeleteProduct _deleteProductUsecase;
+  final Future<void> Function()? onAfterCrud;
 
   ProductEntity _draft = const ProductEntity();
   ProductEntity get draft => _draft;
@@ -95,6 +99,14 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
       final updated = [...state.products, created];
       state = state.copyWith(products: updated, isForm: false);
       _draft = const ProductEntity();
+      // notify transaction pos to refresh if provided (background)
+      try {
+        final f = onAfterCrud?.call();
+        if (f != null) {
+          unawaited(f.catchError((e, st) => Logger('ProductManagementVM')
+              .warning('onAfterCrud failed', e, st)));
+        }
+      } catch (_) {}
     });
   }
 
@@ -110,6 +122,9 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
           state.products.map((p) => p.id == updated.id ? updated : p).toList();
       state = state.copyWith(products: list, isForm: false);
       _draft = const ProductEntity();
+      try {
+        unawaited(onAfterCrud?.call());
+      } catch (_) {}
     });
   }
 
@@ -124,6 +139,9 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
         if (ok) {
           final updated = state.products.where((p) => p.id != id).toList();
           state = state.copyWith(products: updated);
+          try {
+            unawaited(onAfterCrud?.call());
+          } catch (_) {}
         }
         return ok;
       });
@@ -143,6 +161,9 @@ class ProductManagementViewModel extends StateNotifier<ProductManagementState> {
         state = state.copyWith(error: f.message);
       }, (created) {
         state = state.copyWith(products: [...state.products, created]);
+        try {
+          unawaited(onAfterCrud?.call());
+        } catch (_) {}
       });
     } catch (e) {
       state = state.copyWith(error: e.toString());

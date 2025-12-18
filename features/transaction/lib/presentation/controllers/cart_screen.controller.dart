@@ -6,7 +6,7 @@ import 'package:transaction/presentation/view_models/transaction_pos.state.dart'
 
 class CartScreenController {
   CartScreenController(this.ref, this.context) {
-    // Draggable sheet controller and size notifier
+    // Controller sheet draggable dan notifier ukuran
     sheetController = DraggableScrollableController();
     _sheetListener = () {
       sheetSize.value = sheetController.size;
@@ -35,7 +35,7 @@ class CartScreenController {
   late final DraggableScrollableController sheetController;
   VoidCallback? _sheetListener;
 
-  /// Current sheet size (0.0 - 1.0)
+  /// Ukuran sheet saat ini (0.0 - 1.0)
   final ValueNotifier<double> sheetSize = ValueNotifier<double>(1.0);
   late FocusNode _orderFocusNode;
   final Map<int, FocusNode> _itemFocusNodes = {};
@@ -62,15 +62,15 @@ class CartScreenController {
       _itemNoteControllers;
   Map<int, FocusNode> get itemFocusNodes => _itemFocusNodes;
 
-  /// Set active item note id and manage focus consistently
+  /// Set active id catatan item dan kelola fokus secara konsisten
   Future<void> setActiveItemNoteId(int? id) async {
-    // Prevent redundant calls that retrigger input restart
+    // Cegah pemanggilan berulang yang memicu restart input
     final currentActive =
         ref.read(transactionPosViewModelProvider).activeNoteId;
     if (id == currentActive) {
       return;
     }
-    // Lightweight debounce to avoid rapid toggles during rebuilds
+    // Debounce ringan untuk menghindari toggle cepat saat rebuild
     final now = DateTime.now();
     if (_lastRequestedActiveId == id &&
         _lastActiveChangeAt != null &&
@@ -82,10 +82,10 @@ class CartScreenController {
 
     if (id == null) {
       _logger.info('Set activeNoteId -> null, unfocus all');
-      // Update provider first so UI rebuild reflects null immediately
-      // Update UI immediately and persist in background.
+      // Perbarui provider terlebih dahulu agar UI merefleksikan null segera
+      // Perbarui UI langsung dan simpan di latar belakang.
       unawaited(_viewModel.setActiveNoteId(null, background: true));
-      // Then unfocus to avoid IME restart causing stale reads
+      // Kemudian unfocus untuk menghindari restart IME yang menyebabkan bacaan usang
       _unfocusAll();
       return;
     }
@@ -99,9 +99,9 @@ class CartScreenController {
     node?.requestFocus();
   }
 
-  /// Check if a tap is within any currently focused input
+  /// Periksa apakah ketukan berada di dalam input yang sedang fokus
   bool isTapInsideAnyFocused(Offset globalPosition) {
-    // Check focused order note
+    // Cek order note yang sedang fokus
     if (_orderFocusNode.hasFocus) {
       final ctx = _orderFocusNode.context;
       final render = ctx?.findRenderObject();
@@ -111,7 +111,7 @@ class CartScreenController {
         if (rect.contains(local)) return true;
       }
     }
-    // Check focused item notes
+    // Cek note item yang sedang fokus
     for (final entry in _itemFocusNodes.entries) {
       final node = entry.value;
       if (!node.hasFocus) continue;
@@ -137,7 +137,7 @@ class CartScreenController {
     }
   }
 
-  /// Start listening to TransactionPosState changes to synchronize controllers
+  /// Mulai mendengarkan perubahan `TransactionPosState` untuk menyinkronkan controller
   void startListening() {
     ref.listen<TransactionPosState>(transactionPosViewModelProvider,
         (previous, next) {
@@ -161,7 +161,7 @@ class CartScreenController {
     if (previous.details.length != next.details.length) {
       // 1. Hapus controller untuk item yang hilang
       final nextIds = next.details.map((e) => (e as dynamic).productId).toSet();
-      // If active item is being removed, clear active and unfocus before disposing controllers
+      // Jika item aktif dihapus, bersihkan status aktif dan unfokus sebelum membuang controller
       if (previous.activeNoteId != null &&
           !nextIds.contains(previous.activeNoteId)) {
         _logger.info(
@@ -198,7 +198,7 @@ class CartScreenController {
         }
       }
     } else {
-      // Jika length sama, cek apakah text note berubah dari luar
+      // Jika panjang sama, cek apakah teks note berubah dari luar
       for (final item in next.details) {
         final id = (item as dynamic).productId ?? 0;
         final controller = _itemNoteControllers[id];
@@ -219,7 +219,7 @@ class CartScreenController {
 
     _logger.info("total cart items after update: $total");
 
-    // Only proceed if the context is still mounted
+    // Lanjutkan hanya jika `context` masih ter-mount
     if (context.mounted) {
       if (total == 0) {
         FocusScope.of(context).unfocus();
@@ -229,6 +229,57 @@ class CartScreenController {
         }
       }
     }
+  }
+
+  // Controller scroll konten opsional (disediakan oleh CartScreen)
+  ScrollController? _contentScrollController;
+
+  /// Tetapkan `ScrollController` luar/konten sehingga controller dapat melakukan
+  /// scrolling programatis yang aman atas nama widget anak.
+  void setContentScrollController(ScrollController? controller) {
+    _contentScrollController = controller;
+  }
+
+  /// Menggulir konten sejauh `pixels` piksel.
+  /// - `pixels` dapat bernilai positif atau negatif.
+  /// - Positif (`25`) menggeser ke bawah (menaikkan offset),
+  ///   Negatif (`-25`) menggeser ke atas (menurunkan offset).
+  /// Mengembalikan `Future` yang selesai ketika animasi selesai (atau selesai
+  /// segera jika controller tidak tersedia).
+  Future<void> scrollContentBy(double pixels) async {
+    final c = _contentScrollController;
+    if (c == null || !c.hasClients) return;
+    final current = c.position.pixels;
+    // Positive pixels => move down (increase offset). Negative => move up.
+    final dy = pixels;
+    final targetRaw = current + dy;
+    final target = targetRaw < 0.0 ? 0.0 : targetRaw;
+    final bounded = target > c.position.maxScrollExtent
+        ? c.position.maxScrollExtent
+        : target;
+
+    final completer = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctrl = _contentScrollController;
+      if (ctrl == null || !ctrl.hasClients) {
+        completer.complete();
+        return;
+      }
+      try {
+        ctrl
+            .animateTo(
+              bounded,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            )
+            .then((_) => completer.complete())
+            .catchError((_) => completer.complete());
+      } catch (_) {
+        completer.complete();
+      }
+    });
+
+    return completer.future;
   }
 
   void onActivateItemNote(int id) {
@@ -248,7 +299,7 @@ class CartScreenController {
 
     _logger.info("Cart cleared");
 
-    // Unfocus all inputs and close the bottom sheet if cart is empty
+    // Unfocus semua input dan tutup bottom sheet jika keranjang kosong
     if (context.mounted) {
       FocusScope.of(context).unfocus();
       if (Navigator.of(context).canPop()) {
@@ -258,7 +309,7 @@ class CartScreenController {
   }
 
   void dispose() {
-    // Avoid modifying providers during unmount; only unfocus nodes locally
+    // Hindari memodifikasi provider saat unmount; hanya unfocus node secara lokal
     for (final node in _itemFocusNodes.values) {
       node.unfocus();
     }
@@ -271,7 +322,7 @@ class CartScreenController {
     for (final node in _itemFocusNodes.values) {
       node.dispose();
     }
-    // dispose sheet controller and notifier
+    // Buang sheet controller dan listener
     try {
       if (_sheetListener != null) {
         sheetController.removeListener(_sheetListener!);
@@ -282,7 +333,7 @@ class CartScreenController {
   }
 
   void _unfocusAll() {
-    // Safely unfocus only when context is mounted and focus scope exists
+    // Safely unfocus hanya ketika `context` ter-mount dan fokus scope tersedia
     if (context.mounted) {
       FocusScopeNode? scope;
       try {
@@ -292,7 +343,7 @@ class CartScreenController {
       }
       scope?.unfocus();
     }
-    // Also unfocus individual nodes to be thorough
+    // Juga unfocus node individu untuk memastikan
     for (final node in _itemFocusNodes.values) {
       node.unfocus();
     }

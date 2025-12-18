@@ -1,6 +1,9 @@
 import 'package:core/core.dart';
 import 'package:product/presentation/widgets/qty_button.dart';
 
+// catatan jangan di Hapus
+// order card / cart card
+
 class OrderCard extends StatelessWidget {
   final int id;
   final int qty;

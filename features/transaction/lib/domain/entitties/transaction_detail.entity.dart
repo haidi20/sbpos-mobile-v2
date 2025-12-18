@@ -1,4 +1,4 @@
-// Domain entity for transaction detail
+// Entitas domain untuk detail transaksi
 
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
@@ -108,32 +108,47 @@ class TransactionDetailEntity {
     );
   }
 
-  /// Create a TransactionDetailEntity from a ProductEntity
+  /// Buat `TransactionDetailEntity` dari `ProductEntity`
   factory TransactionDetailEntity.fromProductEntity({
     required int transactionId,
     required ProductEntity product,
     int? qty,
     String? note,
+    // Optional packet fields to allow creating packet-backed details
+    int? packetId,
+    String? packetName,
+    int? packetPrice,
   }) {
-    final intPrice = product.price?.toInt();
-    final effectiveQty = qty ?? 1;
+    // Peta (map) field produk ke detail transaksi, pertahankan nilai null
+    // jika data produk tidak tersedia. `subtotal` akan null jika `productPrice`
+    // null supaya tidak otomatis menjadi nol.
+    final int? productPrice = product.price?.toInt();
+    // Prioritaskan argumen `qty` jika diberikan; jika tidak, gunakan
+    // `product.qty` bila tersedia; bila keduanya tidak ada, gunakan 1.
+    final int effectiveQty = qty ?? product.qty?.toInt() ?? 1;
+
+    // Hitung subtotal hanya jika productPrice tersedia.
+    final int? subtotal =
+        productPrice != null ? productPrice * effectiveQty : null;
+
     return TransactionDetailEntity(
       transactionId: transactionId,
       productId: product.id,
       productName: product.name,
-      productPrice: intPrice,
-      packetId: null,
-      packetName: null,
-      packetPrice: null,
+      productPrice: productPrice,
+      packetId: packetId,
+      packetName: packetName,
+      packetPrice: packetPrice,
       qty: effectiveQty,
-      subtotal: (intPrice ?? 0) * effectiveQty,
-      note: note,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      subtotal: subtotal,
+      note: note ?? product.productDetails,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      deletedAt: product.deletedAt,
     );
   }
 
-  /// Convert this detail into a minimal ProductEntity
+  /// Konversi detail ini menjadi `ProductEntity` minimal
   ProductEntity toProductEntity() {
     return ProductEntity(
       id: productId,

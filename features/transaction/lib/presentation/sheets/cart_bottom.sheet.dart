@@ -1,4 +1,4 @@
-import 'package:core/core.dart';
+﻿import 'package:core/core.dart';
 import 'package:transaction/presentation/screens/cart.screen.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
@@ -14,6 +14,8 @@ class CartBottomSheet extends ConsumerStatefulWidget {
 
 class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
   late final CartScreenController _controller;
+  ScrollController? _sheetScrollController;
+  bool _listenerRegistered = false;
 
   @override
   void initState() {
@@ -29,17 +31,33 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final logger = Logger('CartBottomSheet');
+    // Register listener during build (once). Riverpod requires `ref.listen`
+    // to be called during build for ConsumerState.
+    if (!_listenerRegistered) {
+      _listenerRegistered = true;
+      ref.listen<TransactionPosState>(transactionPosViewModelProvider,
+          (previous, next) {
+        _controller.onStateChanged(previous, next);
+        if (previous?.activeNoteId != next.activeNoteId) {
+          Logger('CartBottomSheet').info(
+              'activeNoteId berubah: ${previous?.activeNoteId} -> ${next.activeNoteId}');
+        }
 
-    // Dengarkan perubahan state untuk memastikan reaktivitas
-    ref.listen<TransactionPosState>(transactionPosViewModelProvider,
-        (previous, next) {
-      _controller.onStateChanged(previous, next);
-      if (previous?.activeNoteId != next.activeNoteId) {
-        logger.info(
-            'activeNoteId berubah: ${previous?.activeNoteId} -> ${next.activeNoteId}');
-      }
-    });
+        // Scroll to top when the cart view type changes.
+        if (previous?.typeCart != next.typeCart &&
+            _sheetScrollController != null) {
+          try {
+            _sheetScrollController!.animateTo(
+              0,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          } catch (_) {
+            // Ignore if controller not attached yet.
+          }
+        }
+      });
+    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -59,6 +77,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
         // Izinkan penuh saat di-drag agar tidak memotong konten.
         maxChildSize: 1.0,
         builder: (context, scrollController) {
+          // Capture the inner scroll controller provided by the sheet so
+          // `initState`-registered listener can animate it when needed.
+          _sheetScrollController = scrollController;
+
           return Container(
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -66,56 +88,133 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 top: Radius.circular(24),
               ),
             ),
-            // Make the sheet occupy the full available height and allow only
+            // Make the sheet occupy the available height and allow only
             // the inner content (the Builder result) to scroll. The grab
             // handle (top area) stays fixed while the content below scrolls.
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Show the grab handle only when sheet is not fully expanded.
-                  ValueListenableBuilder<double>(
-                    valueListenable: _controller.sheetSize,
-                    builder: (_, size, __) {
-                      if (size <= 0.95) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 15),
-                          child: Align(
-                            alignment: Alignment.center,
+            // Wrap the Column in AnimatedSize so changes in the content
+            // height (when footer appears/disappears) animate smoothly.
+            child: SizedBox.expand(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Show the grab handle only when sheet is not fully expanded.
+                    ValueListenableBuilder<double>(
+                      valueListenable: _controller.sheetSize,
+                      builder: (_, size, __) {
+                        if (size <= 0.95) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                                top: 15, left: 12, right: 12),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: Container(
+                                      width: 48,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.gray300,
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          return const SizedBox(height: 16);
+                        }
+                      },
+                    ),
+
+                    Builder(
+                      builder: (context) {
+                        final state =
+                            ref.watch(transactionPosViewModelProvider);
+
+                        // Area konten harus fleksibel mengisi sisa ruang
+                        // antara grab handle dan footer. Gunakan Expanded
+                        // agar footer (jika muncul) otomatis mengurangi tinggi konten
+                        // dan mencegah overflow.
+                        if (state.typeCart == ETypeCart.main) {
+                          return Expanded(
+                            child: CartScreen(
+                              outerScrollController: scrollController,
+                            ),
+                          );
+                        }
+
+                        if (state.typeCart == ETypeCart.confirm) {
+                          return Expanded(
+                            child: CartScreen(
+                              readOnly: true,
+                              outerScrollController: scrollController,
+                            ),
+                          );
+                        }
+
+                        return const Expanded(
+                          child: CartMethodPaymentScreen(),
+                        );
+                      },
+                    ),
+                    // Footer tetap (fixed) yang muncul ketika bukan mode utama cart.
+                    // Tombol ini mengembalikan tampilan ke mode `main`.
+                    Builder(
+                      builder: (context) {
+                        final state =
+                            ref.watch(transactionPosViewModelProvider);
+                        if (state.typeCart != ETypeCart.main) {
+                          final vm = ref
+                              .read(transactionPosViewModelProvider.notifier);
+                          return SafeArea(
+                            top: false,
                             child: Container(
-                              width: 48,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: AppColors.gray300,
-                                borderRadius: BorderRadius.circular(3),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                border: Border(
+                                  top: BorderSide(
+                                    color: AppColors.gray100,
+                                  ),
+                                ),
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: () =>
+                                      vm.setTypeCart(ETypeCart.main),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.sbBlue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Kembali',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      } else {
-                        return const SizedBox(height: 16);
-                      }
-                    },
-                  ),
-
-                  Expanded(
-                    child: Builder(builder: (context) {
-                      final state = ref.watch(transactionPosViewModelProvider);
-                      if (state.typeCart == ETypeCart.main) {
-                        return CartScreen(
-                            outerScrollController: scrollController);
-                      }
-                      if (state.typeCart == ETypeCart.confirm) {
-                        // Tampilkan CartScreen dalam mode konfirmasi (hanya baca)
-                        return CartScreen(
-                            readOnly: true,
-                            outerScrollController: scrollController);
-                      }
-                      return const CartMethodPaymentScreen();
-                    }),
-                  ),
-                ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           );

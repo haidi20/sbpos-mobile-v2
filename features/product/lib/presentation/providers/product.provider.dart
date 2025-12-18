@@ -5,6 +5,7 @@ import 'package:product/domain/usecases/update_product.usecase.dart';
 import 'package:product/domain/usecases/get_product.usecase.dart';
 import 'package:product/domain/usecases/delete_product.usecase.dart';
 import 'package:product/presentation/view_models/product_management.vm.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:product/presentation/view_models/product_management.state.dart';
 import 'package:product/presentation/providers/product_repository.provider.dart';
 
@@ -45,10 +46,28 @@ final productManagementViewModelProvider =
   final create = ref.watch(productCreateProductProvider);
   final update = ref.watch(productUpdateProductProvider);
   final delete = ref.watch(productDeleteProductProvider);
+
+  // Debounce wrapper: coalesce multiple CRUD events within short window
+  // into a single refreshProducts() call. Keep Timer in provider closure
+  // so it's shared for the provider lifetime.
+  Timer? refreshDebounce;
+
+  Future<void> onAfterCrudWrapper() async {
+    refreshDebounce?.cancel();
+    refreshDebounce = Timer(const Duration(milliseconds: 300), () {
+      final f =
+          ref.read(transactionPosViewModelProvider.notifier).refreshProducts();
+      unawaited(f.catchError((e, st) =>
+          Logger('ProductProvider').warning('refreshProducts failed', e, st)));
+    });
+    return Future.value();
+  }
+
   return ProductManagementViewModel(
     getProductsUsecase: get,
     createProductUsecase: create,
     updateProductUsecase: update,
     deleteProductUsecase: delete,
+    onAfterCrud: onAfterCrudWrapper,
   );
 });

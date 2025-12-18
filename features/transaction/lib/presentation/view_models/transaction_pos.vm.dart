@@ -1,24 +1,24 @@
 import 'package:core/core.dart';
-import 'package:customer/domain/entities/customer.entity.dart';
-import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/domain/entities/packet.entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
+import 'package:transaction/data/dummy/order_type_dummy.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
+import 'package:product/domain/usecases/get_packets.usecase.dart';
+import 'package:product/domain/usecases/get_products.usecase.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/content_item.entity.dart';
+import 'package:product/domain/entities/packet_selected_item.entity.dart';
+import 'package:transaction/domain/entitties/combined_content.entity.dart';
+import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
-import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
-import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
-import 'package:product/domain/usecases/get_products.usecase.dart';
-import 'package:product/domain/entities/packet_selected_item.entity.dart';
-import 'package:product/domain/usecases/get_packets.usecase.dart';
 import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
-import 'package:transaction/data/dummy/order_type_dummy.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
-import 'package:transaction/domain/entitties/content_item.entity.dart';
-import 'package:transaction/domain/entitties/combined_content.entity.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
 
 // Usecase Product/Paket disediakan oleh composition root (provider)
 // dan diinjeksi ke ViewModel ini. Jangan membuat repository palsu di sini.
@@ -46,6 +46,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   // Guard to prevent concurrent creation of a pending transaction
   bool _isCreatingTx = false;
   Completer<void>? _createTxCompleter;
+  // Guard to prevent concurrent/rapid refreshProductsAndPackets calls
+  bool _isRefreshing = false;
   // Timer debounce untuk pembaruan catatan (note)
   Timer? _orderNoteDebounce;
   final Map<int, Timer> _itemNoteDebounces = {};
@@ -160,20 +162,52 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
 
   /// Metode publik untuk menyegarkan paket dan produk secara offline.
   Future<void> refreshProductsAndPackets({String? packetQuery}) async {
-    // Set content-loading state so UI can show product/packet spinner
+    if (_isRefreshing) return;
+
+    _isRefreshing = true;
     state = state.copyWith(isLoadingContent: true);
     try {
       await getPacketsList(query: packetQuery);
       await _loadProductsAndCategories();
 
       // If both packets and products are empty, ensure UI reflects empty
-      // (some screens rely on `state.packets.isEmpty` and `cachedProducts`).
       if (state.packets.isEmpty && _cachedProducts.isEmpty) {
         state = state.copyWith(packets: []);
       }
     } catch (e, st) {
       _logger.warning('refreshProductsAndPackets failed: $e', e, st);
     } finally {
+      _isRefreshing = false;
+      state = state.copyWith(isLoadingContent: false);
+    }
+  }
+
+  /// Refresh products only (useful when only products changed).
+  Future<void> refreshProducts() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    state = state.copyWith(isLoadingContent: true);
+    try {
+      await _loadProductsAndCategories();
+    } catch (e, st) {
+      _logger.warning('refreshProducts failed: $e', e, st);
+    } finally {
+      _isRefreshing = false;
+      state = state.copyWith(isLoadingContent: false);
+    }
+  }
+
+  /// Refresh packets only (useful when only packets changed).
+  Future<void> refreshPackets({String? packetQuery}) async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    state = state.copyWith(isLoadingContent: true);
+    try {
+      await getPacketsList(query: packetQuery);
+    } catch (e, st) {
+      _logger.warning('refreshPackets failed: $e', e, st);
+    } finally {
+      _isRefreshing = false;
       state = state.copyWith(isLoadingContent: false);
     }
   }
@@ -734,18 +768,13 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       final qty = s.qty;
       final prod = _cachedProducts.firstWhere((p) => p.id == pid,
           orElse: () => ProductEntity(id: pid));
-      final price = prod.price?.toInt() ?? 0;
-      details.add(TransactionDetailEntity(
+      details.add(TransactionDetailEntity.fromProductEntity(
         transactionId: state.transaction?.id ?? 0,
-        productId: prod.id,
-        productName: prod.name,
-        productPrice: price,
+        product: prod,
+        qty: qty,
         packetId: packet.id,
         packetName: packet.name,
-        qty: qty,
-        subtotal: (price * qty).toInt(),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        packetPrice: packet.price?.toInt(),
       ));
     }
     if (details.isNotEmpty) await onAddPacketItems(details);
