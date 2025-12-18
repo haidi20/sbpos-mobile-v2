@@ -139,8 +139,9 @@ class OrderListWidget extends StatelessWidget {
   final TransactionPosViewModel viewModel;
   final TransactionPosState stateTransaction;
   final TextEditingController orderNoteController;
+  // final Logger _logger = Logger('OrderListWidget');
 
-  const OrderListWidget({
+  OrderListWidget({
     super.key,
     this.readOnly = false,
     required this.controller,
@@ -178,9 +179,19 @@ class OrderListWidget extends StatelessWidget {
             productPrice: (item.productPrice ?? 0).toDouble(),
             textController: controller.itemNoteControllers[id]!,
             readOnly: readOnly,
-            onSetActiveNoteId: (pid) =>
-                unawaited(controller.setActiveItemNoteId(pid)),
-            onSetItemNote: (pid, value) => viewModel.setItemNote(pid, value),
+            onSetActiveNoteId: (pid) {
+              unawaited(controller.setActiveItemNoteId(pid));
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // Ambil tinggi layar, gunakan setengahnya lalu tambahkan 10
+                final screenHeight = MediaQuery.of(context).size.height;
+                final double offset = (screenHeight / 2.0) + 10.0;
+                unawaited(controller.scrollContentBy(offset));
+              });
+            },
+            onSetItemNote: (pid, value) {
+              // Simpan note ke state/DB
+              viewModel.setItemNote(pid, value);
+            },
             onUpdateQuantity: (pid, delta) =>
                 controller.onUpdateQuantity(pid, delta),
           );
@@ -355,7 +366,7 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
                   // (typeCart -> confirm/checkout) sudah dirender, lalu lakukan
                   // scroll agar posisi target tersedia.
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    unawaited(widget.controller.scrollContentBy(25));
+                    unawaited(widget.controller.scrollContentBy(20));
                   });
                 }
               },
