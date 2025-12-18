@@ -7,7 +7,8 @@ import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/widgets/filter_products_transaction.widget.dart';
 import 'package:product/presentation/screens/packet_selection.sheet.dart'
-    show PacketSelectionSheet, SelectedPacketItem;
+    show PacketSelectionSheet;
+import 'package:product/domain/entities/packet_selected_item.entity.dart';
 
 class TransactionPosController {
   final WidgetRef ref;
@@ -35,6 +36,9 @@ class TransactionPosController {
   /// kali visibilitas muncul.
   Future<void> maybeRefreshOnVisible(bool isCurrent) async {
     if (isCurrent && !_didRefreshOnVisible) {
+      // Ensure we load any pending local transaction first to avoid missing
+      // an active pending transaction created elsewhere.
+      await _vm.ensureLocalPendingTransactionLoaded();
       await _vm.refreshProductsAndPackets();
       _didRefreshOnVisible = true;
     }

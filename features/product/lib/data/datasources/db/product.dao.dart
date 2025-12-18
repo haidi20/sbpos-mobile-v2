@@ -88,6 +88,81 @@ class ProductDao {
     }
   }
 
+  Future<ProductModel?> getProductByServerId(int idServer) async {
+    try {
+      final rows = await database.query(
+        ProductTable.tableName,
+        where: '${ProductTable.colIdServer} = ?',
+        whereArgs: [idServer],
+        limit: 1,
+      );
+      if (rows.isEmpty) return null;
+      final model = ProductModel.fromDbLocal(rows.first);
+      _logInfo(
+          'getProductByServerId: success id_server=$idServer -> id=${model.id}');
+      return model;
+    } catch (e, s) {
+      _logSevere('Error getProductByServerId: $e', e, s);
+      rethrow;
+    }
+  }
+
+  Future<ProductModel> upsertProduct(Map<String, dynamic> product) async {
+    try {
+      return await database.transaction((txn) async {
+        final idServer = product[ProductTable.colIdServer];
+        if (idServer != null) {
+          final existingRows = await txn.query(
+            ProductTable.tableName,
+            where: '${ProductTable.colIdServer} = ?',
+            whereArgs: [idServer],
+            limit: 1,
+          );
+          if (existingRows.isNotEmpty) {
+            final existing = ProductModel.fromDbLocal(existingRows.first);
+            final cleaned = Map<String, dynamic>.from(product)
+              ..removeWhere((k, v) => v == null);
+            final id = existing.id;
+            cleaned.remove('id');
+            await txn.update(
+              ProductTable.tableName,
+              cleaned,
+              where: '${ProductTable.colId} = ?',
+              whereArgs: [id],
+            );
+            final updated = await txn.query(
+              ProductTable.tableName,
+              where: '${ProductTable.colId} = ?',
+              whereArgs: [id],
+              limit: 1,
+            );
+            final model = ProductModel.fromDbLocal(updated.first);
+            _logInfo(
+                'upsertProduct: updated id=${model.id} id_server=$idServer');
+            return model;
+          }
+        }
+
+        final cleaned = Map<String, dynamic>.from(product)
+          ..removeWhere((k, v) => v == null);
+        final newId = await txn.insert(ProductTable.tableName, cleaned);
+        final inserted = await txn.query(
+          ProductTable.tableName,
+          where: '${ProductTable.colId} = ?',
+          whereArgs: [newId],
+          limit: 1,
+        );
+        final model = ProductModel.fromDbLocal(inserted.first);
+        _logInfo(
+            'upsertProduct: inserted id=${model.id} id_server=${product[ProductTable.colIdServer]}');
+        return model;
+      });
+    } catch (e, s) {
+      _logSevere('Error upsertProduct: $e', e, s);
+      rethrow;
+    }
+  }
+
   Future<int> deleteProduct(int id) async {
     try {
       final res = await database.delete(

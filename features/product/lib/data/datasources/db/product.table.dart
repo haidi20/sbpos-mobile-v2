@@ -33,7 +33,7 @@ class ProductTable {
   static const String createTableQuery = '''
     CREATE TABLE $tableName (
       $colId INTEGER PRIMARY KEY,
-      $colIdServer INTEGER,
+      $colIdServer INTEGER UNIQUE,
       $colSlug TEXT,
       $colCode TEXT,
       $colType TEXT,

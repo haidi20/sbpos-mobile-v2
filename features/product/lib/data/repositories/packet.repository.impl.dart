@@ -1,10 +1,10 @@
 import 'package:core/core.dart';
+import 'package:product/data/models/packet.model.dart';
+import 'package:product/data/dummies/packet.dummy.dart';
 import 'package:product/domain/entities/packet.entity.dart';
+import 'package:product/data/models/packet_item.model.dart';
 import 'package:product/domain/repositories/packet.repository.dart';
 import 'package:product/data/datasources/packet_local.datasource.dart';
-import 'package:product/data/models/packet.model.dart';
-import 'package:product/data/models/packet_item.model.dart';
-import 'package:product/data/dummies/packet.dummy.dart';
 
 class PacketRepositoryImpl implements PacketRepository {
   final PacketLocalDataSource local;
@@ -40,7 +40,7 @@ class PacketRepositoryImpl implements PacketRepository {
                 .toList(),
           );
           try {
-            await local.insertPacket(model,
+            await local.upsertPacket(model,
                 items: model.items?.map((it) => it.toInsertDbLocal()).toList());
           } catch (_) {
             // ignore individual insert errors

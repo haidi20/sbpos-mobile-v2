@@ -43,6 +43,8 @@ class _TransactionHistoryScreenState
             TransactionHistoryHeader(
               onSearch: viewModel.setSearchQuery,
               onDateSelected: (d) => viewModel.setSelectedDate(d),
+              onRefresh: () => viewModel.onRefresh(),
+              isLoading: state.isLoading,
             ),
 
             // date tabs
@@ -51,12 +53,21 @@ class _TransactionHistoryScreenState
               onDateSelected: (d) => viewModel.setSelectedDate(d),
             ),
 
-            // --- LIST ---
+            // --- LIST with pull-to-refresh ---
             Expanded(
-              child: TransactionHistoryList(
-                transactions: filteredTransactions,
-                isLoading: state.isLoading,
-                onTap: (tx) => _controller.onShowTransactionDetail(context, tx),
+              child: RefreshIndicator(
+                onRefresh: () => viewModel.onRefresh(),
+                color: AppColors.sbBlue,
+                displacement: 32,
+                child: TransactionHistoryList(
+                  transactions: filteredTransactions,
+                  isLoading: state.isLoading,
+                  onTap: (tx) async {
+                    await _controller.onShowTransactionDetail(context, tx);
+                    // refresh when returning from the detail sheet
+                    await viewModel.onRefresh();
+                  },
+                ),
               ),
             ),
           ],

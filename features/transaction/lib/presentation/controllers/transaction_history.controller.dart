@@ -7,10 +7,10 @@ class TransactionHistoryController {
   TransactionHistoryController();
 
   /// Alias yang digunakan oleh screen untuk konsistensi nama sebelum refactor.
-  void onShowTransactionDetail(BuildContext context, TransactionEntity tx) {
+  Future<void> onShowTransactionDetail(
+      BuildContext context, TransactionEntity tx) {
     final details = tx.details ?? [];
-
-    showModalBottomSheet(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -22,7 +22,8 @@ class TransactionHistoryController {
   }
 
   /// Backwards-compatible alias used by some screens.
-  void showTransactionDetail(BuildContext context, TransactionEntity tx) {
-    onShowTransactionDetail(context, tx);
+  Future<void> showTransactionDetail(
+      BuildContext context, TransactionEntity tx) {
+    return onShowTransactionDetail(context, tx);
   }
 }

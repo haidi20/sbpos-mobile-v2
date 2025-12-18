@@ -7,6 +7,8 @@ class AppSetting {
 class AppColors {
   static const Color sbBlue = Color(0xFF1E40AF);
   static const Color sbLightBlue = Color(0xFF00A3E0);
+  static const Color sbBlueLight = Color(0xFFEFF6FF);
+  static const Color sbBlue700 = Color(0xFF1D4ED8);
   static const Color sbOrange = Color(0xFFF97316);
   static const Color sbGold = Color(0xFFFFB81C);
   static const Color sbBg = Color(0xFFF8FAFC);

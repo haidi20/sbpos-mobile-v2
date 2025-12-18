@@ -92,6 +92,25 @@ class ProductLocalDataSource with BaseErrorHelper {
     }
   }
 
+  Future<ProductModel?> upsertProduct(ProductModel model) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat upsertProduct');
+        return null;
+      }
+      final dao = createDao(db);
+      final map = sanitizeForDb(model.toInsertDbLocal());
+      final upserted =
+          await _withRetry(() async => await dao.upsertProduct(map));
+      _logInfo('upsertProduct: id=${upserted.id}');
+      return upserted;
+    } catch (e, st) {
+      _logSevere('Error upsertProduct', e, st);
+      rethrow;
+    }
+  }
+
   Future<int> updateProduct(Map<String, dynamic> data) async {
     try {
       final db = _testDb ?? await databaseHelper.database;

@@ -11,8 +11,7 @@ import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart'
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:product/domain/usecases/get_products.usecase.dart';
-import 'package:product/presentation/screens/packet_selection.sheet.dart'
-    show SelectedPacketItem;
+import 'package:product/domain/entities/packet_selected_item.entity.dart';
 import 'package:product/domain/usecases/get_packets.usecase.dart';
 import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
 import 'package:transaction/data/dummy/order_type_dummy.dart';
@@ -34,6 +33,9 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   List<ProductEntity> get cachedProducts => _cachedProducts;
   final _logger = Logger('TransactionPosViewModel');
   late final TransactionPersistence _persistence;
+  // Guard to prevent concurrent creation of a pending transaction
+  bool _isCreatingTx = false;
+  Completer<void>? _createTxCompleter;
   // Timer debounce untuk pembaruan catatan (note)
   Timer? _orderNoteDebounce;
   final Map<int, Timer> _itemNoteDebounces = {};
@@ -55,17 +57,12 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     );
     _getPacketsUsecase = getPackets;
     _getProductsUsecase = getProducts;
-
-    // Load local transaction and initial data
-    // pemanggilan async di konstruktor secara berurutan
     (() async {
       await _persistence.loadLocalTransaction(
         _getTransactionActive,
         () => state,
         (s) => state = s,
       );
-      await getPacketsList();
-      await _loadProductsAndCategories();
     })();
   }
 
@@ -95,6 +92,20 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     }
   }
 
+  /// Ensure local pending transaction is loaded from local DB and applied to state.
+  /// Safe to call multiple times; underlying persistence handles empty result.
+  Future<void> ensureLocalPendingTransactionLoaded() async {
+    try {
+      await _persistence.loadLocalTransaction(
+        _getTransactionActive,
+        () => state,
+        (s) => state = s,
+      );
+    } catch (e, st) {
+      _logger.warning('ensureLocalPendingTransactionLoaded failed', e, st);
+    }
+  }
+
   List<String> get availableCategories {
     final set = <String>{'Paket'};
     for (final p in _cachedProducts) {
@@ -112,6 +123,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
   }
 
   Future<void> getPacketsList({String? query}) async {
+    // _logger.info(
+    //     'getPacketsList called, current packets count: ${state.packets.length}');
     try {
       if (_getPacketsUsecase == null) {
         _logger.info('no packets usecase provided');
@@ -397,9 +410,17 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     if (id == null) {
       state = state.clear(clearActiveNoteId: true);
 
+      // Persist change to local DB; if there are no details left this will
+      // delete the local transaction as implemented in persistence helper.
+      unawaited(_persistence.persistAndUpdateState(() => state,
+          (s) => state = s, List<TransactionDetailEntity>.from(state.details)));
+
       return;
     }
     state = state.copyWith(activeNoteId: id);
+    // Persist activeNoteId change so DB reflects latest active note selection
+    unawaited(_persistence.persistAndUpdateState(() => state, (s) => state = s,
+        List<TransactionDetailEntity>.from(state.details)));
   }
 
   // Mengatur tipe tampilan cart (`ETypeCart`) di state.
@@ -493,6 +514,31 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
     // Update state segera untuk UI responsif, tapi persist hanya di background
     // tanpa memaksa refresh state dari persistence.
     state = state.copyWith(details: updated);
+
+    // If there's no local transaction yet, serialize creation to avoid duplicates.
+    if (state.transaction == null) {
+      if (_isCreatingTx) {
+        // Wait until the other create finishes and state is updated
+        await (_createTxCompleter?.future);
+        // after waiting, transaction should exist; persist remaining changes
+        unawaited(_persistence.persistOnly(state, updated));
+        return;
+      }
+
+      _isCreatingTx = true;
+      _createTxCompleter = Completer<void>();
+      try {
+        await _persistence.persistAndUpdateState(() => state, (s) => state = s,
+            List<TransactionDetailEntity>.from(state.details));
+      } finally {
+        _isCreatingTx = false;
+        _createTxCompleter?.complete();
+        _createTxCompleter = null;
+      }
+      return;
+    }
+
+    // Otherwise persist in background without forcing a state refresh.
     unawaited(_persistence.persistOnly(state, updated));
   }
 
@@ -521,6 +567,28 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
         ..add(newDetail);
     }
 
+    // If there's no local transaction yet, serialize creation to avoid duplicates.
+    if (state.transaction == null) {
+      if (_isCreatingTx) {
+        await (_createTxCompleter?.future);
+        // after waiting, persist remaining change in background
+        unawaited(_persistence.persistOnly(state, updated));
+        return;
+      }
+
+      _isCreatingTx = true;
+      _createTxCompleter = Completer<void>();
+      try {
+        await _persistence.persistAndUpdateState(
+            () => state, (s) => state = s, updated);
+      } finally {
+        _isCreatingTx = false;
+        _createTxCompleter?.complete();
+        _createTxCompleter = null;
+      }
+      return;
+    }
+
     await _persistence.persistAndUpdateState(
         () => state, (s) => state = s, updated);
   }
@@ -542,6 +610,27 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState> {
       } else {
         updated.add(d);
       }
+    }
+
+    // If there's no local transaction yet, serialize creation to avoid duplicates.
+    if (state.transaction == null) {
+      if (_isCreatingTx) {
+        await (_createTxCompleter?.future);
+        unawaited(_persistence.persistOnly(state, updated));
+        return;
+      }
+
+      _isCreatingTx = true;
+      _createTxCompleter = Completer<void>();
+      try {
+        await _persistence.persistAndUpdateState(
+            () => state, (s) => state = s, updated);
+      } finally {
+        _isCreatingTx = false;
+        _createTxCompleter?.complete();
+        _createTxCompleter = null;
+      }
+      return;
     }
 
     await _persistence.persistAndUpdateState(

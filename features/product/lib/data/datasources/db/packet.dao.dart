@@ -21,9 +21,19 @@ class PacketDao {
 
   Future<List<PacketModel>> getPackets({int? limit, int? offset}) async {
     try {
-      final rows = await database.query(PacketTable.tableName,
-          limit: limit, offset: offset);
-      final result = rows.map((r) => PacketModel.fromDbLocal(r)).toList();
+      final rows = await database.query(
+        PacketTable.tableName,
+        limit: limit,
+        offset: offset,
+      );
+
+      final List<PacketModel> result = [];
+      for (final r in rows) {
+        final id = r[PacketTable.colId] as int?;
+        final items =
+            id == null ? <PacketItemModel>[] : await _getItemsForPacket(id);
+        result.add(PacketModel.fromDbLocal(r, items: items));
+      }
       _logInfo('getPackets: success count=${result.length}');
       return result;
     } catch (e, s) {
@@ -98,6 +108,122 @@ class PacketDao {
       });
     } catch (e, s) {
       _logSevere('Error insertPacket: $e', e, s);
+      rethrow;
+    }
+  }
+
+  Future<PacketModel?> getPacketByServerId(int idServer) async {
+    try {
+      final rows = await database.query(
+        PacketTable.tableName,
+        where: '${PacketTable.colIdServer} = ?',
+        whereArgs: [idServer],
+        limit: 1,
+      );
+      if (rows.isEmpty) return null;
+      final id = rows.first[PacketTable.colId] as int?;
+      final model = PacketModel.fromDbLocal(rows.first,
+          items:
+              id == null ? <PacketItemModel>[] : await _getItemsForPacket(id));
+      _logInfo(
+          'getPacketByServerId: success id_server=$idServer -> id=${model.id}');
+      return model;
+    } catch (e, s) {
+      _logSevere('Error getPacketByServerId: $e', e, s);
+      rethrow;
+    }
+  }
+
+  Future<PacketModel> upsertPacket(Map<String, dynamic> packet,
+      {List<Map<String, dynamic>>? items}) async {
+    try {
+      return await database.transaction((txn) async {
+        final idServer = packet[PacketTable.colIdServer];
+        if (idServer != null) {
+          final existingRows = await txn.query(
+            PacketTable.tableName,
+            where: '${PacketTable.colIdServer} = ?',
+            whereArgs: [idServer],
+            limit: 1,
+          );
+          if (existingRows.isNotEmpty) {
+            final existingId = existingRows.first[PacketTable.colId] as int?;
+            final cleaned = Map<String, dynamic>.from(packet)
+              ..removeWhere((k, v) => v == null);
+            cleaned.remove('id');
+            await txn.update(
+              PacketTable.tableName,
+              cleaned,
+              where: '${PacketTable.colId} = ?',
+              whereArgs: [existingId],
+            );
+            if (items != null) {
+              await txn.delete(PacketItemTable.tableName,
+                  where: '${PacketItemTable.colPacketId} = ?',
+                  whereArgs: [existingId]);
+              for (final it in items) {
+                final i = Map<String, dynamic>.from(it)
+                  ..removeWhere((k, v) => v == null);
+                i[PacketItemTable.colPacketId] = existingId;
+                await txn.insert(PacketItemTable.tableName, i);
+              }
+            }
+            final updatedRows = await txn.query(
+              PacketTable.tableName,
+              where: '${PacketTable.colId} = ?',
+              whereArgs: [existingId],
+              limit: 1,
+            );
+            final itemRows = await txn.query(
+              PacketItemTable.tableName,
+              where: '${PacketItemTable.colPacketId} = ?',
+              whereArgs: [existingId],
+            );
+            final itemModels =
+                itemRows.map((r) => PacketItemModel.fromDbLocal(r)).toList();
+            final model = PacketModel.fromDbLocal(
+                updatedRows.first as Map<String, dynamic>,
+                items: itemModels);
+            _logInfo(
+                'upsertPacket: updated id=${model.id} id_server=$idServer');
+            return model;
+          }
+        }
+
+        // insert new
+        final cleaned = Map<String, dynamic>.from(packet)
+          ..removeWhere((k, v) => v == null);
+        final id = await txn.insert(PacketTable.tableName, cleaned);
+        if (items != null && items.isNotEmpty) {
+          for (final it in items) {
+            final i = Map<String, dynamic>.from(it)
+              ..removeWhere((k, v) => v == null);
+            i[PacketItemTable.colPacketId] = id;
+            await txn.insert(PacketItemTable.tableName, i);
+          }
+        }
+        final inserted = await txn.query(
+          PacketTable.tableName,
+          where: '${PacketTable.colId} = ?',
+          whereArgs: [id],
+          limit: 1,
+        );
+        final itemRows = await txn.query(
+          PacketItemTable.tableName,
+          where: '${PacketItemTable.colPacketId} = ?',
+          whereArgs: [id],
+        );
+        final itemModels =
+            itemRows.map((r) => PacketItemModel.fromDbLocal(r)).toList();
+        final model = PacketModel.fromDbLocal(
+            inserted.first as Map<String, dynamic>,
+            items: itemModels);
+        _logInfo(
+            'upsertPacket: inserted id=${model.id} id_server=${packet[PacketTable.colIdServer]}');
+        return model;
+      });
+    } catch (e, s) {
+      _logSevere('Error upsertPacket: $e', e, s);
       rethrow;
     }
   }

@@ -286,21 +286,18 @@ class SummaryBottomWidget extends StatelessWidget {
           const SizedBox(height: 24),
           // Summary
           ...[
-            _buildSummaryRow(
-              'Subtotal',
-              formatRupiah(controller.cartTotal),
-            ),
+            _SummaryRow(
+                label: 'Subtotal', value: formatRupiah(controller.cartTotal)),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Divider(
                 color: Color(0xFFE5E7EB),
               ),
             ),
-            _buildSummaryRow(
-              'Total',
-              formatRupiah(controller.finalTotal),
-              isTotal: true,
-            ),
+            _SummaryRow(
+                label: 'Total',
+                value: formatRupiah(controller.finalTotal),
+                isTotal: true),
           ],
           const SizedBox(height: 24),
           // Pay Button
@@ -333,32 +330,40 @@ class SummaryBottomWidget extends StatelessWidget {
   }
 }
 
-Widget _buildSummaryRow(
-  String label,
-  String value, {
-  bool isTotal = false,
-}) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        label,
-        style: TextStyle(
-          color: isTotal ? Colors.black : Colors.grey.shade600,
-          fontSize: isTotal ? 20 : 14,
-          fontWeight: isTotal ? FontWeight.bold : null,
+// replaced by private widget `_SummaryRow`
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isTotal;
+
+  const _SummaryRow(
+      {required this.label, required this.value, this.isTotal = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: isTotal ? Colors.black : Colors.grey.shade600,
+            fontSize: isTotal ? 20 : 14,
+            fontWeight: isTotal ? FontWeight.bold : null,
+          ),
         ),
-      ),
-      Text(
-        value,
-        style: TextStyle(
-          color: isTotal ? Colors.black : Colors.grey.shade600,
-          fontSize: isTotal ? 20 : 14,
-          fontWeight: isTotal ? FontWeight.bold : null,
+        Text(
+          value,
+          style: TextStyle(
+            color: isTotal ? Colors.black : Colors.grey.shade600,
+            fontSize: isTotal ? 20 : 14,
+            fontWeight: isTotal ? FontWeight.bold : null,
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 // CustomerInfoSelected widget is implemented as `CustomerInfoSelected` class above.

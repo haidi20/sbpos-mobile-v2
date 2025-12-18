@@ -93,6 +93,26 @@ class PacketLocalDataSource with BaseErrorHelper {
     }
   }
 
+  Future<PacketModel?> upsertPacket(PacketModel model,
+      {List<Map<String, dynamic>>? items}) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat upsertPacket');
+        return null;
+      }
+      final dao = createDao(db);
+      final map = sanitizeForDb(model.toInsertDbLocal());
+      final upserted = await _withRetry(
+          () async => await dao.upsertPacket(map, items: items));
+      _logInfo('upsertPacket: id=${upserted.id}');
+      return upserted;
+    } catch (e, st) {
+      _logSevere('Error upsertPacket', e, st);
+      rethrow;
+    }
+  }
+
   Future<int> updatePacket(Map<String, dynamic> data,
       {List<Map<String, dynamic>>? items}) async {
     try {

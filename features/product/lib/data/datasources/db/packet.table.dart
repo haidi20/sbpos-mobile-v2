@@ -14,7 +14,7 @@ class PacketTable {
   static const String createTableQuery = '''
     CREATE TABLE $tableName (
       $colId INTEGER PRIMARY KEY,
-      $colIdServer INTEGER,
+      $colIdServer INTEGER UNIQUE,
       $colName TEXT,
       $colPrice INTEGER,
       $colIsActive INTEGER,

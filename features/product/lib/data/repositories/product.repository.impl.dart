@@ -26,7 +26,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final inserted = <ProductModel>[];
       for (final p in products) {
         try {
-          final ins = await local.insertProduct(p);
+          final ins = await local.upsertProduct(p);
           if (ins != null) {
             inserted.add(ins);
           }
@@ -150,8 +150,8 @@ class ProductRepositoryImpl implements ProductRepository {
         return const Left(ServerFailure());
       }
       final model = resp.data!.first;
-      await local.insertProduct(model);
-      return Right(ProductEntity.fromModel(model));
+      final saved = await local.upsertProduct(model);
+      return Right(ProductEntity.fromModel(saved ?? model));
     } on ServerException {
       final localModel = await local.getProductById(id);
       if (localModel != null) {

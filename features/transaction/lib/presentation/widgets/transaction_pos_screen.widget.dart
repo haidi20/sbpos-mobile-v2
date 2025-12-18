@@ -162,11 +162,12 @@ class CategoryBar extends StatelessWidget {
     final categories = viewModel.orderedCategories;
 
     return SizedBox(
-      height: 56,
+      height: 72,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
             child: Material(
               type: MaterialType.transparency,
               child: IconButton(
@@ -179,62 +180,69 @@ class CategoryBar extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: ListView.separated(
-              controller: categoryScrollController,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: categories.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final name = categories[index];
-                final active = state.activeCategory == name;
-                return GestureDetector(
-                  onTap: () => controller.onCategoryTap(
-                    index: index,
-                    name: name,
-                    categoryScrollController: categoryScrollController,
-                    productGridController: productGridController,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: active ? Colors.grey[300] : Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          border: active
-                              ? null
-                              : Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Center(
-                          child: Text(
-                            name,
-                            style: TextStyle(
-                              color:
-                                  active ? Colors.grey[600] : Colors.grey[800],
-                              fontWeight:
-                                  active ? FontWeight.w700 : FontWeight.w500,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: ListView.separated(
+                controller: categoryScrollController,
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: categories.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final name = categories[index];
+                  final active = state.activeCategory == name;
+                  return GestureDetector(
+                    onTap: () => controller.onCategoryTap(
+                      index: index,
+                      name: name,
+                      categoryScrollController: categoryScrollController,
+                      productGridController: productGridController,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: active ? Colors.grey[300] : Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: active
+                                ? null
+                                : Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Center(
+                            child: Text(
+                              name,
+                              style: TextStyle(
+                                color: active
+                                    ? Colors.grey[600]
+                                    : Colors.grey[800],
+                                fontWeight:
+                                    active ? FontWeight.w700 : FontWeight.w500,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        width: active ? 28 : 0,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: active ? AppColors.sbBlue : Colors.transparent,
-                          borderRadius: BorderRadius.circular(2),
+                        const SizedBox(height: 6),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          width: active ? 28 : 0,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color:
+                                active ? AppColors.sbBlue : Colors.transparent,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -348,7 +356,9 @@ class _ContentData extends ConsumerWidget {
           return PacketCard(
             packet: pkt,
             onTap: () => controller.showPacketSelection(
-                packet: pkt, products: viewModel.cachedProducts),
+              packet: pkt,
+              products: viewModel.cachedProducts,
+            ),
           );
         } else {
           final product = item.product!;

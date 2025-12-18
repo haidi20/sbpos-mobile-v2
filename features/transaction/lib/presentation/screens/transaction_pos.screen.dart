@@ -86,6 +86,14 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                 },
               )
             : null,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        titleTextStyle: const TextStyle(
+          color: Colors.black87,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black87),
         actions: _isSearching
             ? null
             : [
