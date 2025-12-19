@@ -24,6 +24,11 @@ abstract class TransactionRepository {
   Future<Either<Failure, TransactionEntity>> getPendingTransaction(
       {bool? isOffline});
 
+  /// Get the highest sequence number stored locally (or 0 if none).
+  /// This should be a local-only operation; `isOffline` is accepted for
+  /// consistency but the implementation must not call remote.
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline});
+
   /// Get single transaction by id
   Future<Either<Failure, TransactionEntity>> getTransaction(int id,
       {bool? isOffline});

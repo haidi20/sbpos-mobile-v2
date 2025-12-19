@@ -7,6 +7,7 @@ import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
+import 'package:transaction/domain/usecases/get_last_secuence_number_transaction.usecase.dart';
 import 'package:product/presentation/providers/packet.provider.dart';
 import 'package:product/presentation/providers/product.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
@@ -44,12 +45,18 @@ final getTransactionActive = Provider((ref) {
   return GetTransactionActive(repo!);
 });
 
+final getLastSequenceNumber = Provider((ref) {
+  final repo = ref.watch(transactionRepositoryProvider);
+  return GetLastSequenceNumberTransaction(repo!);
+});
+
 final transactionPosViewModelProvider =
     StateNotifierProvider<TransactionPosViewModel, TransactionPosState>((ref) {
   final createTxn = ref.watch(createTransaction);
   final updateTxn = ref.watch(updateTransaction);
   final deleteTxn = ref.watch(deleteTransaction);
   final getTxnActive = ref.watch(getTransactionActive);
+  final getLastSeq = ref.watch(getLastSequenceNumber);
   final packetsProvider = (() {
     try {
       return ref.watch(packetGetPacketsProvider);
@@ -71,6 +78,7 @@ final transactionPosViewModelProvider =
     updateTxn,
     deleteTxn,
     getTxnActive,
+    getLastSeq,
     packetsProvider,
     productsProvider,
   );

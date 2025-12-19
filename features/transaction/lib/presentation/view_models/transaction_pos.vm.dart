@@ -20,6 +20,7 @@ import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
+import 'package:transaction/domain/usecases/get_last_secuence_number_transaction.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
 
@@ -39,6 +40,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
   final UpdateTransaction _updateTransaction;
   final DeleteTransaction _deleteTransaction;
   final GetTransactionActive _getTransactionActive;
+  final GetLastSequenceNumberTransaction? _getLastSequenceNumber;
   late final GetPackets? _getPacketsUsecase;
   late final GetProducts? _getProductsUsecase;
   List<ProductEntity> _cachedProducts = [];
@@ -68,6 +70,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
     this._updateTransaction,
     this._deleteTransaction,
     this._getTransactionActive, [
+    this._getLastSequenceNumber,
     GetPackets? getPackets,
     GetProducts? getProducts,
   ]) : super(TransactionPosState()) {
@@ -77,6 +80,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
       _updateTransaction,
       _deleteTransaction,
       _logger,
+      getLastSequenceUsecase: _getLastSequenceNumber,
     );
     _getPacketsUsecase = getPackets;
     _getProductsUsecase = getProducts;

@@ -5,6 +5,7 @@ import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
+import 'package:transaction/domain/usecases/get_last_secuence_number_transaction.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 
 class TransactionPersistence {
@@ -13,12 +14,12 @@ class TransactionPersistence {
   final DeleteTransaction _deleteTransaction;
   final Logger _logger;
 
-  TransactionPersistence(
-    this._createTransaction,
-    this._updateTransaction,
-    this._deleteTransaction,
-    this._logger,
-  );
+  TransactionPersistence(this._createTransaction, this._updateTransaction,
+      this._deleteTransaction, this._logger,
+      {GetLastSequenceNumberTransaction? getLastSequenceUsecase})
+      : _getLastSequenceUsecase = getLastSequenceUsecase;
+
+  final GetLastSequenceNumberTransaction? _getLastSequenceUsecase;
 
   // Guard to ensure local transaction is loaded at most once unless forced.
   bool _isLoadingLocal = false;
@@ -52,9 +53,23 @@ class TransactionPersistence {
           return;
         }
 
+        // determine next sequence number (try usecase first, fallback to 1)
+        int nextSequence = 1;
+        try {
+          final usecase = _getLastSequenceUsecase;
+          if (usecase != null) {
+            final last = await usecase.call(isOffline: true);
+            if (last > 0) {
+              nextSequence = last + 1;
+            }
+          }
+        } catch (_) {
+          // ignore and fallback to default
+        }
+
         final txEntity = TransactionEntity(
           outletId: currentState.transaction?.outletId ?? 1,
-          sequenceNumber: currentState.transaction?.sequenceNumber ?? 1,
+          sequenceNumber: nextSequence,
           orderTypeId: currentState.orderType.index + 1,
           date: DateTime.now(),
           totalAmount: totalAmount,
@@ -198,9 +213,18 @@ class TransactionPersistence {
       if (currentState.transaction == null) {
         if (updatedDetails.isEmpty) return;
 
+        int nextSequence = 1;
+        try {
+          final usecase = _getLastSequenceUsecase;
+          if (usecase != null) {
+            final last = await usecase.call(isOffline: true);
+            if (last > 0) nextSequence = last + 1;
+          }
+        } catch (_) {}
+
         final txEntity = TransactionEntity(
           outletId: currentState.transaction?.outletId ?? 1,
-          sequenceNumber: currentState.transaction?.sequenceNumber ?? 1,
+          sequenceNumber: nextSequence,
           orderTypeId: currentState.orderType.index + 1,
           date: DateTime.now(),
           totalAmount: totalAmount,
@@ -287,13 +311,15 @@ class TransactionPersistence {
     try {
       // indicate persistent loading while fetching from DB
       setState(getState().copyWith(isLoadingPersistent: true));
+
       final res = await getTransactionActive.call(isOffline: true);
       res.fold((f) {
         _logger
             .info('loadLocalTransaction: no existing local transaction found');
       }, (tx) {
-        _logger.info(
-            'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
+        // _logger.info(
+        //     'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
+        _logger.info('status tx lokal: ${tx.statusValue}');
         setState(
             getState().copyWith(transaction: tx, details: tx.details ?? []));
       });

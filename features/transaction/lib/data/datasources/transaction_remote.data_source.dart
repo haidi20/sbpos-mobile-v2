@@ -46,10 +46,10 @@ class TransactionRemoteDataSource with BaseErrorHelper {
     );
   }
 
-  Future<TransactionResponse> getTransaction(int id) async {
+  Future<TransactionResponse> fetchTransaction(int id) async {
     return await _callAndDecode(
         () => _apiHelper.get(url: '$host/$api/transactions/$id'),
-        'getTransaction');
+        'fetchTransaction');
   }
 
   Future<TransactionResponse> updateTransaction(

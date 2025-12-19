@@ -206,7 +206,7 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       );
 
-  String _dateOrDash(DateTime? d) => d == null ? '-' : d.dateTimeReadable();
+  // helper previously used for formatted dates; removed because unused
 
   @override
   Widget build(BuildContext context) {
@@ -214,34 +214,39 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
     final items = <MapEntry<String, Widget>>[
       // MapEntry('ID', _valueWidget(tx.id?.toString() ?? '-')),
       // MapEntry('Server ID', _valueWidget(tx.idServer?.toString() ?? '-')),
-      MapEntry('Shift', _valueWidget(tx.shiftId?.toString() ?? '-')),
-      MapEntry('Synced At', _valueWidget(_dateOrDash(tx.syncedAt))),
-      MapEntry('Outlet', _valueWidget(tx.outletId.toString())),
+      // MapEntry('Shift', _valueWidget(tx.shiftId?.toString() ?? '-')),
+      // MapEntry('Synced At', _valueWidget(_dateOrDash(tx.syncedAt))),
+      // MapEntry('Outlet', _valueWidget(tx.outletId.toString())),
       MapEntry('No. Order', _valueWidget('#${tx.sequenceNumber}')),
-      MapEntry('OrderType ID', _valueWidget(tx.orderTypeId.toString())),
+      // MapEntry('OrderType ID', _valueWidget(tx.orderTypeId.toString())),
       MapEntry('Kategori', _valueWidget(tx.categoryOrder ?? '-')),
-      MapEntry('Kasir (User)', _valueWidget(tx.userId?.toString() ?? '-')),
+      // MapEntry('Kasir (User)', _valueWidget(tx.userId?.toString() ?? '-')),
       MapEntry('Metode Bayar',
           _valueWidget(_friendlyPaymentLabel(tx.paymentMethod))),
-      MapEntry('Tanggal', _valueWidget(tx.date.dateTimeReadable())),
+      MapEntry('Tanggal', _valueWidget(tx.date.toDisplayDate())),
+      MapEntry('Jam', _valueWidget(tx.date.toDisplayTime())),
       // MapEntry('Catatan', _valueWidget(tx.notes ?? '-')),
       MapEntry(
           'Total (Rp)', _valueWidget(formatRupiah(tx.totalAmount.toDouble()))),
       MapEntry('Jumlah Item', _valueWidget(tx.totalQty.toString())),
-      MapEntry('Terbayar (Rp)',
-          _valueWidget(formatRupiah((tx.paidAmount ?? 0).toDouble()))),
+      MapEntry(
+        'Terbayar (Rp)',
+        _valueWidget(
+          tx.isPaid ? formatRupiah((tx.paidAmount ?? 0).toDouble()) : '-',
+        ),
+      ),
       MapEntry('Kembalian (Rp)',
           _valueWidget(formatRupiah(tx.changeMoney.toDouble()))),
-      MapEntry('Lunas', _valueWidget(tx.isPaid ? 'Ya' : 'Tidak')),
+      MapEntry('Lunas', _valueWidget(tx.isPaid ? 'Ya' : 'Belum')),
       MapEntry('Status', _valueWidget(tx.statusValue)),
-      MapEntry('OTP Batal', _valueWidget(tx.cancelationOtp ?? '-')),
+      // MapEntry('OTP Batal', _valueWidget(tx.cancelationOtp ?? '-')),
       MapEntry('Alasan Batal', _valueWidget(tx.cancelationReason ?? '-')),
       MapEntry('Ojol Provider', _valueWidget(tx.ojolProvider ?? '-')),
       // MapEntry('Created', _valueWidget(_dateOrDash(tx.createdAt))),
       // MapEntry('Updated', _valueWidget(_dateOrDash(tx.updatedAt))),
       // MapEntry('Deleted', _valueWidget(_dateOrDash(tx.deletedAt))),
-      MapEntry(
-          'Details Count', _valueWidget((tx.details?.length ?? 0).toString())),
+      // MapEntry(
+      //     'Details Count', _valueWidget((tx.details?.length ?? 0).toString())),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {

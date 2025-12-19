@@ -72,15 +72,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return Left(failure);
   }
 
-  Future<Either<Failure, TransactionEntity>> _localPendingOrFailure(
-      Failure failure) async {
-    final localModel = await local.getPendingTransaction();
-    if (localModel != null) {
-      return Right(TransactionEntity.fromModel(localModel));
-    }
-    return Left(failure);
-  }
-
   Future<Either<Failure, List<TransactionEntity>>> _fallbackToLocal({
     Failure fallbackFailure = const NetworkFailure(),
   }) async {
@@ -286,7 +277,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     try {
-      final resp = await remote.getTransaction(id);
+      final resp = await remote.fetchTransaction(id);
       if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
         return await _localOrFailureById(id, const ServerFailure());
       }
@@ -305,59 +296,30 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  @override
   Future<Either<Failure, TransactionEntity>> getPendingTransaction(
       {bool? isOffline}) async {
-    // If caller forces offline, return local latest
-    if (isOffline == true) {
+    // Always resolve from local DB only (no remote/network involvement).
+    try {
       final localModel = await local.getPendingTransaction();
       if (localModel != null) {
         return Right(TransactionEntity.fromModel(localModel));
       }
       return const Left(UnknownFailure());
-    }
-
-    final networkInfo = NetworkInfoImpl(Connectivity());
-    final bool isConnected = await networkInfo.isConnected;
-
-    if (!isConnected) {
-      return await _localPendingOrFailure(const NetworkFailure());
-    }
-
-    try {
-      final TransactionResponse resp = await remote.fetchTransactions();
-
-      if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
-        return await _localPendingOrFailure(const ServerFailure());
-      }
-
-      final List<TransactionModel> txModels = resp.data!;
-      // pick latest by createdAt desc
-      txModels.sort((a, b) {
-        final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bTime.compareTo(aTime);
-      });
-
-      final latest = txModels.first;
-
-      try {
-        // insert sync to local (include details)
-        final inserted = await local.insertSyncTransaction(latest);
-        if (inserted != null) {
-          return Right(TransactionEntity.fromModel(inserted));
-        }
-      } catch (e, st) {
-        _logger.warning('Failed to persist latest transaction to local', e, st);
-      }
-
-      return Right(TransactionEntity.fromModel(latest));
-    } on ServerException {
-      return await _localPendingOrFailure(const ServerFailure());
-    } on NetworkException {
-      return await _localPendingOrFailure(const NetworkFailure());
     } catch (e, st) {
-      _logger.severe('Error getPendingTransaction:', e, st);
+      _logger.severe('Error getPendingTransaction (local):', e, st);
+      return const Left(UnknownFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async {
+    try {
+      // Always read from local DB only
+      final last = await local.getLastSequenceNumber();
+      return Right(last);
+    } catch (e, st) {
+      _logger.warning(
+          'Error getLastSequenceNumber, returning Left(UnknownFailure)', e, st);
       return const Left(UnknownFailure());
     }
   }

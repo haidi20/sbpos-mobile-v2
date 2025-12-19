@@ -52,6 +52,7 @@ class TransactionDao {
         TransactionTable.tableName,
         where: where,
         whereArgs: whereArgs.isEmpty ? null : whereArgs,
+        orderBy: '${TransactionTable.colCreatedAt} DESC',
       );
       List<TransactionModel> result = [];
       for (var t in txs) {
@@ -111,6 +112,7 @@ class TransactionDao {
         orderBy: '${TransactionTable.colCreatedAt} DESC',
         limit: 1,
       );
+
       if (txResult.isEmpty) return null;
 
       final row = txResult.first;
@@ -286,6 +288,25 @@ class TransactionDao {
       return res;
     } catch (e, s) {
       _logSevere('Error updateTransaction: $e', e, s);
+      rethrow;
+    }
+  }
+
+  /// Return the highest sequence_number in transactions table, or 0 if none.
+  Future<int> getLastSequenceNumber() async {
+    try {
+      final rows = await database.rawQuery(
+        'SELECT MAX(${TransactionTable.colSequenceNumber}) as max_seq FROM ${TransactionTable.tableName}',
+      );
+      if (rows.isEmpty) return 0;
+      final first = rows.first;
+      final val = first['max_seq'];
+      if (val == null) return 0;
+      if (val is int) return val;
+      if (val is String) return int.tryParse(val) ?? 0;
+      return 0;
+    } catch (e, s) {
+      _logSevere('Error getLastSequenceNumber: $e', e, s);
       rethrow;
     }
   }

@@ -105,6 +105,24 @@ class TransactionLocalDataSource with BaseErrorHelper {
     }
   }
 
+  /// Return the highest sequence number stored locally, or 0 if none.
+  Future<int> getLastSequenceNumber() async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database gagal dibuka/null');
+        return 0;
+      }
+      final dao = createDao(db);
+      final res = await dao.getLastSequenceNumber();
+      _logFine('getLastSequenceNumber: $res');
+      return res;
+    } catch (e, st) {
+      _logSevere('Error getLastSequenceNumber', e, st);
+      rethrow;
+    }
+  }
+
   Future<TransactionModel?> insertTransaction(TransactionModel tx) async {
     try {
       final db = _testDb ?? await databaseHelper.database;

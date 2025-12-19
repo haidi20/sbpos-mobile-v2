@@ -134,4 +134,11 @@ extension DateDisplay on DateTime {
     final yyyy = year.toString();
     return '$dd/$mm/$yyyy';
   }
+
+  /// Returns time portion in `HH:mm` format.
+  String toDisplayTime() {
+    final hh = hour.toString().padLeft(2, '0');
+    final min = minute.toString().padLeft(2, '0');
+    return '$hh:$min';
+  }
 }

@@ -24,10 +24,10 @@ class TransactionHistoryHeader extends StatelessWidget {
       color: AppColors.sbBg,
       child: Column(
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Riwayat Transaksi',
                   style: TextStyle(
@@ -38,44 +38,44 @@ class TransactionHistoryHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.filter_list,
-                        color: AppColors.sbBlue,
-                      ),
-                      onPressed: () async {
-                        if (onDateSelected == null) return;
-                        final now = DateTime.now();
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: now,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(now.year + 2),
-                          builder: (ctx, child) => Theme(
-                            data: Theme.of(ctx).copyWith(
-                              colorScheme: const ColorScheme.light(
-                                primary: AppColors.sbBlue,
-                                onPrimary: Colors.white,
-                                onSurface: Colors.black87,
-                              ),
-                            ),
-                            child: child!,
-                          ),
-                        );
-                        onDateSelected!(picked);
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     Container(
+              //       decoration: BoxDecoration(
+              //         color: Colors.white,
+              //         borderRadius: BorderRadius.circular(12),
+              //         border: Border.all(color: Colors.grey.shade200),
+              //       ),
+              //       child: IconButton(
+              //         icon: const Icon(
+              //           Icons.filter_list,
+              //           color: AppColors.sbBlue,
+              //         ),
+              //         onPressed: () async {
+              //           if (onDateSelected == null) return;
+              //           final now = DateTime.now();
+              //           final picked = await showDatePicker(
+              //             context: context,
+              //             initialDate: now,
+              //             firstDate: DateTime(2000),
+              //             lastDate: DateTime(now.year + 2),
+              //             builder: (ctx, child) => Theme(
+              //               data: Theme.of(ctx).copyWith(
+              //                 colorScheme: const ColorScheme.light(
+              //                   primary: AppColors.sbBlue,
+              //                   onPrimary: Colors.white,
+              //                   onSurface: Colors.black87,
+              //                 ),
+              //               ),
+              //               child: child!,
+              //             ),
+              //           );
+              //           onDateSelected!(picked);
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
           const SizedBox(height: 16),
@@ -135,9 +135,11 @@ class TransactionHistoryList extends StatelessWidget {
         children: const [
           SizedBox(height: 24),
           Center(
-              child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator())),
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator(),
+            ),
+          ),
         ],
       );
     }

@@ -8,28 +8,11 @@ class GetTransactionActive {
   final TransactionRepository repository;
 
   GetTransactionActive(this.repository);
-
   Future<Either<Failure, TransactionEntity>> call({bool? isOffline}) async {
     try {
-      final res = await repository.getPendingTransaction(isOffline: isOffline);
-      return await res.fold((l) async {
-        try {
-          final maybe =
-              await repository.getTransaction(1, isOffline: isOffline);
-          return maybe;
-        } catch (_) {
-          return Left(l);
-        }
-      }, (r) async {
-        return Right(r);
-      });
+      return await repository.getPendingTransaction(isOffline: isOffline);
     } catch (e) {
-      try {
-        final maybe = await repository.getTransaction(1, isOffline: isOffline);
-        return maybe;
-      } catch (_) {
-        return const Left(UnknownFailure());
-      }
+      return const Left(UnknownFailure());
     }
   }
 }
