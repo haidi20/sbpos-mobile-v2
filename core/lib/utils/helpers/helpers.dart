@@ -122,7 +122,6 @@ extension DateTimeDisplay on DateTime {
   }
 }
 
-
 extension DateDisplay on DateTime {
   String toDisplayDate() {
     final now = DateTime.now();

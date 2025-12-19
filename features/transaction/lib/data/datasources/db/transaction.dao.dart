@@ -2,6 +2,7 @@ import 'package:core/core.dart';
 import 'transaction.table.dart';
 import 'transaction_detail.table.dart';
 import 'package:transaction/data/models/transaction.model.dart';
+import 'package:transaction/domain/entitties/transaction_status.extension.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 
@@ -98,11 +99,15 @@ class TransactionDao {
     }
   }
 
-  /// Get the latest transaction by `created_at` descending (limit 1) with its details.
-  Future<TransactionModel?> getLatestTransaction() async {
+  /// Get the latest pending transaction (status = 'Pending') by `created_at` descending (limit 1) with its details.
+  Future<TransactionModel?> getPendingTransaction() async {
     try {
+      // Only consider transactions with status = 'Pending' when resolving
+      // the "latest" active transaction used by the POS flow.
       final txResult = await database.query(
         TransactionTable.tableName,
+        where: '${TransactionTable.colStatus} = ?',
+        whereArgs: [TransactionStatus.pending.value],
         orderBy: '${TransactionTable.colCreatedAt} DESC',
         limit: 1,
       );
@@ -121,10 +126,10 @@ class TransactionDao {
       final txModel = TransactionModel.fromDbLocal(row);
       final detailModels =
           details.map((e) => TransactionDetailModel.fromDbLocal(e)).toList();
-      _logInfo('getLatestTransaction: success id=$id');
+      _logInfo('getPendingTransaction: success id=$id');
       return txModel.copyWith(details: detailModels);
     } catch (e, s) {
-      _logSevere('Error getLatestTransaction: $e', e, s);
+      _logSevere('Error getPendingTransaction: $e', e, s);
       rethrow;
     }
   }

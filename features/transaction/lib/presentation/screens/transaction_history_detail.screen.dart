@@ -1,8 +1,9 @@
 ﻿// ignore_for_file: prefer_const_constructors
 
 import 'package:core/core.dart';
+import 'package:flutter/services.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-import 'package:transaction/presentation/components/detail_info.card.dart';
+// detail_info.card not used by the full fields grid; kept imports minimal
 import 'package:transaction/presentation/components/summary_row.card.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -37,7 +38,7 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _TransactionDetailInfoGrid(tx: tx, dateString: dateString),
+                  _TransactionFullFieldsGrid(tx: tx),
                   const SizedBox(height: 24),
                   const Text(
                     'Rincian Item',
@@ -106,22 +107,46 @@ class _TransactionDetailHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              InkWell(
-                onTap: () => Navigator.pop(context),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.close,
-                    size: 20,
-                    color: Colors.grey.shade600,
+              Row(children: [
+                // Sequence number: tappable to copy
+                GestureDetector(
+                  onTap: () {
+                    final messenger = ScaffoldMessenger.of(context);
+                    Clipboard.setData(
+                            ClipboardData(text: tx.sequenceNumber.toString()))
+                        .then((_) {
+                      messenger.showSnackBar(const SnackBar(
+                          content: Text('Nomor order disalin ke clipboard')));
+                    });
+                  },
+                  child: Text(
+                    '#${tx.sequenceNumber}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade800,
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                // Status badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: tx.statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: tx.statusColor.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    tx.statusValue,
+                    style: TextStyle(
+                      color: tx.statusColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ])
             ],
           ),
           const SizedBox(height: 16),
@@ -159,45 +184,98 @@ class _TransactionDetailHeader extends StatelessWidget {
   }
 }
 
-class _TransactionDetailInfoGrid extends StatelessWidget {
-  final TransactionEntity tx;
-  final String dateString;
+// `_TransactionDetailInfoGrid` has been replaced by
+// `_TransactionFullFieldsGrid`. Kept intentionally removed to avoid
+// duplicate UI implementations.
 
-  const _TransactionDetailInfoGrid(
-      {required this.tx, required this.dateString});
+/// Full grid presenting all `TransactionEntity` fields in a responsive layout.
+class _TransactionFullFieldsGrid extends StatelessWidget {
+  final TransactionEntity tx;
+
+  const _TransactionFullFieldsGrid({required this.tx});
+
+  Widget _label(String t) => Text(
+        t,
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+      );
+
+  Widget _valueWidget(String v) => Text(
+        v,
+        style: const TextStyle(
+            fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w600),
+        overflow: TextOverflow.ellipsis,
+      );
+
+  String _dateOrDash(DateTime? d) => d == null ? '-' : d.dateTimeReadable();
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 2.5,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: [
-        DetailInfoCard(
-          icon: Icons.receipt,
-          label: 'No. Order',
-          value: '#${tx.sequenceNumber}',
-        ),
-        DetailInfoCard(
-          icon: Icons.access_time,
-          label: 'Tanggal',
-          value: dateString,
-        ),
-        DetailInfoCard(
-          icon: Icons.category_outlined,
-          label: 'Tipe Order',
-          value: tx.categoryOrder ?? '-',
-        ),
-        DetailInfoCard(
-          icon: Icons.payments_outlined,
-          label: 'Metode Bayar',
-          value: tx.paymentMethod ?? '-',
-        ),
-      ],
-    );
+    // Build pairs of label + value for all fields
+    final items = <MapEntry<String, Widget>>[
+      // MapEntry('ID', _valueWidget(tx.id?.toString() ?? '-')),
+      // MapEntry('Server ID', _valueWidget(tx.idServer?.toString() ?? '-')),
+      MapEntry('Shift', _valueWidget(tx.shiftId?.toString() ?? '-')),
+      MapEntry('Synced At', _valueWidget(_dateOrDash(tx.syncedAt))),
+      MapEntry('Outlet', _valueWidget(tx.outletId.toString())),
+      MapEntry('No. Order', _valueWidget('#${tx.sequenceNumber}')),
+      MapEntry('OrderType ID', _valueWidget(tx.orderTypeId.toString())),
+      MapEntry('Kategori', _valueWidget(tx.categoryOrder ?? '-')),
+      MapEntry('Kasir (User)', _valueWidget(tx.userId?.toString() ?? '-')),
+      MapEntry('Metode Bayar',
+          _valueWidget(_friendlyPaymentLabel(tx.paymentMethod))),
+      MapEntry('Tanggal', _valueWidget(tx.date.dateTimeReadable())),
+      // MapEntry('Catatan', _valueWidget(tx.notes ?? '-')),
+      MapEntry(
+          'Total (Rp)', _valueWidget(formatRupiah(tx.totalAmount.toDouble()))),
+      MapEntry('Jumlah Item', _valueWidget(tx.totalQty.toString())),
+      MapEntry('Terbayar (Rp)',
+          _valueWidget(formatRupiah((tx.paidAmount ?? 0).toDouble()))),
+      MapEntry('Kembalian (Rp)',
+          _valueWidget(formatRupiah(tx.changeMoney.toDouble()))),
+      MapEntry('Lunas', _valueWidget(tx.isPaid ? 'Ya' : 'Tidak')),
+      MapEntry('Status', _valueWidget(tx.statusValue)),
+      MapEntry('OTP Batal', _valueWidget(tx.cancelationOtp ?? '-')),
+      MapEntry('Alasan Batal', _valueWidget(tx.cancelationReason ?? '-')),
+      MapEntry('Ojol Provider', _valueWidget(tx.ojolProvider ?? '-')),
+      // MapEntry('Created', _valueWidget(_dateOrDash(tx.createdAt))),
+      // MapEntry('Updated', _valueWidget(_dateOrDash(tx.updatedAt))),
+      // MapEntry('Deleted', _valueWidget(_dateOrDash(tx.deletedAt))),
+      MapEntry(
+          'Details Count', _valueWidget((tx.details?.length ?? 0).toString())),
+    ];
+
+    return LayoutBuilder(builder: (context, constraints) {
+      // target up to 3 columns, with minimal spacing
+      const gap = 12.0;
+      const maxCols = 3;
+      final itemWidth = (constraints.maxWidth - gap * (maxCols - 1)) / maxCols;
+
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: items.map((e) {
+          return SizedBox(
+            width: itemWidth.clamp(160.0, constraints.maxWidth),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade100),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _label(e.key),
+                  const SizedBox(height: 6),
+                  e.value,
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      );
+    });
   }
 }
 
@@ -251,6 +329,16 @@ class _TransactionDetailItemsList extends StatelessWidget {
       }).toList(),
     );
   }
+}
+
+// Helper to render friendlier payment method labels
+String _friendlyPaymentLabel(String? raw) {
+  if (raw == null) return '-';
+  final v = raw.toLowerCase();
+  if (v.contains('cash') || v == 'tunai') return 'Tunai';
+  if (v.contains('qris')) return 'QRIS';
+  if (v.contains('transfer') || v.contains('card')) return 'Transfer';
+  return raw;
 }
 
 class TransactionSummaryCard extends StatelessWidget {

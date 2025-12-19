@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 
 class OrderTypeSelector extends StatelessWidget {
   final void Function(String) onChanged;
@@ -36,9 +37,10 @@ class OrderTypeSelector extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
                         selected ? Colors.blue.shade50 : Colors.white,
-                    foregroundColor: selected ? Colors.blue : Colors.grey[700],
+                    foregroundColor: selected ? Colors.blue : Colors.grey[800],
                     elevation: selected ? 2 : 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
@@ -50,14 +52,18 @@ class OrderTypeSelector extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(icon, size: 20),
+                      Icon(icon, size: 22),
                       const SizedBox(height: 6),
-                      Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
@@ -75,19 +81,17 @@ class OrderTypeSelector extends StatelessWidget {
 class OjolProviderSelector extends StatelessWidget {
   final String value;
   final void Function(String) onChanged;
+  final TransactionPosViewModel vm;
   const OjolProviderSelector({
     super.key,
     required this.value,
     required this.onChanged,
+    required this.vm,
   });
 
   @override
   Widget build(BuildContext context) {
-    const providers = [
-      'Go Food',
-      'Grab Food',
-      'Shopee Food',
-    ];
+    final providers = vm.ojolProviders;
 
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -116,23 +120,37 @@ class OjolProviderSelector extends StatelessWidget {
           Row(
             children: providers.map(
               (p) {
-                final sel = p == value;
+                final sel = p.name == value;
 
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: sel ? Colors.orange : Colors.white,
-                        foregroundColor: sel ? Colors.white : Colors.grey[700],
+                        backgroundColor: sel ? p.color : Colors.white,
+                        foregroundColor: sel ? Colors.white : Colors.grey[800],
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      onPressed: () => onChanged(p),
-                      child: Text(
-                        p,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      onPressed: () => onChanged(p.name),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(p.icon,
+                              size: 18, color: sel ? Colors.white : p.color),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              p.name,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -179,7 +197,6 @@ class PaymentMethodSelector extends StatelessWidget {
           children: methods.map((m) {
             final id = m['id'] as String;
             final sel = id == value.name;
-
             return Expanded(
               child: TextButton(
                 style: TextButton.styleFrom(
@@ -193,9 +210,16 @@ class PaymentMethodSelector extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(m['icon'] as IconData, size: 16),
+                    Icon(m['icon'] as IconData,
+                        size: 16, color: sel ? Colors.blue : Colors.grey[700]),
                     const SizedBox(width: 8),
-                    Text(m['label'] as String),
+                    Flexible(
+                      child: Text(
+                        m['label'] as String,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -214,6 +238,7 @@ class PaymentDetails extends StatelessWidget {
   final void Function(int) onCashChanged;
   final int Function() computeCartTotal;
   final int Function() computeGrandTotal;
+  final int Function(int) suggestQuickCash;
   final int Function() computeChange;
 
   const PaymentDetails({
@@ -224,6 +249,7 @@ class PaymentDetails extends StatelessWidget {
     required this.onCashChanged,
     required this.computeCartTotal,
     required this.computeGrandTotal,
+    required this.suggestQuickCash,
     required this.computeChange,
   });
 
@@ -269,15 +295,13 @@ class PaymentDetails extends StatelessWidget {
                     child: const Text('Uang Pas'),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => onCashChanged(50000),
-                    child: const Text('50.000'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => onCashChanged(100000),
-                    child: const Text('100.000'),
-                  ),
+                  Builder(builder: (c) {
+                    final sug = suggestQuickCash(grandTotal);
+                    return ElevatedButton(
+                      onPressed: () => onCashChanged(sug),
+                      child: Text(formatRupiah(sug.toDouble())),
+                    );
+                  }),
                 ]),
               ),
               const SizedBox(height: 8),
@@ -295,7 +319,7 @@ class PaymentDetails extends StatelessWidget {
                         'Kembalian',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
-                      Text('Rp ${change.toString()}')
+                      Text(formatRupiah(change.toDouble()))
                     ]),
               ),
             ])
@@ -312,7 +336,7 @@ class PaymentDetails extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Rp ${grandTotal.toString()}',
+                    formatRupiah(grandTotal.toDouble()),
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ])
@@ -441,7 +465,7 @@ class FooterSummary extends StatelessWidget {
               style: TextStyle(color: Colors.grey.shade600),
             ),
             Text(
-              'Rp ${cartTotal.toString()}',
+              formatRupiah(cartTotal.toDouble()),
               style: TextStyle(
                 color: Colors.grey.shade600,
               ),
@@ -456,7 +480,7 @@ class FooterSummary extends StatelessWidget {
                 style: TextStyle(color: Colors.grey.shade600),
               ),
               Text(
-                'Rp ${tax.toString()}',
+                formatRupiah(tax.toDouble()),
                 style: TextStyle(
                   color: Colors.grey.shade600,
                 ),
@@ -477,7 +501,7 @@ class FooterSummary extends StatelessWidget {
                 ),
               ),
               Text(
-                'Rp ${grandTotal.toString()}',
+                formatRupiah(grandTotal.toDouble()),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -486,16 +510,25 @@ class FooterSummary extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Langsung Bayar checkbox
-          Row(
-            children: [
-              Checkbox(
-                value: isPaid,
-                onChanged: (v) => onIsPaidChanged(v ?? false),
-              ),
-              const SizedBox(width: 8),
-              const Expanded(child: Text('Langsung Bayar')),
-            ],
+          // Langsung Bayar checkbox — tappable single-row label
+          InkWell(
+            onTap: () => onIsPaidChanged(!isPaid),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: isPaid,
+                  onChanged: (v) => onIsPaidChanged(v ?? false),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Langsung Bayar',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           ElevatedButton(
@@ -503,7 +536,7 @@ class FooterSummary extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
               backgroundColor:
-                  viewMode == EViewMode.cart ? Colors.orange : Colors.blue,
+                  viewMode == EViewMode.cart ? Colors.green : Colors.blue,
             ),
             child: Text(
               viewMode == EViewMode.cart

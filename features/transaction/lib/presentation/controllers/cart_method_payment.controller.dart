@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
@@ -16,11 +15,8 @@ class CartMethodPaymentController {
   late final TransactionPosViewModel _viewModel;
 
   /// Mengembalikan daftar tipe order siap pakai untuk UI selector.
-  List<OrderTypeItemUiModel> getOrderTypeItems() =>
-      _viewModel.getOrderTypeItems();
-
-  /// Pilih order type berdasarkan id (delegasi ke ViewModel).
-  void selectOrderTypeById(String id) => _viewModel.selectOrderTypeById(id);
+  // Controller no longer exposes order-type helpers; the screen should
+  // access the view-model directly for order-type listing and selection.
 
   /// Toggle view mode (delegasi ke ViewModel).
   void onToggleView() => _viewModel.onToggleView();

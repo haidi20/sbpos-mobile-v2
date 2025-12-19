@@ -1,5 +1,6 @@
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/presentation/ui_models/ojol_provider.um.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 
@@ -37,6 +38,7 @@ class TransactionPosState {
   final ETypeCart typeCart;
   final EOrderType orderType;
   final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
+  final List<OjolProviderUiModel> ojolProviders;
   final EPaymentMethod paymentMethod;
   final int cashReceived;
   final EViewMode viewMode;
@@ -62,6 +64,7 @@ class TransactionPosState {
     this.typeCart = ETypeCart.main,
     this.orderType = EOrderType.dineIn,
     this.ojolProvider = '',
+    List<OjolProviderUiModel>? ojolProviders,
     this.paymentMethod = EPaymentMethod.cash,
     this.cashReceived = 0,
     this.viewMode = EViewMode.cart,
@@ -70,7 +73,10 @@ class TransactionPosState {
     List<TransactionDetailEntity>? details,
     List<PacketEntity>? packets,
   })  : details = details ?? const [],
-        packets = packets ?? const [];
+        packets = packets ?? const [],
+        ojolProviders = (ojolProviders != null && ojolProviders.isNotEmpty)
+            ? ojolProviders
+            : ojolProviderList;
 
   TransactionPosState copyWith({
     String? error,
@@ -84,6 +90,7 @@ class TransactionPosState {
     String? searchQuery,
     EOrderType? orderType,
     String? ojolProvider,
+    List<OjolProviderUiModel>? ojolProviders,
     EPaymentMethod? paymentMethod,
     ETypeCart? typeCart,
     String? activeCategory,
@@ -104,6 +111,7 @@ class TransactionPosState {
       orderNote: orderNote ?? this.orderNote,
       orderType: orderType ?? this.orderType,
       ojolProvider: ojolProvider ?? this.ojolProvider,
+      ojolProviders: ojolProviders ?? this.ojolProviders,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       cashReceived: cashReceived ?? this.cashReceived,
       viewMode: viewMode ?? this.viewMode,
@@ -136,6 +144,8 @@ class TransactionPosState {
       // reset UI state to defaults
       orderType: EOrderType.dineIn,
       ojolProvider: '',
+      ojolProviders: ojolProviderList,
+      typeCart: ETypeCart.main,
       paymentMethod: EPaymentMethod.cash,
       cashReceived: 0,
       viewMode: EViewMode.cart,

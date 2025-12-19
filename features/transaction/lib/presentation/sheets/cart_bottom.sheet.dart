@@ -73,7 +73,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
         // Buka hampir penuh saat diakses. Izinkan expand penuh agar konten
         // tidak terpotong saat daftar atau footer tinggi.
         minChildSize: 0.35,
-        initialChildSize: 0.9,
+        // Start fully expanded so the sheet appears full-screen.
+        // The grab handle will be shown when the user drags the sheet
+        // and the `sheetSize` falls below the visibility threshold.
+        initialChildSize: 1.0,
         // Izinkan penuh saat di-drag agar tidak memotong konten.
         maxChildSize: 1.0,
         builder: (context, scrollController) {
@@ -190,8 +193,13 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                                 width: double.infinity,
                                 height: 48,
                                 child: ElevatedButton(
-                                  onPressed: () =>
-                                      vm.setTypeCart(ETypeCart.main),
+                                  onPressed: () {
+                                    final target =
+                                        state.typeCart == ETypeCart.checkout
+                                            ? ETypeCart.confirm
+                                            : ETypeCart.main;
+                                    vm.setTypeCart(target);
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.sbBlue,
                                     shape: RoundedRectangleBorder(

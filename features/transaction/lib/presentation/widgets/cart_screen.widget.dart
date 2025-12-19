@@ -141,7 +141,7 @@ class OrderListWidget extends StatelessWidget {
   final TextEditingController orderNoteController;
   // final Logger _logger = Logger('OrderListWidget');
 
-  OrderListWidget({
+  const OrderListWidget({
     super.key,
     this.readOnly = false,
     required this.controller,
@@ -181,12 +181,6 @@ class OrderListWidget extends StatelessWidget {
             readOnly: readOnly,
             onSetActiveNoteId: (pid) {
               unawaited(controller.setActiveItemNoteId(pid));
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                // Ambil tinggi layar, gunakan setengahnya lalu tambahkan 10
-                final screenHeight = MediaQuery.of(context).size.height;
-                final double offset = (screenHeight / 2.0) + 10.0;
-                unawaited(controller.scrollContentBy(offset));
-              });
             },
             onSetItemNote: (pid, value) {
               // Simpan note ke state/DB
@@ -194,6 +188,8 @@ class OrderListWidget extends StatelessWidget {
             },
             onUpdateQuantity: (pid, delta) =>
                 controller.onUpdateQuantity(pid, delta),
+            onOpenItemNoteEditor: (pid) =>
+                unawaited(controller.showItemNoteEditor(pid)),
           );
         } else {
           return const SizedBox();

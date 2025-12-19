@@ -16,6 +16,7 @@ class OrderCard extends StatelessWidget {
   final FocusNode focusNode;
   final TextEditingController textController;
   final void Function(int? productId) onSetActiveNoteId;
+  final void Function(int productId) onOpenItemNoteEditor;
   final void Function(int productId, int delta) onUpdateQuantity;
   final void Function(int productId, String value) onSetItemNote;
 
@@ -34,6 +35,7 @@ class OrderCard extends StatelessWidget {
     required this.textController,
     required this.onUpdateQuantity,
     required this.onSetActiveNoteId,
+    required this.onOpenItemNoteEditor,
   });
   @override
   Widget build(BuildContext context) {
@@ -44,9 +46,9 @@ class OrderCard extends StatelessWidget {
           _OrderCardMain(
             id: id,
             qty: qty,
+            readOnly: readOnly,
             productName: productName,
             productPrice: productPrice,
-            readOnly: readOnly,
             onUpdateQuantity: onUpdateQuantity,
           ),
           _OrderCardNoteArea(
@@ -55,9 +57,10 @@ class OrderCard extends StatelessWidget {
             isActive: isActive,
             readOnly: readOnly,
             focusNode: focusNode,
-            textController: textController,
             onSetItemNote: onSetItemNote,
+            textController: textController,
             onSetActiveNoteId: onSetActiveNoteId,
+            onOpenItemNoteEditor: onOpenItemNoteEditor,
           ),
           const Padding(
             padding: EdgeInsets.only(top: 16),
@@ -71,6 +74,8 @@ class OrderCard extends StatelessWidget {
     );
   }
 }
+
+// Note: the sheet guard and open logic moved into `CartScreenController`.
 
 class _OrderCardMain extends StatelessWidget {
   final int id;
@@ -165,6 +170,7 @@ class _OrderCardNoteArea extends StatelessWidget {
   final TextEditingController textController;
   final void Function(int? productId) onSetActiveNoteId;
   final void Function(int productId, String value) onSetItemNote;
+  final void Function(int productId) onOpenItemNoteEditor;
 
   const _OrderCardNoteArea({
     required this.id,
@@ -175,19 +181,26 @@ class _OrderCardNoteArea extends StatelessWidget {
     required this.textController,
     required this.onSetItemNote,
     required this.onSetActiveNoteId,
+    required this.onOpenItemNoteEditor,
   });
 
   @override
   Widget build(BuildContext context) {
     final itemNote = note ?? '';
     if (isActive) {
-      return _OrderNoteEditor(
-        id: id,
-        focusNode: focusNode,
-        controller: textController,
-        onSetActiveNoteId: onSetActiveNoteId,
-        onSetItemNote: onSetItemNote,
-      );
+      // return _OrderNoteEditor(
+      //   id: id,
+      //   focusNode: focusNode,
+      //   controller: textController,
+      //   onSetActiveNoteId: onSetActiveNoteId,
+      //   onSetItemNote: onSetItemNote,
+      // );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onOpenItemNoteEditor(id);
+      });
+
+      return const SizedBox.shrink();
     }
 
     // Reusable non-editable preview used for both readOnly and non-active states.
@@ -243,6 +256,10 @@ class _OrderNotePreview extends StatelessWidget {
   }
 }
 
+// Editor catatan inline ini disimpan sebagai referensi dan opsional, namun saat ini
+// UI menampilkan sheet `TextEditor` dari bawah. Abaikan hint analyzer
+// unused_element untuk widget private ini.
+// ignore: unused_element
 class _OrderNoteEditor extends StatelessWidget {
   final int id;
   final FocusNode focusNode;

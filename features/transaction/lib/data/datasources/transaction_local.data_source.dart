@@ -89,7 +89,7 @@ class TransactionLocalDataSource with BaseErrorHelper {
   }
 
   /// Returns the latest transaction (created_at desc) or null if none.
-  Future<TransactionModel?> getLatestTransaction() async {
+  Future<TransactionModel?> getPendingTransaction() async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
@@ -97,10 +97,10 @@ class TransactionLocalDataSource with BaseErrorHelper {
         return null;
       }
       final query = createDao(db);
-      final latest = await query.getLatestTransaction();
+      final latest = await query.getPendingTransaction();
       return latest;
     } catch (e, st) {
-      _logSevere('Error getLatestTransaction', e, st);
+      _logSevere('Error getPendingTransaction', e, st);
       rethrow;
     }
   }

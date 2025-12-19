@@ -20,8 +20,8 @@ abstract class TransactionRepository {
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
       {bool? isOffline, QueryGetTransactions? query});
 
-  /// Get the latest single transaction (created_at desc limit 1)
-  Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+  /// Get the active pending transaction (status = 'Pending'), latest by created_at desc
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
       {bool? isOffline});
 
   /// Get single transaction by id

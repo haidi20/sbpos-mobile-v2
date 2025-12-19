@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
@@ -48,6 +50,7 @@ class CartScreenController {
   int? _lastRequestedActiveId;
   DateTime? _lastActiveChangeAt;
   int? _pendingFocusId;
+  final Set<int> _openNoteEditorIds = {};
   double get cartTotal =>
       ref.read(transactionPosViewModelProvider).details.fold(0, (sum, item) {
         final subtotal =
@@ -229,6 +232,35 @@ class CartScreenController {
         }
       }
     }
+  }
+
+  /// Show item note editor as a bottom-up sheet for the given `id`.
+  /// Guards against opening multiple sheets for the same item.
+  Future<void> showItemNoteEditor(int id) {
+    if (_openNoteEditorIds.contains(id)) return Future.value();
+    _openNoteEditorIds.add(id);
+
+    final controller = _itemNoteControllers[id] ?? TextEditingController();
+
+    if (!context.mounted) {
+      _openNoteEditorIds.remove(id);
+      return Future.value();
+    }
+
+    final hostContext = context;
+
+    return FullScreenTextEditor.showAsBottomSheet<void>(
+      hostContext,
+      controller: controller,
+      onSave: (value) async {
+        await _viewModel.setItemNote(id, value);
+      },
+      title: 'Catatan',
+      hintText: 'tulis catatan...',
+    ).whenComplete(() {
+      _openNoteEditorIds.remove(id);
+      unawaited(_viewModel.setActiveNoteId(null, background: true));
+    });
   }
 
   // Controller scroll konten opsional (disediakan oleh CartScreen)

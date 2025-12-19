@@ -72,9 +72,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return Left(failure);
   }
 
-  Future<Either<Failure, TransactionEntity>> _localLatestOrFailure(
+  Future<Either<Failure, TransactionEntity>> _localPendingOrFailure(
       Failure failure) async {
-    final localModel = await local.getLatestTransaction();
+    final localModel = await local.getPendingTransaction();
     if (localModel != null) {
       return Right(TransactionEntity.fromModel(localModel));
     }
@@ -305,11 +305,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
       {bool? isOffline}) async {
     // If caller forces offline, return local latest
     if (isOffline == true) {
-      final localModel = await local.getLatestTransaction();
+      final localModel = await local.getPendingTransaction();
       if (localModel != null) {
         return Right(TransactionEntity.fromModel(localModel));
       }
@@ -320,14 +321,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
     final bool isConnected = await networkInfo.isConnected;
 
     if (!isConnected) {
-      return await _localLatestOrFailure(const NetworkFailure());
+      return await _localPendingOrFailure(const NetworkFailure());
     }
 
     try {
       final TransactionResponse resp = await remote.fetchTransactions();
 
       if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
-        return await _localLatestOrFailure(const ServerFailure());
+        return await _localPendingOrFailure(const ServerFailure());
       }
 
       final List<TransactionModel> txModels = resp.data!;
@@ -352,11 +353,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
       return Right(TransactionEntity.fromModel(latest));
     } on ServerException {
-      return await _localLatestOrFailure(const ServerFailure());
+      return await _localPendingOrFailure(const ServerFailure());
     } on NetworkException {
-      return await _localLatestOrFailure(const NetworkFailure());
+      return await _localPendingOrFailure(const NetworkFailure());
     } catch (e, st) {
-      _logger.severe('Error getLatestTransaction:', e, st);
+      _logger.severe('Error getPendingTransaction:', e, st);
       return const Left(UnknownFailure());
     }
   }

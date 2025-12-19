@@ -2,14 +2,16 @@ import 'package:core/core.dart';
 
 class DetailInfoCard extends StatelessWidget {
   final String label;
-  final String value;
+  final String? value;
   final IconData icon;
+  final Widget? valueWidget;
 
   const DetailInfoCard({
     super.key,
     required this.icon,
     required this.label,
-    required this.value,
+    this.value,
+    this.valueWidget,
   });
 
   @override
@@ -31,15 +33,26 @@ class DetailInfoCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
+        valueWidget != null
+            ? DefaultTextStyle.merge(
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                child: valueWidget!,
+              )
+            : Text(
+                value ?? '-',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
       ],
     );
   }

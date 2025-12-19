@@ -175,7 +175,7 @@ class TransactionModel {
         'change_money': changeMoney ?? 0,
         'is_paid': (isPaid == true) ? 1 : 0,
         // store enum as string for DB/JSON
-        'status': _statusToString(status) ?? 'Pending',
+        'status': _statusToString(status) ?? TransactionStatus.pending.value,
         'cancelation_otp': cancelationOtp,
         'cancelation_reason': cancelationReason,
         'created_at': createdAt?.toIso8601String(),
@@ -204,8 +204,8 @@ class TransactionModel {
         // ensure DB non-null default
         'change_money': changeMoney ?? 0,
         'is_paid': (isPaid == true) ? 1 : 0,
-        // store enum as string
-        'status': _statusToString(status) ?? 'Pending',
+        // store enum as string (use enum value)
+        'status': _statusToString(status) ?? TransactionStatus.pending.value,
         'cancelation_otp': cancelationOtp,
         'cancelation_reason': cancelationReason,
         'created_at': createdAt?.toIso8601String(),
@@ -267,14 +267,16 @@ class TransactionModel {
 
   // Helpers to convert status between stored string and enum
   static TransactionStatus? _statusFromString(String? s) {
-    switch (s) {
-      case 'Lunas':
+    if (s == null) return TransactionStatus.unknown;
+    final lower = s.toString().toLowerCase();
+    switch (lower) {
+      case 'lunas':
         return TransactionStatus.lunas;
-      case 'Pending':
+      case 'pending':
         return TransactionStatus.pending;
-      case 'Proses':
+      case 'proses':
         return TransactionStatus.proses;
-      case 'Batal':
+      case 'batal':
         return TransactionStatus.batal;
       default:
         return TransactionStatus.unknown;
@@ -283,17 +285,6 @@ class TransactionModel {
 
   static String? _statusToString(TransactionStatus? status) {
     if (status == null) return null;
-    switch (status) {
-      case TransactionStatus.lunas:
-        return 'Lunas';
-      case TransactionStatus.pending:
-        return 'Pending';
-      case TransactionStatus.proses:
-        return 'Proses';
-      case TransactionStatus.batal:
-        return 'Batal';
-      default:
-        return '';
-    }
+    return status.value;
   }
 }
