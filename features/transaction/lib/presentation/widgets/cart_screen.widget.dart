@@ -233,7 +233,6 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final viewModel = widget.viewModel;
-    final logger = Logger('SummaryBottomWidget');
 
     return Padding(
       padding: EdgeInsets.only(
@@ -355,7 +354,7 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
             child: ElevatedButton(
               onPressed: () async {
                 await viewModel.onShowMethodPayment();
-                logger.info("read only ${widget.readOnly}");
+                // logger.info("read only ${widget.readOnly}");
 
                 if (widget.readOnly == false) {
                   // Tunggu sampai frame berikutnya agar perubahan state/layout

@@ -5,11 +5,13 @@ import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 class TransactionHistoryCard extends StatelessWidget {
   final TransactionEntity transaction;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const TransactionHistoryCard({
     super.key,
     required this.transaction,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -19,6 +21,7 @@ class TransactionHistoryCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -112,9 +115,10 @@ class _OrderInfo extends StatelessWidget {
         Text(
           'Order #$sequence',
           style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.gray700,
-              fontWeight: FontWeight.w700),
+            fontSize: 16,
+            color: AppColors.gray700,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         const SizedBox(height: 4),
         Row(
@@ -226,7 +230,7 @@ class _FooterRow extends StatelessWidget {
         const Row(
           children: [
             Text(
-              'Lihat Detail',
+              'Detail',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

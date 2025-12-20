@@ -83,7 +83,8 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
   }
 
   /// Hitung grand total (total + pajak).
-  int get getGrandTotalValue => getCartTotalValue + getTaxValue;
+  // int get getGrandTotalValue => getCartTotalValue + getTaxValue;
+  int get getGrandTotalValue => getCartTotalValue;
 
   /// Hitung kembalian berdasarkan cash yang diterima.
   int get getChangeValue =>
@@ -144,6 +145,9 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
 
   /// Expose ojol provider models for UI (forwarder to state).
   List<OjolProviderUiModel> get ojolProviders => state.ojolProviders;
+
+  /// Expose available payment methods (UI models) for the UI to consume.
+  List<PaymentMethodUiModel> get paymentMethods => paymentMethodList;
 
   /// Filter produk menurut kategori dan query saat ini.
   List<ProductEntity> getFilteredProducts(List<ProductEntity> products) {

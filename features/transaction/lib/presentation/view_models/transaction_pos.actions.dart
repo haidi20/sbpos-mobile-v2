@@ -138,7 +138,12 @@ mixin TransactionPosViewModelActions on StateNotifier<TransactionPosState> {
       return;
     }
 
-    unawaited(_vm._persistence.persistOnly(state, updated));
+    // Pastikan perubahan detail di-persist dan state diperbarui
+    await _vm._persistence.persistAndUpdateState(
+      () => state,
+      (s) => state = s,
+      updated,
+    );
   }
 
   /// Action: tambahkan paket ke keranjang.
@@ -351,13 +356,6 @@ mixin TransactionPosViewModelActions on StateNotifier<TransactionPosState> {
       _vm._isRefreshing = false;
       state = state.copyWith(isLoadingContent: false);
     }
-  }
-
-  /// Toggle antara tampilan cart dan checkout.
-  void onToggleView() {
-    final next =
-        state.viewMode == EViewMode.cart ? EViewMode.checkout : EViewMode.cart;
-    _vm.setViewMode(next);
   }
 
   /// Kosongkan keranjang, termasuk menghapus transaksi remote jika ada.

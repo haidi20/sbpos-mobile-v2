@@ -12,6 +12,7 @@ import 'package:transaction/domain/entitties/content_item.entity.dart';
 import 'package:product/domain/entities/packet_selected_item.entity.dart';
 import 'package:transaction/domain/entitties/combined_content.entity.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
+import 'package:transaction/presentation/ui_models/payment_method.um.dart';
 import 'package:transaction/presentation/ui_models/ojol_provider.um.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -91,5 +92,26 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
       //   (s) => state = s,
       // );
     })();
+  }
+
+  @override
+  void dispose() {
+    try {
+      _orderNoteDebounce?.cancel();
+      for (final t in _itemNoteDebounces.values) {
+        try {
+          t.cancel();
+        } catch (_) {}
+      }
+      _itemNoteDebounces.clear();
+
+      if (_createTxCompleter != null && !(_createTxCompleter!.isCompleted)) {
+        try {
+          _createTxCompleter!.complete();
+        } catch (_) {}
+      }
+    } finally {
+      super.dispose();
+    }
   }
 }

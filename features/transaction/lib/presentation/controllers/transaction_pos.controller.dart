@@ -75,13 +75,13 @@ class TransactionPosController {
         _suppressNextRefresh = false;
         return;
       }
-      // If we've refreshed very recently (e.g., due to closing a sheet), skip.
+      // Jika kita baru saja melakukan refresh (misal karena sheet baru ditutup), lewati.
       if (_lastRefreshAt != null &&
           now.difference(_lastRefreshAt!).inSeconds < 2) {
         return;
       }
-      // Ensure we load any pending local transaction first to avoid missing
-      // an active pending transaction created elsewhere.
+      // Pastikan transaksi pending lokal sudah dimuat terlebih dahulu agar tidak
+      // melewatkan transaksi pending aktif yang dibuat di tempat lain.
       await _vm.ensureLocalPendingTransactionLoaded();
       await _vm.refreshProductsAndPackets();
       _lastRefreshAt = DateTime.now();

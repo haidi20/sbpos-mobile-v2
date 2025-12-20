@@ -16,15 +16,15 @@ enum EOrderType {
   online,
 }
 
-enum EViewMode {
-  cart,
-  checkout,
-}
-
 enum EPaymentMethod {
   cash,
   qris,
   transfer,
+}
+
+enum ETransactionMode {
+  create,
+  edit,
 }
 
 class TransactionPosState {
@@ -37,11 +37,11 @@ class TransactionPosState {
   final String? searchQuery;
   final ETypeCart typeCart;
   final EOrderType orderType;
-  final String ojolProvider; // e.g. 'GoFood', 'GrabFood'
+  final String ojolProvider;
   final List<OjolProviderUiModel> ojolProviders;
   final EPaymentMethod paymentMethod;
   final int cashReceived;
-  final EViewMode viewMode;
+  final ETransactionMode transactionMode;
   final bool isPaid;
   final bool showErrorSnackbar;
   final String activeCategory;
@@ -67,7 +67,7 @@ class TransactionPosState {
     List<OjolProviderUiModel>? ojolProviders,
     this.paymentMethod = EPaymentMethod.cash,
     this.cashReceived = 0,
-    this.viewMode = EViewMode.cart,
+    this.transactionMode = ETransactionMode.create,
     this.isPaid = false,
     this.showErrorSnackbar = false,
     List<TransactionDetailEntity>? details,
@@ -83,7 +83,7 @@ class TransactionPosState {
     bool? isLoading,
     bool? isLoadingContent,
     bool? isLoadingPersistent,
-    EViewMode? viewMode,
+    ETransactionMode? transactionMode,
     int? cashReceived,
     String? orderNote,
     int? activeNoteId,
@@ -114,7 +114,7 @@ class TransactionPosState {
       ojolProviders: ojolProviders ?? this.ojolProviders,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       cashReceived: cashReceived ?? this.cashReceived,
-      viewMode: viewMode ?? this.viewMode,
+      transactionMode: transactionMode ?? this.transactionMode,
       isPaid: isPaid ?? this.isPaid,
       showErrorSnackbar: showErrorSnackbar ?? this.showErrorSnackbar,
       typeCart: typeCart ?? this.typeCart,
@@ -148,7 +148,7 @@ class TransactionPosState {
       typeCart: ETypeCart.main,
       paymentMethod: EPaymentMethod.cash,
       cashReceived: 0,
-      viewMode: EViewMode.cart,
+      transactionMode: ETransactionMode.create,
       isPaid: false,
       showErrorSnackbar: false,
     );
@@ -184,6 +184,7 @@ extension TransactionPosStateClearX on TransactionPosState {
       activeCategory: resetActiveCategory ? "Semua" : activeCategory,
       details: clearDetails ? const [] : details,
       packets: clearDetails ? const [] : packets,
+      transactionMode: ETransactionMode.create,
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:transaction/presentation/screens/cart.screen.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
-import 'package:transaction/presentation/screens/cart_method_payment.screen.dart';
+import 'package:transaction/presentation/screens/cart_payment.screen.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -163,7 +163,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                         }
 
                         return const Expanded(
-                          child: CartMethodPaymentScreen(),
+                          child: CartPaymentScreen(),
                         );
                       },
                     ),
@@ -201,15 +201,19 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                                     vm.setTypeCart(target);
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.sbBlue,
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: AppColors.sbBlue,
+                                    elevation: 0,
                                     shape: RoundedRectangleBorder(
+                                      side: const BorderSide(
+                                          color: AppColors.sbBlue),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
                                   child: const Text(
                                     'Kembali',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.sbBlue,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),

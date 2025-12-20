@@ -66,4 +66,13 @@ class TransactionHistoryViewModel
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
+
+  /// Shift the currently selected date by [shiftDays]. If no date is selected,
+  /// shift relative to today. This delegates to `setSelectedDate` which will
+  /// trigger a refresh.
+  Future<void> shiftSelectedDate(int shiftDays) async {
+    final current = state.selectedDate ?? DateTime.now();
+    final newDate = current.add(Duration(days: shiftDays));
+    await setSelectedDate(newDate);
+  }
 }

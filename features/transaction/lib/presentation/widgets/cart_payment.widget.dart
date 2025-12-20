@@ -1,7 +1,10 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:flutter/services.dart';
+import 'package:transaction/presentation/ui_models/payment_method.um.dart';
 
 class OrderTypeSelector extends StatelessWidget {
   final void Function(String) onChanged;
@@ -167,20 +170,17 @@ class OjolProviderSelector extends StatelessWidget {
 class PaymentMethodSelector extends StatelessWidget {
   final EPaymentMethod value;
   final void Function(EPaymentMethod) onChanged;
+  final List<PaymentMethodUiModel> methods;
   const PaymentMethodSelector({
     super.key,
     required this.value,
     required this.onChanged,
+    required this.methods,
   });
 
   @override
   Widget build(BuildContext context) {
-    const methods = [
-      {'id': 'cash', 'label': 'Tunai', 'icon': Icons.money},
-      {'id': 'qris', 'label': 'QRIS', 'icon': Icons.qr_code},
-      {'id': 'transfer', 'label': 'Transfer', 'icon': Icons.credit_card},
-    ];
-
+    // use methods passed from parent (VM)
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text(
         'Metode Pembayaran',
@@ -194,37 +194,42 @@ class PaymentMethodSelector extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
-          children: methods.map((m) {
-            final id = m['id'] as String;
-            final sel = id == value.name;
-            return Expanded(
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: sel ? Colors.blue : Colors.grey[700],
-                  backgroundColor: sel ? Colors.white : Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                onPressed: () => onChanged(
-                    EPaymentMethod.values.firstWhere((e) => e.name == id)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(m['icon'] as IconData,
-                        size: 16, color: sel ? Colors.blue : Colors.grey[700]),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        m['label'] as String,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+          children: methods.map(
+            (m) {
+              final id = m.id;
+              final sel = id == value.name;
+              return Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: sel ? Colors.blue : Colors.grey[700],
+                    backgroundColor: sel ? Colors.white : Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () => onChanged(
+                      EPaymentMethod.values.firstWhere((e) => e.name == id)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        m.icon,
+                        size: 16,
+                        color: sel ? Colors.blue : m.color,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          m.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            },
+          ).toList(),
         ),
       ),
     ]);
@@ -240,6 +245,7 @@ class PaymentDetails extends StatelessWidget {
   final int Function() computeGrandTotal;
   final int Function(int) suggestQuickCash;
   final int Function() computeChange;
+  final TextEditingController cashController;
 
   const PaymentDetails({
     super.key,
@@ -251,6 +257,7 @@ class PaymentDetails extends StatelessWidget {
     required this.computeGrandTotal,
     required this.suggestQuickCash,
     required this.computeChange,
+    required this.cashController,
   });
 
   @override
@@ -273,18 +280,17 @@ class PaymentDetails extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: cashController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
                   prefixText: 'Rp ',
                   hintText: '0',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
-                    Radius.circular(
-                      12,
-                    ),
+                    Radius.circular(12),
                   )),
                 ),
-                onChanged: (v) => onCashChanged(int.tryParse(v) ?? 0),
               ),
               const SizedBox(height: 8),
               SingleChildScrollView(
@@ -417,12 +423,10 @@ class BankRow extends StatelessWidget {
   }
 }
 
-class FooterSummary extends StatelessWidget {
+class FooterSummary extends ConsumerWidget {
   final List details;
-  final EViewMode viewMode;
   final bool isPaid;
   final VoidCallback onProcess;
-  final VoidCallback onToggleView;
   final void Function(bool) onIsPaidChanged;
   final int Function() computeCartTotal;
   final int Function() computeTax;
@@ -431,10 +435,8 @@ class FooterSummary extends StatelessWidget {
   const FooterSummary({
     super.key,
     required this.details,
-    required this.viewMode,
     required this.isPaid,
     required this.onProcess,
-    required this.onToggleView,
     required this.onIsPaidChanged,
     required this.computeCartTotal,
     required this.computeTax,
@@ -442,9 +444,10 @@ class FooterSummary extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(transactionPosViewModelProvider);
+    // final viewModel = ref.read(transactionPosViewModelProvider.notifier);
     final cartTotal = computeCartTotal();
-    final tax = computeTax();
     final grandTotal = computeGrandTotal();
 
     return Container(
@@ -472,22 +475,22 @@ class FooterSummary extends StatelessWidget {
             )
           ]),
           const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Pajak (10%)',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-              Text(
-                formatRupiah(tax.toDouble()),
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                ),
-              )
-            ],
-          ),
-          const SizedBox(height: 8),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text(
+          //       'Pajak (10%)',
+          //       style: TextStyle(color: Colors.grey.shade600),
+          //     ),
+          //     Text(
+          //       formatRupiah(tax.toDouble()),
+          //       style: TextStyle(
+          //         color: Colors.grey.shade600,
+          //       ),
+          //     )
+          //   ],
+          // ),
+          // const SizedBox(height: 8),
           Divider(color: Colors.grey.shade200),
           const SizedBox(height: 8),
           Row(
@@ -512,11 +515,11 @@ class FooterSummary extends StatelessWidget {
           const SizedBox(height: 12),
           // Langsung Bayar checkbox — tappable single-row label
           InkWell(
-            onTap: () => onIsPaidChanged(!isPaid),
+            onTap: () => onIsPaidChanged(!state.isPaid),
             child: Row(
               children: [
                 Checkbox(
-                  value: isPaid,
+                  value: state.isPaid,
                   onChanged: (v) => onIsPaidChanged(v ?? false),
                 ),
                 const SizedBox(width: 8),
@@ -532,16 +535,13 @@ class FooterSummary extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           ElevatedButton(
-            onPressed: viewMode == EViewMode.cart ? onToggleView : onProcess,
+            onPressed: onProcess,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
-              backgroundColor:
-                  viewMode == EViewMode.cart ? Colors.green : Colors.blue,
+              backgroundColor: state.isPaid ? Colors.green : Colors.orange,
             ),
             child: Text(
-              viewMode == EViewMode.cart
-                  ? 'Lanjut Pembayaran'
-                  : 'Bayar Sekarang',
+              state.isPaid ? 'Bayar' : 'Pesan',
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.white,

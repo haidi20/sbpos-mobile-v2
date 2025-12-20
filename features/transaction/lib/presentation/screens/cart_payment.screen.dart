@@ -1,31 +1,30 @@
 import 'package:core/core.dart';
+import 'package:transaction/presentation/widgets/cart_payment.widget.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
-import 'package:transaction/presentation/widgets/cart_method_payment.widget.dart';
-import 'package:transaction/presentation/controllers/cart_method_payment.controller.dart';
+import 'package:transaction/presentation/controllers/cart_payment.controller.dart';
 
-class CartMethodPaymentScreen extends ConsumerStatefulWidget {
-  const CartMethodPaymentScreen({super.key});
+class CartPaymentScreen extends ConsumerStatefulWidget {
+  const CartPaymentScreen({super.key});
 
   @override
-  ConsumerState<CartMethodPaymentScreen> createState() =>
-      _CartMethodPaymentScreenState();
+  ConsumerState<CartPaymentScreen> createState() => _CartPaymentScreenState();
 }
 
-class _CartMethodPaymentScreenState
-    extends ConsumerState<CartMethodPaymentScreen> {
+class _CartPaymentScreenState extends ConsumerState<CartPaymentScreen> {
   late final ScrollController _scrollController;
-  late final CartMethodPaymentController _controller;
+  late final CartPaymentController _controller;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _controller = CartMethodPaymentController(ref, context);
+    _controller = CartPaymentController(ref, context);
   }
 
   @override
   void dispose() {
+    _controller.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -34,6 +33,13 @@ class _CartMethodPaymentScreenState
   Widget build(BuildContext context) {
     final stateTransaction = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
+
+    // Listen for external changes to the transaction state and synchronize
+    // the controller's `cashController`. `ref.listen` must be called from
+    // the widget build method (Consumer context), so we register the
+    // listener here and delegate logic to the controller.
+    ref.listen<TransactionPosState>(transactionPosViewModelProvider,
+        (previous, next) => _controller.syncFromState(previous, next));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
@@ -60,6 +66,7 @@ class _CartMethodPaymentScreenState
               PaymentMethodSelector(
                 value: stateTransaction.paymentMethod,
                 onChanged: (v) => viewModel.setPaymentMethod(v),
+                methods: viewModel.paymentMethods,
               ),
               const SizedBox(height: 12),
               PaymentDetails(
@@ -67,6 +74,7 @@ class _CartMethodPaymentScreenState
                 cashReceived: stateTransaction.cashReceived,
                 paymentMethod: stateTransaction.paymentMethod,
                 onCashChanged: (v) => viewModel.setCashReceived(v),
+                cashController: _controller.cashController,
                 computeCartTotal: () => viewModel.getCartTotalValue,
                 computeGrandTotal: () => viewModel.getGrandTotalValue,
                 computeChange: () => viewModel.getChangeValue,
@@ -75,11 +83,9 @@ class _CartMethodPaymentScreenState
               const SizedBox(height: 12),
               FooterSummary(
                 details: stateTransaction.details,
-                viewMode: stateTransaction.viewMode,
                 isPaid: stateTransaction.isPaid,
                 onIsPaidChanged: (v) => viewModel.setIsPaid(v),
                 onProcess: () => _controller.onProcess(),
-                onToggleView: () => _controller.onToggleView(),
                 computeCartTotal: () => viewModel.getCartTotalValue,
                 computeTax: () => viewModel.getTaxValue,
                 computeGrandTotal: () => viewModel.getGrandTotalValue,

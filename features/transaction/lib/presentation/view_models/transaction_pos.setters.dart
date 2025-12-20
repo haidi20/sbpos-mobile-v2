@@ -221,9 +221,34 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
             List<TransactionDetailEntity>.from(state.details)));
   }
 
-  /// Set tampilan mode POS (cart/checkout).
-  void setViewMode(EViewMode mode) {
-    state = state.copyWith(viewMode: mode);
+  /// Siapkan VM untuk mengubah transaksi yang sudah ada.
+  /// Memasukkan `transaction` dan `details` ke state dan menandai mode sebagai `edit`.
+  Future<void> setTransactionForEdit(TransactionEntity txn) async {
+    // Map TransactionEntity fields into POS state so form inputs show values
+    EOrderType mapOrderType(int? id) {
+      if (id == 2) return EOrderType.takeAway;
+      if (id == 3) return EOrderType.online;
+      return EOrderType.dineIn;
+    }
+
+    EPaymentMethod mapPayment(String? raw) {
+      final v = (raw ?? '').toLowerCase();
+      if (v.contains('qris')) return EPaymentMethod.qris;
+      if (v.contains('transfer')) return EPaymentMethod.transfer;
+      return EPaymentMethod.cash;
+    }
+
+    state = state.copyWith(
+      transaction: txn,
+      details: txn.details ?? [],
+      orderNote: txn.notes ?? '',
+      orderType: mapOrderType(txn.orderTypeId),
+      paymentMethod: mapPayment(txn.paymentMethod),
+      cashReceived: txn.paidAmount ?? 0,
+      isPaid: txn.isPaid,
+      ojolProvider: txn.ojolProvider ?? '',
+    );
+    state = state.copyWith(transactionMode: ETransactionMode.edit);
   }
 
   /// Tampilkan atau sembunyikan snackbar error.

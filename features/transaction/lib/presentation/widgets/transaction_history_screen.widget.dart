@@ -114,22 +114,68 @@ class TransactionHistoryHeader extends StatelessWidget {
 }
 
 // Transaction list extracted for easier unit testing
-class TransactionHistoryList extends StatelessWidget {
+class TransactionHistoryList extends StatefulWidget {
   final List<TransactionEntity> transactions;
   final Future<void> Function(TransactionEntity) onTap;
+  final Future<void> Function(TransactionEntity)? onLongPress;
   final bool isLoading;
+
+  /// Callback invoked when the user swipes horizontally on the list.
+  /// Passes number of days to shift: positive -> add days (next), negative -> subtract days (previous).
+  final ValueChanged<int>? onDateShift;
 
   const TransactionHistoryList({
     super.key,
     required this.onTap,
     required this.transactions,
+    this.onLongPress,
     this.isLoading = false,
+    this.onDateShift,
   });
 
   @override
+  State<TransactionHistoryList> createState() => _TransactionHistoryListState();
+}
+
+class _TransactionHistoryListState extends State<TransactionHistoryList> {
+  double _accumulatedDx = 0.0;
+  // UI hint shadows while dragging
+  double _leftShadowOpacity = 0.0;
+  double _rightShadowOpacity = 0.0;
+
+  void _resetAccum() => _accumulatedDx = 0.0;
+
+  void _updateShadows() {
+    // Normalize accumulated drag distance into an opacity value.
+    // Use a slightly more aggressive scale so the shadow is visible earlier.
+    final v = (_accumulatedDx.abs() / 100).clamp(0.0, 0.85);
+    if (_accumulatedDx > 0) {
+      // Dragging to the right -> show left-side content hint on the left edge
+      _leftShadowOpacity = v;
+      _rightShadowOpacity = 0.0;
+    } else if (_accumulatedDx < 0) {
+      // Dragging to the left -> show right-side content hint on the right edge
+      _rightShadowOpacity = v;
+      _leftShadowOpacity = 0.0;
+    } else {
+      _leftShadowOpacity = 0.0;
+      _rightShadowOpacity = 0.0;
+    }
+  }
+
+  void _clearShadows() {
+    setState(() {
+      _leftShadowOpacity = 0.0;
+      _rightShadowOpacity = 0.0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return ListView(
+    // build the actual list content (loading / empty / items)
+    final Widget listContent;
+    if (widget.isLoading) {
+      listContent = ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
         children: const [
@@ -142,30 +188,123 @@ class TransactionHistoryList extends StatelessWidget {
           ),
         ],
       );
-    }
-
-    if (transactions.isEmpty) {
-      return ListView(
+    } else if (widget.transactions.isEmpty) {
+      listContent = ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
         children: const [
           _TransactionHistoryEmpty(),
         ],
       );
+    } else {
+      listContent = ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        itemCount: widget.transactions.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final tx = widget.transactions[index];
+          return TransactionHistoryCard(
+            transaction: tx,
+            onTap: () => widget.onTap(tx),
+            onLongPress: widget.onLongPress == null
+                ? null
+                : () => widget.onLongPress!(tx),
+          );
+        },
+      );
     }
 
-    return ListView.separated(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(20),
-      itemCount: transactions.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final tx = transactions[index];
-        return TransactionHistoryCard(
-          transaction: tx,
-          onTap: () => onTap(tx),
-        );
-      },
+    return Stack(
+      children: [
+        // Use pan gestures to better capture horizontal swipes while
+        // allowing the inner ListView to handle vertical scrolls.
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanStart: (_) => _resetAccum(),
+          onPanUpdate: (details) {
+            final dx = details.delta.dx;
+            if (dx == 0) return;
+            _accumulatedDx += dx;
+            setState(() {
+              _updateShadows();
+            });
+          },
+          onPanEnd: (details) {
+            final vx = details.velocity.pixelsPerSecond.dx;
+            const distanceThreshold = 60; // pixels
+            // Accept either a sufficient drag distance or a fling velocity.
+            if (_accumulatedDx.abs() >= distanceThreshold || vx.abs() >= 200) {
+              if (_accumulatedDx > 0 || vx > 0) {
+                // user moved to right -> request previous date (shift -1)
+                widget.onDateShift?.call(-1);
+              } else {
+                // user moved to left -> request next date (shift +1)
+                widget.onDateShift?.call(1);
+              }
+            }
+            _resetAccum();
+            _clearShadows();
+          },
+          onPanCancel: () {
+            _resetAccum();
+            _clearShadows();
+          },
+          child: listContent,
+        ),
+
+        // Left shadow
+        Positioned(
+          left: 0,
+          top: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              opacity: _leftShadowOpacity,
+              child: Container(
+                width: 32,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.28),
+                      Colors.transparent
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Right shadow
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              opacity: _rightShadowOpacity,
+              child: Container(
+                width: 32,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                    colors: [
+                      Colors.black.withOpacity(0.28),
+                      Colors.transparent
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

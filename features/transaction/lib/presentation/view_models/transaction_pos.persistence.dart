@@ -96,12 +96,19 @@ class TransactionPersistence {
               'persistAndUpdateState: clearing isLoadingPersistent (create failed)');
           setState(currentState.copyWith(isLoadingPersistent: false));
         }, (created) {
+          // Ensure in-memory state reflects paid status when caller marked it paid.
           final updatedDetailsFromServer = created.details ?? updatedDetails;
+          final enforced = created.copyWith(
+            status: currentState.isPaid ? TransactionStatus.lunas : created.status,
+            paidAmount: currentState.isPaid ? currentState.cashReceived : created.paidAmount,
+            changeMoney: currentState.cashReceived,
+            details: updatedDetailsFromServer,
+          );
           _logger.fine(
               'persistAndUpdateState: create succeeded, clearing isLoadingPersistent');
           setState(currentState.copyWith(
             isLoadingPersistent: false,
-            transaction: created,
+            transaction: enforced,
             details: updatedDetailsFromServer,
           ));
         });
@@ -167,6 +174,9 @@ class TransactionPersistence {
                 : currentState.transaction!.status),
       );
 
+      // ketika update data
+      _logger.info("transaction to update: $txEntity");
+
       final res = await _updateTransaction.call(txEntity, isOffline: true);
       res.fold((f) {
         _logger.severe("Failed to update transaction: $f");
@@ -178,10 +188,17 @@ class TransactionPersistence {
             (updated.details != null && (updated.details?.isNotEmpty ?? false))
                 ? updated.details!
                 : updatedDetails;
+        // If caller intended the transaction to be paid, enforce in-memory status
+        final enforcedUpdated = updated.copyWith(
+          status: currentState.isPaid ? TransactionStatus.lunas : updated.status,
+          paidAmount: currentState.isPaid ? currentState.cashReceived : updated.paidAmount,
+          changeMoney: currentState.cashReceived,
+          details: safeDetails,
+        );
         _logger.fine(
             'persistAndUpdateState: update succeeded, clearing isLoadingPersistent');
         setState(currentState.copyWith(
-            transaction: updated,
+            transaction: enforcedUpdated,
             details: safeDetails,
             isLoadingPersistent: false));
       });

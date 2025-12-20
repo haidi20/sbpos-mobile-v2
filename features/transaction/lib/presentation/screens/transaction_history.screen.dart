@@ -2,9 +2,9 @@ import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
+import 'package:transaction/presentation/controllers/transaction_history.controller.dart';
 import 'package:transaction/presentation/widgets/transaction_history_screen.widget.dart';
 import 'package:transaction/presentation/widgets/transaction_history_tabtime.widget.dart';
-import 'package:transaction/presentation/controllers/transaction_history.controller.dart';
 
 class TransactionHistoryScreen extends ConsumerStatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -22,6 +22,7 @@ class _TransactionHistoryScreenState
   void initState() {
     super.initState();
     _controller = TransactionHistoryController();
+    // controller not required here; use ViewModel for actions
     Future.microtask(() =>
         ref.read(transactionHistoryViewModelProvider.notifier).onRefresh());
   }
@@ -50,6 +51,7 @@ class _TransactionHistoryScreenState
             // date tabs
             TransactionHistoryTabtime(
               daysToShow: 7,
+              selectedDate: state.selectedDate,
               onDateSelected: (d) => viewModel.setSelectedDate(d),
             ),
 
@@ -63,9 +65,12 @@ class _TransactionHistoryScreenState
                   transactions: filteredTransactions,
                   isLoading: state.isLoading,
                   onTap: (tx) async {
-                    await _controller.onShowTransactionDetail(context, tx);
-                    // refresh when returning from the detail sheet
-                    await viewModel.onRefresh();
+                    await _controller.showTransactionActions(context, ref, tx);
+                  },
+                  onDateShift: (shiftDays) =>
+                      viewModel.shiftSelectedDate(shiftDays),
+                  onLongPress: (tx) async {
+                    //
                   },
                 ),
               ),

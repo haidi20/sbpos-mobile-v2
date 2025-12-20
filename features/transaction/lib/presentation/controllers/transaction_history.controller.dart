@@ -1,6 +1,8 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
+import 'package:transaction/presentation/sheets/transaction_history_action.sheet.dart';
+// (removed unused import)
 
 /// Controller yang menyediakan helper untuk menampilkan detail transaksi.
 class TransactionHistoryController {
@@ -25,5 +27,15 @@ class TransactionHistoryController {
   Future<void> showTransactionDetail(
       BuildContext context, TransactionEntity tx) {
     return onShowTransactionDetail(context, tx);
+  }
+
+  /// Show actions for a transaction (edit / other actions).
+  Future<void> showTransactionActions(
+      BuildContext context, WidgetRef ref, TransactionEntity tx) async {
+    await showTransactionHistoryActionSheet(
+      context,
+      ref,
+      tx,
+    );
   }
 }

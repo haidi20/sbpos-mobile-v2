@@ -4,6 +4,7 @@ class TransactionHistoryTabtime extends StatefulWidget {
   /// Number of consecutive dates to show (including today).
   final int daysToShow;
   final ValueChanged<DateTime>? onDateSelected;
+  final DateTime? selectedDate;
   final double itemWidth;
   final double height;
 
@@ -11,6 +12,7 @@ class TransactionHistoryTabtime extends StatefulWidget {
     super.key,
     this.daysToShow = 90,
     this.onDateSelected,
+    this.selectedDate,
     this.itemWidth = 88,
     this.height = 72,
   }) : assert(daysToShow > 0);
@@ -35,14 +37,53 @@ class _TransactionHistoryTabtimeState extends State<TransactionHistoryTabtime> {
 
     _dates =
         List.generate(widget.daysToShow, (i) => start.add(Duration(days: i)));
-    _selected = _dates.last;
+    _selected = widget.selectedDate ?? _dates.last;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Small delay to ensure list has laid out its scroll extent on various devices.
       await Future.delayed(const Duration(milliseconds: 50));
       if (!_controller.hasClients) return;
-      _controller.jumpTo(_controller.position.maxScrollExtent);
+      // If selected is at end use maxScrollExtent else scroll to selected index
+      final idx = _dates.indexWhere((d) =>
+          d.year == _selected.year &&
+          d.month == _selected.month &&
+          d.day == _selected.day);
+      if (idx == -1) return;
+      final target = (idx) * (widget.itemWidth + 8);
+      final max = _controller.position.maxScrollExtent;
+      _controller.jumpTo(target > max ? max : target);
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant TransactionHistoryTabtime oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedDate != null) {
+      final sel = DateTime(widget.selectedDate!.year,
+          widget.selectedDate!.month, widget.selectedDate!.day);
+      if (sel.year != _selected.year ||
+          sel.month != _selected.month ||
+          sel.day != _selected.day) {
+        setState(() => _selected = sel);
+        // animate to the new index
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_controller.hasClients) return;
+          final idx = _dates.indexWhere((d) =>
+              d.year == _selected.year &&
+              d.month == _selected.month &&
+              d.day == _selected.day);
+          if (idx == -1) return;
+          final target = (idx) * (widget.itemWidth + 8);
+          final max = _controller.position.maxScrollExtent;
+          final t = target > max ? max : target;
+          try {
+            _controller.animateTo(t,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut);
+          } catch (_) {}
+        });
+      }
+    }
   }
 
   @override
