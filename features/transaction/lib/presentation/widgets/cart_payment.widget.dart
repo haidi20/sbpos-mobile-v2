@@ -474,7 +474,7 @@ class FooterSummary extends ConsumerWidget {
               ),
             )
           ]),
-          const SizedBox(height: 6),
+          // const SizedBox(height: 6),
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
           //   children: [

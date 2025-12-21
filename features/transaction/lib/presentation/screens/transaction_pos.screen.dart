@@ -136,7 +136,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
               viewModel: viewModel,
               onTap: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                _controller.onShowCartSheet();
+                _controller.onShowCartBottomSheet();
               },
             ),
           ],

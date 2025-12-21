@@ -8,15 +8,16 @@ import 'package:dashboard/presentation/view_models/dashboard.state.dart';
 class CartPaymentController {
   final WidgetRef ref;
   final BuildContext context;
+  VoidCallback? _cashListener;
   late TransactionPosState _state;
   late final TransactionPosViewModel _viewModel;
   late final TextEditingController cashController;
-  VoidCallback? _cashListener;
+  final Logger _logger = Logger('CartPaymentController');
 
   CartPaymentController(this.ref, this.context) {
     _state = ref.read(transactionPosViewModelProvider);
     _viewModel = ref.read(transactionPosViewModelProvider.notifier);
-    // initialize cash controller from current state
+    // inisialisasi `cashController` dari state saat ini
     cashController = TextEditingController(
         text: _state.cashReceived > 0 ? _state.cashReceived.toString() : '');
     _cashListener = () {
@@ -30,7 +31,10 @@ class CartPaymentController {
   }
 
   Future<void> onProcess() async {
-    // use cached state initialized in constructor
+    _logger.info('CartPaymentController.onProcess called');
+
+    // return; // (baris ini dikomentari)
+    // gunakan state yang di-cache dan diinisialisasi di konstruktor
     if (_state.orderType == EOrderType.online &&
         (_state.ojolProvider.isEmpty)) {
       _viewModel.setShowErrorSnackbar(true);
@@ -43,22 +47,38 @@ class CartPaymentController {
       return;
     }
 
+    // Tangkap notifier eksternal secara sinkron untuk menghindari penggunaan `ref`
+    // setelah widget mungkin telah di-dispose selama operasi await.
+    final historyNotifier =
+        ref.read(transactionHistoryViewModelProvider.notifier);
+    final dashboardNotifier = ref.read(dashboardViewModelProvider.notifier);
+
+    // Tutup `CartBottomSheet` jika terbuka sebelum proses, supaya UI kembali ke layar utama.
+    try {
+      Navigator.of(context).pop();
+    } catch (_) {}
+
     // Simpan transaksi di latar belakang tapi tunggu sampai selesai (status akan menjadi 'proses')
     await _viewModel.onStore();
 
     // Setelah berhasil disimpan, reset seluruh state POS ke kondisi awal
     _viewModel.onClearAll();
-    // Aktifkan tab Orders pada dashboard lalu navigasi ke dashboard
-    ref.read(dashboardViewModelProvider.notifier).onTabChange(AppTab.orders);
+
+    // Segarkan riwayat transaksi agar dashboard menampilkan pesanan baru,
+    // kemudian aktifkan tab Orders dan navigasi ke dashboard.
+    try {
+      await historyNotifier.onRefresh();
+    } catch (_) {}
+
+    dashboardNotifier.onTabChange(AppTab.orders);
     AppRouter.instance.router.go(AppRoutes.dashboard);
   }
 
   /// Mulai mendengarkan perubahan state untuk menyinkronkan `cashController`.
-  /// Synchronize controller state when transaction state changes.
-  ///
-  /// This method is safe to call from a `ref.listen` callback (from the
-  /// widget's `build` method) to keep the controller in sync with the
-  /// latest `TransactionPosState`.
+  /// Sinkronisasi state controller saat state transaksi berubah.
+  /// Metode ini aman dipanggil dari callback `ref.listen` (misal dari
+  /// metode `build` widget) untuk menjaga controller tetap sinkron
+  /// dengan `TransactionPosState` terbaru.
   void syncFromState(TransactionPosState? previous, TransactionPosState next) {
     if (previous == null) {
       _state = next;
@@ -71,7 +91,7 @@ class CartPaymentController {
           int.tryParse(cashController.text.replaceAll(RegExp(r'[^0-9]'), '')) ??
               0;
       if (ctrlVal != next.cashReceived) {
-        // Jangan ganggu jika field sedang difokuskan oleh user
+        // Jangan ganggu jika field sedang difokuskan oleh pengguna
         final focusScope = FocusManager.instance.primaryFocus;
         if (focusScope == null || !focusScope.hasFocus) {
           cashController.text =
@@ -82,7 +102,7 @@ class CartPaymentController {
     _state = next;
   }
 
-  /// Dispose controller listeners (dipanggil dari screen.dispose)
+  /// Lepaskan listener controller (dipanggil dari screen.dispose)
   void dispose() {
     try {
       if (_cashListener != null) cashController.removeListener(_cashListener!);

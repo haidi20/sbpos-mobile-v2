@@ -89,7 +89,7 @@ class TransactionPosController {
     }
   }
 
-  void onShowCartSheet() {
+  void onShowCartBottomSheet() {
     // Prevent duplicate openings
     if (_isCartSheetOpen) return;
     _isCartSheetOpen = true;

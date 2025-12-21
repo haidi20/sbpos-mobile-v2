@@ -99,8 +99,11 @@ class TransactionPersistence {
           // Ensure in-memory state reflects paid status when caller marked it paid.
           final updatedDetailsFromServer = created.details ?? updatedDetails;
           final enforced = created.copyWith(
-            status: currentState.isPaid ? TransactionStatus.lunas : created.status,
-            paidAmount: currentState.isPaid ? currentState.cashReceived : created.paidAmount,
+            status:
+                currentState.isPaid ? TransactionStatus.lunas : created.status,
+            paidAmount: currentState.isPaid
+                ? currentState.cashReceived
+                : created.paidAmount,
             changeMoney: currentState.cashReceived,
             details: updatedDetailsFromServer,
           );
@@ -190,8 +193,11 @@ class TransactionPersistence {
                 : updatedDetails;
         // If caller intended the transaction to be paid, enforce in-memory status
         final enforcedUpdated = updated.copyWith(
-          status: currentState.isPaid ? TransactionStatus.lunas : updated.status,
-          paidAmount: currentState.isPaid ? currentState.cashReceived : updated.paidAmount,
+          status:
+              currentState.isPaid ? TransactionStatus.lunas : updated.status,
+          paidAmount: currentState.isPaid
+              ? currentState.cashReceived
+              : updated.paidAmount,
           changeMoney: currentState.cashReceived,
           details: safeDetails,
         );

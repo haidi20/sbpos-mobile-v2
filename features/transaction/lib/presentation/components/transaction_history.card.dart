@@ -54,6 +54,9 @@ class TransactionHistoryCard extends StatelessWidget {
                 _AmountStatus(transaction: transaction),
               ],
             ),
+            const SizedBox(height: 8),
+            // Status row placed under PaymentMethod and OrderInfo as a single line
+            _StatusRow(transaction: transaction),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: SizedBox(
@@ -64,7 +67,8 @@ class TransactionHistoryCard extends StatelessWidget {
                 ),
               ),
             ),
-            _FooterRow(totalQty: transaction.totalQty),
+            _FooterRow(
+                transaction: transaction, totalQty: transaction.totalQty),
           ],
         ),
       ),
@@ -100,12 +104,14 @@ class _PaymentMethod extends StatelessWidget {
 
 class _OrderInfo extends StatelessWidget {
   final String sequence;
-  final String dateString;
   final String category;
-  const _OrderInfo(
-      {required this.sequence,
-      required this.dateString,
-      required this.category});
+  final String dateString;
+
+  const _OrderInfo({
+    required this.sequence,
+    required this.dateString,
+    required this.category,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,15 +132,27 @@ class _OrderInfo extends StatelessWidget {
             const Icon(Icons.calendar_today,
                 size: 12, color: AppColors.gray500),
             const SizedBox(width: 4),
-            Text(dateString,
-                style: const TextStyle(fontSize: 12, color: AppColors.gray500)),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6),
-              child:
-                  CircleAvatar(radius: 2, backgroundColor: AppColors.gray300),
+            Text(
+              dateString,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.gray500,
+              ),
             ),
-            Text(category,
-                style: const TextStyle(fontSize: 12, color: AppColors.gray500)),
+            // const Padding(
+            //   padding: EdgeInsets.symmetric(horizontal: 6),
+            //   child: CircleAvatar(
+            //     radius: 2,
+            //     backgroundColor: AppColors.gray300,
+            //   ),
+            // ),
+            // Text(
+            //   category,
+            //   style: const TextStyle(
+            //     fontSize: 12,
+            //     color: AppColors.gray500,
+            //   ),
+            // ),
           ],
         ),
       ],
@@ -149,12 +167,6 @@ class _AmountStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = transaction.totalAmount.toDouble();
-    final isPending = transaction.status == TransactionStatus.pending;
-    final statusColor = isPending ? AppColors.sbOrange : AppColors.sbBlue;
-    final statusValue = transaction.status.name.toUpperCase();
-    final isSynced =
-        (transaction.idServer != null) || (transaction.syncedAt != null);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -166,36 +178,73 @@ class _AmountStatus extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 3,
-              ),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                statusValue,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: statusColor,
+      ],
+    );
+  }
+}
+
+class _StatusRow extends StatelessWidget {
+  final TransactionEntity transaction;
+  const _StatusRow({required this.transaction});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPaid = transaction.isPaid;
+    final paidAmount = transaction.paidAmount ?? 0;
+    final isPending = transaction.status == TransactionStatus.pending;
+    final statusColor = isPending ? AppColors.gray500 : AppColors.sbBlue;
+    final statusValue = transaction.status.name.toUpperCase();
+
+    return Row(
+      children: [
+        // Left side: status badge and optional LUNAS badge
+        Expanded(
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  statusValue,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              isSynced ? Icons.done_all : Icons.check,
-              size: 14,
-              color: isSynced ? AppColors.sbBlue : AppColors.gray400,
-            ),
-          ],
+              if (isPaid) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'LUNAS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green[700],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
+
+        // Right side: paid amount aligned to the right
+        if (isPaid)
+          Text(
+            'Dibayar: ${formatRupiah(paidAmount.toDouble())}',
+            style: const TextStyle(fontSize: 12, color: AppColors.gray600),
+          ),
       ],
     );
   }
@@ -203,15 +252,29 @@ class _AmountStatus extends StatelessWidget {
 
 class _FooterRow extends StatelessWidget {
   final int totalQty;
-  const _FooterRow({required this.totalQty});
+  final TransactionEntity transaction;
+  const _FooterRow({required this.transaction, required this.totalQty});
 
   @override
   Widget build(BuildContext context) {
+    final isSynced =
+        (transaction.idServer != null) || (transaction.syncedAt != null);
+    final theme = Theme.of(context);
+    final syncColor =
+        isSynced ? theme.colorScheme.primary : theme.colorScheme.secondary;
+    final syncIcon = isSynced ? Icons.done_all : Icons.access_time;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
+            Icon(
+              syncIcon,
+              size: 14,
+              color: syncColor,
+            ),
+            const SizedBox(width: 8),
             const Icon(
               Icons.shopping_bag_outlined,
               size: 14,
@@ -227,20 +290,20 @@ class _FooterRow extends StatelessWidget {
             ),
           ],
         ),
-        const Row(
+        Row(
           children: [
             Text(
-              'Detail',
+              'Lihat',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.sbOrange,
+                color: theme.colorScheme.secondary,
               ),
             ),
             Icon(
               Icons.chevron_right,
               size: 16,
-              color: AppColors.sbOrange,
+              color: theme.colorScheme.secondary,
             ),
           ],
         ),
