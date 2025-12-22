@@ -236,6 +236,84 @@ class PaymentMethodSelector extends StatelessWidget {
   }
 }
 
+class TableNumberSection extends StatelessWidget {
+  final EOrderType orderType;
+  final bool useTableNumber;
+  final ValueChanged<bool> onUseTableNumberChanged;
+  final TextEditingController tableNumberController;
+
+  const TableNumberSection({
+    super.key,
+    required this.orderType,
+    required this.useTableNumber,
+    required this.onUseTableNumberChanged,
+    required this.tableNumberController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (orderType != EOrderType.dineIn) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () => onUseTableNumberChanged(!useTableNumber),
+            borderRadius: BorderRadius.circular(8),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: useTableNumber,
+                  onChanged: (v) => onUseTableNumberChanged(v ?? false),
+                ),
+                const Expanded(
+                  child: Text(
+                    'Nomor Meja',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: useTableNumber
+                ? Padding(
+                    key: const ValueKey('table-input'),
+                    padding: const EdgeInsets.only(top: 8),
+                    child: TextField(
+                      controller: tableNumberController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        labelText: 'Nomor Meja',
+                        filled: true,
+                        fillColor: cs.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class PaymentDetails extends StatelessWidget {
   final int cashReceived;
   final List cartDetails;
@@ -263,7 +341,9 @@ class PaymentDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final grandTotal = computeGrandTotal();
-    final change = computeChange();
+    // Hitung kembalian sebagai uang diterima dikurangi total.
+    // Nilai 0 untuk uang pas, positif untuk kembalian, negatif untuk kurang bayar.
+    final change = cashReceived - grandTotal;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -297,14 +377,22 @@ class PaymentDetails extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(children: [
                   ElevatedButton(
-                    onPressed: () => onCashChanged(computeGrandTotal()),
+                    onPressed: () {
+                      final v = computeGrandTotal();
+                      // Sinkronkan field input agar langsung terlihat oleh pengguna
+                      cashController.text = v > 0 ? v.toString() : '';
+                      onCashChanged(v);
+                    },
                     child: const Text('Uang Pas'),
                   ),
                   const SizedBox(width: 8),
                   Builder(builder: (c) {
                     final sug = suggestQuickCash(grandTotal);
                     return ElevatedButton(
-                      onPressed: () => onCashChanged(sug),
+                      onPressed: () {
+                        cashController.text = sug > 0 ? sug.toString() : '';
+                        onCashChanged(sug);
+                      },
                       child: Text(formatRupiah(sug.toDouble())),
                     );
                   }),

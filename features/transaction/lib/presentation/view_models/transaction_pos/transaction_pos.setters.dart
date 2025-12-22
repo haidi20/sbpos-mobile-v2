@@ -16,6 +16,45 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     );
   }
 
+  /// Tambahkan atau perbarui produk ke dalam detail keranjang dan persist.
+  Future<void> addProductToCart(ProductEntity product) async {
+    final updated = addOrUpdateProductInDetails(
+      state.details,
+      product,
+      transactionId: state.transaction?.id ?? 0,
+    );
+    await _vm._persistence.persistAndUpdateState(
+      () => state,
+      (s) => state = s,
+      updated,
+    );
+  }
+
+  /// Tambahkan atau perbarui paket ke dalam detail keranjang dan persist.
+  Future<void> addPacketToCart(PacketEntity packet) async {
+    final updated = addOrUpdatePacketInDetails(
+      state.details,
+      packet,
+      transactionId: state.transaction?.id,
+    );
+    await _vm._persistence.persistAndUpdateState(
+      () => state,
+      (s) => state = s,
+      updated,
+    );
+  }
+
+  /// Tambahkan beberapa item paket ke detail keranjang dan persist.
+  Future<void> addPacketItems(
+      List<TransactionDetailEntity> detailsToAdd) async {
+    final updated = addPacketItemsToDetails(state.details, detailsToAdd);
+    await _vm._persistence.persistAndUpdateState(
+      () => state,
+      (s) => state = s,
+      updated,
+    );
+  }
+
   /// Set catatan untuk item tertentu (debounced persist).
   Future<void> setItemNote(int productId, String note) async {
     final index = state.details.indexWhere((i) => i.productId == productId);
@@ -44,9 +83,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     _vm._orderNoteDebounce = Timer(const Duration(milliseconds: 500), () {
       final updatedDetails = List<TransactionDetailEntity>.from(state.details);
       unawaited(
-        _vm._persistence.persistAndUpdateState(
-          () => state,
-          (s) => state = s,
+        _vm._persistence.persistOnly(
+          state,
           updatedDetails,
           orderNote: state.orderNote,
         ),
@@ -68,9 +106,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   void setActiveCategory(String category) {
     state = state.copyWith(activeCategory: category);
     unawaited(
-      _vm._persistence.persistAndUpdateState(
-        () => state,
-        (s) => state = s,
+      _vm._persistence.persistOnly(
+        state,
         List<TransactionDetailEntity>.from(state.details),
       ),
     );
@@ -91,18 +128,16 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
       if (!persist) return;
       if (background) {
         unawaited(
-          _vm._persistence.persistAndUpdateState(
-            () => state,
-            (s) => state = s,
+          _vm._persistence.persistOnly(
+            state,
             List<TransactionDetailEntity>.from(state.details),
           ),
         );
         return;
       }
 
-      await _vm._persistence.persistAndUpdateState(
-        () => state,
-        (s) => state = s,
+      await _vm._persistence.persistOnly(
+        state,
         List<TransactionDetailEntity>.from(state.details),
       );
       return;
@@ -112,18 +147,16 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     if (!persist) return;
     if (background) {
       unawaited(
-        _vm._persistence.persistAndUpdateState(
-          () => state,
-          (s) => state = s,
+        _vm._persistence.persistOnly(
+          state,
           List<TransactionDetailEntity>.from(state.details),
         ),
       );
       return;
     }
 
-    await _vm._persistence.persistAndUpdateState(
-      () => state,
-      (s) => state = s,
+    await _vm._persistence.persistOnly(
+      state,
       List<TransactionDetailEntity>.from(state.details),
     );
   }
@@ -137,9 +170,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   void setOrderType(EOrderType type) {
     state = state.copyWith(orderType: type);
     unawaited(
-      _vm._persistence.persistAndUpdateState(
-        () => state,
-        (s) => state = s,
+      _vm._persistence.persistOnly(
+        state,
         List<TransactionDetailEntity>.from(state.details),
       ),
     );
@@ -181,17 +213,15 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     state = state.copyWith(ojolProvider: provider);
     unawaited((this as TransactionPosViewModel)
         ._persistence
-        .persistAndUpdateState(() => state, (s) => state = s,
-            List<TransactionDetailEntity>.from(state.details)));
+        .persistOnly(state, List<TransactionDetailEntity>.from(state.details)));
   }
 
   /// Set metode pembayaran dan persist.
   void setPaymentMethod(EPaymentMethod method) {
     state = state.copyWith(paymentMethod: method);
     unawaited(
-      _vm._persistence.persistAndUpdateState(
-        () => state,
-        (s) => state = s,
+      _vm._persistence.persistOnly(
+        state,
         List<TransactionDetailEntity>.from(state.details),
       ),
     );
@@ -204,9 +234,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   void setIsPaid(bool v) {
     state = state.copyWith(isPaid: v);
     unawaited(
-      _vm._persistence.persistAndUpdateState(
-        () => state,
-        (s) => state = s,
+      _vm._persistence.persistOnly(
+        state,
         List<TransactionDetailEntity>.from(state.details),
       ),
     );
@@ -217,8 +246,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     state = state.copyWith(cashReceived: amount);
     unawaited((this as TransactionPosViewModel)
         ._persistence
-        .persistAndUpdateState(() => state, (s) => state = s,
-            List<TransactionDetailEntity>.from(state.details)));
+        .persistOnly(state, List<TransactionDetailEntity>.from(state.details)));
   }
 
   /// Siapkan VM untuk mengubah transaksi yang sudah ada.
@@ -247,6 +275,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
       cashReceived: txn.paidAmount ?? 0,
       isPaid: txn.isPaid,
       ojolProvider: txn.ojolProvider ?? '',
+      useTableNumber: (txn.numberTable != null),
+      tableNumber: txn.numberTable,
     );
     state = state.copyWith(transactionMode: ETransactionMode.edit);
   }
@@ -254,5 +284,29 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   /// Tampilkan atau sembunyikan snackbar error.
   void setShowErrorSnackbar(bool v) {
     state = state.copyWith(showErrorSnackbar: v);
+  }
+
+  /// Gunakan atau nonaktifkan nomor meja, lalu persist perubahan.
+  void setUseTableNumber(bool v) {
+    state = v
+        ? state.copyWith(useTableNumber: true)
+        : state.copyWith(useTableNumber: false, tableNumber: null);
+    unawaited(
+      _vm._persistence.persistOnly(
+        state,
+        List<TransactionDetailEntity>.from(state.details),
+      ),
+    );
+  }
+
+  /// Set nomor meja (nullable), lalu persist perubahan.
+  void setTableNumber(int? number) {
+    state = state.copyWith(tableNumber: number);
+    unawaited(
+      _vm._persistence.persistOnly(
+        state,
+        List<TransactionDetailEntity>.from(state.details),
+      ),
+    );
   }
 }

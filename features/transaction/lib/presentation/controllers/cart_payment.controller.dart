@@ -9,9 +9,11 @@ class CartPaymentController {
   final WidgetRef ref;
   final BuildContext context;
   VoidCallback? _cashListener;
+  VoidCallback? _tableListener;
   late TransactionPosState _state;
   late final TransactionPosViewModel _viewModel;
   late final TextEditingController cashController;
+  late final TextEditingController tableNumberController;
   final Logger _logger = Logger('CartPaymentController');
 
   CartPaymentController(this.ref, this.context) {
@@ -28,6 +30,19 @@ class CartPaymentController {
       }
     };
     cashController.addListener(_cashListener!);
+
+    // inisialisasi `tableNumberController` dari state saat ini
+    tableNumberController = TextEditingController(
+        text:
+            (_state.tableNumber ?? 0) > 0 ? _state.tableNumber.toString() : '');
+    _tableListener = () {
+      final raw = tableNumberController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      final v = int.tryParse(raw);
+      if (v != _state.tableNumber) {
+        _viewModel.setTableNumber(v);
+      }
+    };
+    tableNumberController.addListener(_tableListener!);
   }
 
   Future<void> onProcess() async {
@@ -99,6 +114,20 @@ class CartPaymentController {
         }
       }
     }
+
+    // Sinkronkan nomor meja jika berubah dari luar
+    if (previous.tableNumber != next.tableNumber) {
+      final ctrlVal = int.tryParse(
+              tableNumberController.text.replaceAll(RegExp(r'[^0-9]'), '')) ??
+          0;
+      final nextVal = next.tableNumber ?? 0;
+      if (ctrlVal != nextVal) {
+        final focusScope = FocusManager.instance.primaryFocus;
+        if (focusScope == null || !focusScope.hasFocus) {
+          tableNumberController.text = nextVal > 0 ? nextVal.toString() : '';
+        }
+      }
+    }
     _state = next;
   }
 
@@ -107,6 +136,10 @@ class CartPaymentController {
     try {
       if (_cashListener != null) cashController.removeListener(_cashListener!);
       cashController.dispose();
+      if (_tableListener != null) {
+        tableNumberController.removeListener(_tableListener!);
+      }
+      tableNumberController.dispose();
     } catch (_) {}
   }
 }

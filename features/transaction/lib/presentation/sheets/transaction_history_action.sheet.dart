@@ -37,6 +37,25 @@ Future<void> showTransactionHistoryActionSheet(
                 await controller.onEdit(txn);
               },
             ),
+            if (txn.status == TransactionStatus.proses)
+              ListTile(
+                leading: const Icon(Icons.check_circle, color: Colors.green),
+                title: const Text('Selesai'),
+                onTap: () async {
+                  final controller =
+                      TransactionHistoryActionController(ref, context);
+                  await controller.onComplete(txn);
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.cancel, color: Colors.red),
+              title: const Text('Batal'),
+              onTap: () async {
+                final controller =
+                    TransactionHistoryActionController(ref, context);
+                await controller.onCancel(txn);
+              },
+            ),
             ListTile(
               leading: Icon(Icons.delete, color: theme.colorScheme.error),
               title: Text('Hapus',

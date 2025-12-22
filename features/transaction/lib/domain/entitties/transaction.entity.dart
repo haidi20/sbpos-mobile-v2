@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'transaction_status.extension.dart';
 export 'transaction_status.extension.dart';
 import 'package:transaction/data/models/transaction.model.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
 class TransactionEntity {
@@ -15,7 +16,11 @@ class TransactionEntity {
   final int orderTypeId;
   final String? categoryOrder;
   final int? userId;
+  final int? customerId;
+  final String? customerType;
+  final CustomerEntity? customerSelected;
   final String? paymentMethod;
+  final int? numberTable;
   final DateTime date;
   final String? notes;
   final int totalAmount;
@@ -40,8 +45,13 @@ class TransactionEntity {
     required this.sequenceNumber,
     required this.orderTypeId,
     this.categoryOrder,
+    // user atau customer
     this.userId,
+    this.customerId,
+    this.customerType,
+    this.customerSelected,
     this.paymentMethod,
+    this.numberTable,
     required this.date,
     this.notes,
     required this.totalAmount,
@@ -69,7 +79,11 @@ class TransactionEntity {
     int? orderTypeId,
     String? categoryOrder,
     int? userId,
+    int? customerId,
+    String? customerType,
+    CustomerEntity? customerSelected,
     String? paymentMethod,
+    int? numberTable,
     DateTime? date,
     String? notes,
     int? totalAmount,
@@ -96,7 +110,11 @@ class TransactionEntity {
       orderTypeId: orderTypeId ?? this.orderTypeId,
       categoryOrder: categoryOrder ?? this.categoryOrder,
       userId: userId ?? this.userId,
+      customerId: customerId ?? this.customerId,
+      customerType: customerType ?? this.customerType,
+      customerSelected: customerSelected ?? this.customerSelected,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      numberTable: numberTable ?? this.numberTable,
       date: date ?? this.date,
       notes: notes ?? this.notes,
       totalAmount: totalAmount ?? this.totalAmount,
@@ -126,7 +144,13 @@ class TransactionEntity {
       orderTypeId: model.orderTypeId!,
       categoryOrder: model.categoryOrder,
       userId: model.userId,
+      customerId: model.customerId,
+      customerType: model.customerType,
+      customerSelected: model.customerSelected != null
+          ? CustomerEntity.fromModel(model.customerSelected!)
+          : null,
       paymentMethod: model.paymentMethod,
+      numberTable: model.numberTable,
       date: model.date!,
       notes: model.notes,
       totalAmount: model.totalAmount!,
@@ -158,7 +182,11 @@ class TransactionEntity {
       orderTypeId: orderTypeId,
       categoryOrder: categoryOrder,
       userId: userId,
+      customerId: customerId,
+      customerType: customerType,
+      customerSelected: customerSelected?.toModel(),
       paymentMethod: paymentMethod,
+      numberTable: numberTable,
       date: date,
       notes: notes,
       totalAmount: totalAmount,
@@ -192,7 +220,11 @@ class TransactionEntity {
         other.orderTypeId == orderTypeId &&
         other.categoryOrder == categoryOrder &&
         other.userId == userId &&
+        other.customerId == customerId &&
+        other.customerType == customerType &&
+        other.customerSelected == customerSelected &&
         other.paymentMethod == paymentMethod &&
+        other.numberTable == numberTable &&
         other.date == date &&
         other.notes == notes &&
         other.totalAmount == totalAmount &&
@@ -218,7 +250,11 @@ class TransactionEntity {
         orderTypeId,
         categoryOrder,
         userId,
+        customerId,
+        customerType,
+        customerSelected,
         paymentMethod,
+        numberTable,
         date,
         notes,
         totalAmount,
@@ -237,7 +273,7 @@ class TransactionEntity {
 
   @override
   String toString() {
-    return 'TransactionEntity(id: $id, idServer: $idServer, shiftId: $shiftId, outletId: $outletId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, syncedAt: $syncedAt, details: $details)';
+    return 'TransactionEntity(id: $id, idServer: $idServer, shiftId: $shiftId, outletId: $outletId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, customerId: $customerId, customerType: $customerType, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, syncedAt: $syncedAt, details: $details)';
   }
 
   Color get statusColor => status.color;

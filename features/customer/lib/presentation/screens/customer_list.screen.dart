@@ -6,7 +6,7 @@ import 'package:customer/presentation/providers/customer.providers.dart';
 import 'package:customer/presentation/widgets/customer_list_tile.card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:customer/presentation/controllers/customer_list.controller.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 
 class CustomerListScreen extends HookConsumerWidget {
   const CustomerListScreen({
@@ -133,8 +133,8 @@ class CustomerListScreen extends HookConsumerWidget {
     required CustomerViewModel vm,
     required BuildContext context,
     required ScrollController scrollController,
-    required TransactionPosViewModel transactionPosVm,
     required CustomerListController listController,
+    required TransactionPosViewModel transactionPosVm,
   }) {
     final bool isEmptyState = !state.loading && state.customers.isEmpty;
     final items = vm.filteredCustomers;

@@ -1,9 +1,9 @@
 ﻿import 'package:core/core.dart';
 import 'package:transaction/presentation/screens/cart.screen.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
-import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
 import 'package:transaction/presentation/screens/cart_payment.screen.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 
 class CartBottomSheet extends ConsumerStatefulWidget {
   const CartBottomSheet({super.key});
@@ -31,19 +31,15 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // Register listener during build (once). Riverpod requires `ref.listen`
-    // to be called during build for ConsumerState.
+    // Daftarkan listener saat build (sekali). Riverpod mewajibkan `ref.listen`
+    // dipanggil saat build untuk ConsumerState.
     if (!_listenerRegistered) {
       _listenerRegistered = true;
       ref.listen<TransactionPosState>(transactionPosViewModelProvider,
           (previous, next) {
         _controller.onStateChanged(previous, next);
-        if (previous?.activeNoteId != next.activeNoteId) {
-          Logger('CartBottomSheet').info(
-              'activeNoteId berubah: ${previous?.activeNoteId} -> ${next.activeNoteId}');
-        }
 
-        // Scroll to top when the cart view type changes.
+        // Gulir ke atas saat tipe tampilan cart berubah.
         if (previous?.typeCart != next.typeCart &&
             _sheetScrollController != null) {
           try {
@@ -53,7 +49,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
               curve: Curves.easeOut,
             );
           } catch (_) {
-            // Ignore if controller not attached yet.
+            // Abaikan jika controller belum terpasang.
           }
         }
       });
@@ -62,26 +58,26 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        // No-op: use onTapDown to decide if outside tap
+        // Tidak melakukan apa-apa: gunakan onTapDown untuk menentukan apakah tap di luar
         unawaited(_controller.setActiveItemNoteId(null));
       },
-      // Removed global onTapDown clearing to prevent accidental unfocus while typing.
-      // Do not clear on pan; avoid unfocus during scroll
+      // Menghapus pembersihan global onTapDown untuk mencegah fokus hilang saat mengetik.
+      // Jangan bersihkan saat pan; hindari kehilangan fokus saat scroll
       child: DraggableScrollableSheet(
         controller: _controller.sheetController,
         expand: false,
         // Buka hampir penuh saat diakses. Izinkan expand penuh agar konten
         // tidak terpotong saat daftar atau footer tinggi.
         minChildSize: 0.35,
-        // Start fully expanded so the sheet appears full-screen.
-        // The grab handle will be shown when the user drags the sheet
-        // and the `sheetSize` falls below the visibility threshold.
+        // Mulai dalam keadaan penuh agar sheet tampil layar penuh.
+        // Pegangan (grab handle) akan muncul saat pengguna menarik sheet
+        // dan `sheetSize` turun di bawah ambang visibilitas.
         initialChildSize: 1.0,
         // Izinkan penuh saat di-drag agar tidak memotong konten.
         maxChildSize: 1.0,
         builder: (context, scrollController) {
-          // Capture the inner scroll controller provided by the sheet so
-          // `initState`-registered listener can animate it when needed.
+          // Ambil scroll controller internal dari sheet agar listener
+          // yang didaftarkan di `initState` dapat menganimasikannya saat diperlukan.
           _sheetScrollController = scrollController;
 
           return Container(
@@ -91,11 +87,11 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 top: Radius.circular(24),
               ),
             ),
-            // Make the sheet occupy the available height and allow only
-            // the inner content (the Builder result) to scroll. The grab
-            // handle (top area) stays fixed while the content below scrolls.
-            // Wrap the Column in AnimatedSize so changes in the content
-            // height (when footer appears/disappears) animate smoothly.
+            // Membuat sheet menempati tinggi yang tersedia dan hanya
+            // konten di dalamnya (hasil Builder) yang bisa discroll.
+            // Grab handle (area atas) tetap fixed sementara konten di bawahnya bisa discroll.
+            // Bungkus Column dengan AnimatedSize agar perubahan tinggi konten
+            // (saat footer muncul/hilang) dianimasikan dengan halus.
             child: SizedBox.expand(
               child: AnimatedSize(
                 duration: const Duration(milliseconds: 240),
@@ -104,7 +100,7 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Show the grab handle only when sheet is not fully expanded.
+                    // Tampilkan grab handle hanya saat sheet tidak penuh.
                     ValueListenableBuilder<double>(
                       valueListenable: _controller.sheetSize,
                       builder: (_, size, __) {
@@ -162,8 +158,10 @@ class _CartBottomSheetState extends ConsumerState<CartBottomSheet> {
                           );
                         }
 
-                        return const Expanded(
-                          child: CartPaymentScreen(),
+                        return Expanded(
+                          child: CartPaymentScreen(
+                            outerScrollController: scrollController,
+                          ),
                         );
                       },
                     ),

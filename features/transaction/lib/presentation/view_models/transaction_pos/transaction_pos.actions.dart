@@ -102,121 +102,21 @@ mixin TransactionPosViewModelActions on StateNotifier<TransactionPosState> {
   // ------------------ Actions (on*) ------------------
   /// Action: tambahkan produk ke keranjang.
   Future<void> onAddToCart(ProductEntity product) async {
-    _vm._logger.fine(
-        'onAddToCart: start, isLoading=${state.isLoading}, isLoadingPersistent=${state.isLoadingPersistent}');
-
-    final updated = addOrUpdateProductInDetails(
-      state.details,
-      product,
-      transactionId: state.transaction?.id ?? 0,
-    );
-
-    _vm._logger.fine(
-        'onAddToCart: updating details locally (count=${updated.length})');
-    state = state.copyWith(details: updated);
-
-    if (state.transaction == null) {
-      if (_vm._isCreatingTx) {
-        await (_vm._createTxCompleter?.future);
-        unawaited(_vm._persistence.persistOnly(state, updated));
-        return;
-      }
-
-      _vm._isCreatingTx = true;
-      _vm._createTxCompleter = Completer<void>();
-      try {
-        await _vm._persistence.persistAndUpdateState(
-          () => state,
-          (s) => state = s,
-          List<TransactionDetailEntity>.from(state.details),
-        );
-      } finally {
-        _vm._isCreatingTx = false;
-        _vm._createTxCompleter?.complete();
-        _vm._createTxCompleter = null;
-      }
-      return;
-    }
-
-    // Pastikan perubahan detail di-persist dan state diperbarui
-    await _vm._persistence.persistAndUpdateState(
-      () => state,
-      (s) => state = s,
-      updated,
-    );
+    _vm._logger.fine('onAddToCart: delegating to setter addProductToCart');
+    await _vm.addProductToCart(product);
   }
 
   /// Action: tambahkan paket ke keranjang.
   Future<void> onAddPacketToCart({required PacketEntity packet}) async {
-    final updated = addOrUpdatePacketInDetails(
-      state.details,
-      packet,
-      transactionId: state.transaction?.id,
-    );
-
-    if (state.transaction == null) {
-      if (_vm._isCreatingTx) {
-        await (_vm._createTxCompleter?.future);
-        unawaited(_vm._persistence.persistOnly(state, updated));
-        return;
-      }
-
-      _vm._isCreatingTx = true;
-      _vm._createTxCompleter = Completer<void>();
-      try {
-        await _vm._persistence.persistAndUpdateState(
-          () => state,
-          (s) => state = s,
-          updated,
-        );
-      } finally {
-        _vm._isCreatingTx = false;
-        _vm._createTxCompleter?.complete();
-        _vm._createTxCompleter = null;
-      }
-      return;
-    }
-
-    await _vm._persistence.persistAndUpdateState(
-      () => state,
-      (s) => state = s,
-      updated,
-    );
+    _vm._logger.fine('onAddPacketToCart: delegating to setter addPacketToCart');
+    await _vm.addPacketToCart(packet);
   }
 
   /// Action: tambahkan beberapa item paket ke keranjang.
   Future<void> onAddPacketItems(
       List<TransactionDetailEntity> detailsToAdd) async {
-    final updated = addPacketItemsToDetails(state.details, detailsToAdd);
-
-    if (state.transaction == null) {
-      if (_vm._isCreatingTx) {
-        await (_vm._createTxCompleter?.future);
-        unawaited(_vm._persistence.persistOnly(state, updated));
-        return;
-      }
-
-      _vm._isCreatingTx = true;
-      _vm._createTxCompleter = Completer<void>();
-      try {
-        await _vm._persistence.persistAndUpdateState(
-          () => state,
-          (s) => state = s,
-          updated,
-        );
-      } finally {
-        _vm._isCreatingTx = false;
-        _vm._createTxCompleter?.complete();
-        _vm._createTxCompleter = null;
-      }
-      return;
-    }
-
-    await _vm._persistence.persistAndUpdateState(
-      () => state,
-      (s) => state = s,
-      updated,
-    );
+    _vm._logger.fine('onAddPacketItems: delegating to setter addPacketItems');
+    await _vm.addPacketItems(detailsToAdd);
   }
 
   /// Buat dan tambahkan detail untuk pilihan paket yang dipilih.

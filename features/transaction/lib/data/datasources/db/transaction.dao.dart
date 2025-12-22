@@ -439,6 +439,48 @@ class TransactionDao {
     }
   }
 
+  /// Replace all details for a transaction atomically: DELETE old rows then INSERT new rows.
+  Future<List<TransactionDetailModel>> replaceDetailsForTransaction(
+      int txId, List<Map<String, dynamic>> details) async {
+    try {
+      final result = await database.transaction((txn) async {
+        // Delete existing rows for this transaction id
+        await txn.delete(
+          TransactionDetailTable.tableName,
+          where: '${TransactionDetailTable.colTransactionId} = ?',
+          whereArgs: [txId],
+        );
+
+        // Insert new rows in a batch for efficiency
+        final batch = txn.batch();
+        for (var d in details) {
+          final map = Map<String, dynamic>.from(d)
+            ..removeWhere((k, v) => v == null);
+          map[TransactionDetailTable.colTransactionId] = txId;
+          batch.insert(TransactionDetailTable.tableName, map,
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+        await batch.commit(noResult: true);
+
+        // Return the final set of rows
+        final finalRows = await txn.query(
+          TransactionDetailTable.tableName,
+          where: '${TransactionDetailTable.colTransactionId} = ?',
+          whereArgs: [txId],
+        );
+        return finalRows
+            .map((e) => TransactionDetailModel.fromDbLocal(e))
+            .toList();
+      });
+      _logInfo(
+          'replaceDetailsForTransaction: success txId=$txId count=${result.length}');
+      return result;
+    } catch (e, s) {
+      _logSevere('Error replaceDetailsForTransaction: $e', e, s);
+      rethrow;
+    }
+  }
+
   /// Sanitize a map for DB insertion/updating.
   /// Mirrors the logic in TransactionLocalDataSource._sanitizeForDb to keep behavior consistent.
 

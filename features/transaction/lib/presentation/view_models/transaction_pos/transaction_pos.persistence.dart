@@ -71,12 +71,16 @@ class TransactionPersistence {
           outletId: currentState.transaction?.outletId ?? 1,
           sequenceNumber: nextSequence,
           orderTypeId: currentState.orderType.index + 1,
+          numberTable:
+              currentState.useTableNumber ? currentState.tableNumber : null,
           date: DateTime.now(),
           totalAmount: totalAmount,
           totalQty: totalQty,
           notes: orderNote ?? currentState.orderNote,
           categoryOrder: currentState.activeCategory,
-          userId: currentState.selectedCustomer?.id,
+          customerId: currentState.selectedCustomer?.id,
+          customerType:
+              currentState.selectedCustomer != null ? 'customer' : null,
           paymentMethod: currentState.paymentMethod.toString().split('.').last,
           ojolProvider: currentState.ojolProvider,
           paidAmount: currentState.isPaid ? currentState.cashReceived : null,
@@ -162,8 +166,12 @@ class TransactionPersistence {
         totalQty: totalQty,
         notes: orderNote ?? currentState.orderNote,
         orderTypeId: currentState.orderType.index + 1,
+        numberTable:
+            currentState.useTableNumber ? currentState.tableNumber : null,
         categoryOrder: currentState.activeCategory,
-        userId: currentState.selectedCustomer?.id,
+        customerId: currentState.selectedCustomer?.id,
+        customerType: currentState.selectedCustomer != null ? 'customer' : null,
+        customerSelected: currentState.selectedCustomer,
         paymentMethod: currentState.paymentMethod.toString().split('.').last,
         ojolProvider: currentState.ojolProvider,
         paidAmount: currentState.isPaid
@@ -252,12 +260,16 @@ class TransactionPersistence {
           outletId: currentState.transaction?.outletId ?? 1,
           sequenceNumber: nextSequence,
           orderTypeId: currentState.orderType.index + 1,
+          numberTable:
+              currentState.useTableNumber ? currentState.tableNumber : null,
           date: DateTime.now(),
           totalAmount: totalAmount,
           totalQty: totalQty,
           notes: orderNote ?? currentState.orderNote,
           categoryOrder: currentState.activeCategory,
-          userId: currentState.selectedCustomer?.id,
+          customerId: currentState.selectedCustomer?.id,
+          customerType:
+              currentState.selectedCustomer != null ? 'customer' : null,
           paymentMethod: currentState.paymentMethod.toString().split('.').last,
           ojolProvider: currentState.ojolProvider,
           paidAmount: currentState.isPaid ? currentState.cashReceived : null,
@@ -293,8 +305,12 @@ class TransactionPersistence {
         totalQty: totalQty,
         notes: orderNote ?? currentState.orderNote,
         orderTypeId: currentState.orderType.index + 1,
+        numberTable:
+            currentState.useTableNumber ? currentState.tableNumber : null,
         categoryOrder: currentState.activeCategory,
-        userId: currentState.selectedCustomer?.id,
+        customerId: currentState.selectedCustomer?.id,
+        customerType: currentState.selectedCustomer != null ? 'customer' : null,
+        customerSelected: currentState.selectedCustomer,
         paymentMethod: currentState.paymentMethod.toString().split('.').last,
         ojolProvider: currentState.ojolProvider,
         paidAmount: currentState.isPaid

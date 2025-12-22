@@ -38,4 +38,12 @@ class TransactionDetailTable {
       $colNote TEXT NULL
     )
   ''';
+
+  // Unique indexes to prevent duplicate rows for the same item in a transaction.
+  // Separate indexes for product-based and packet-based items.
+  static const String createUniqueIndexProduct =
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_tx_detail_unique_product ON $tableName ($colTransactionId, $colProductId)';
+
+  static const String createUniqueIndexPacket =
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_tx_detail_unique_packet ON $tableName ($colTransactionId, $colPacketId)';
 }

@@ -9,7 +9,10 @@ class TransactionTable {
   static const String colOrderTypeId = 'order_type_id';
   static const String colCategoryOrder = 'category_order';
   static const String colUserId = 'user_id';
+  static const String colCustomerId = 'customer_id';
+  static const String colCustomerType = 'customer_type';
   static const String colPaymentMethod = 'payment_method';
+  static const String colNumberTable = 'number_table';
   static const String colDate = 'date';
   static const String colNotes = 'notes';
   static const String colOjolProvider = 'ojol_provider';
@@ -37,7 +40,10 @@ class TransactionTable {
       $colOjolProvider TEXT,
       $colCategoryOrder TEXT,
       $colUserId INTEGER,
+      $colCustomerId INTEGER,
+      $colCustomerType TEXT,
       $colPaymentMethod TEXT,
+      $colNumberTable INTEGER,
       $colDate TEXT NULL,
       $colNotes TEXT NULL,
       $colTotalAmount INTEGER,

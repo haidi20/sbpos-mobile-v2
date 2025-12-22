@@ -62,6 +62,14 @@ class CoreDatabase {
           } catch (e, stack) {
             _logger.warning('Failed to ensure table columns on open', e, stack);
           }
+
+          // Ensure indexes exist (idempotent). This helps avoid duplicate
+          // rows for details by enforcing uniqueness on keys.
+          try {
+            await _ensureIndexes(db);
+          } catch (e, stack) {
+            _logger.warning('Failed to ensure indexes on open', e, stack);
+          }
         },
       );
 
@@ -167,6 +175,26 @@ class CoreDatabase {
             'ALTER TABLE $txTable ADD COLUMN $isPaidCol INTEGER NOT NULL DEFAULT 0');
       }
 
+      // transactions.customer_id
+      const customerIdCol = TransactionTable.colCustomerId;
+      final hasCustomerId = await columnExists(txTable, customerIdCol);
+      if (!hasCustomerId) {
+        _logger
+            .info('Adding missing column `$customerIdCol` to table `$txTable`');
+        await db
+            .execute('ALTER TABLE $txTable ADD COLUMN $customerIdCol INTEGER');
+      }
+
+      // transactions.customer_type
+      const customerTypeCol = TransactionTable.colCustomerType;
+      final hasCustomerType = await columnExists(txTable, customerTypeCol);
+      if (!hasCustomerType) {
+        _logger.info(
+            'Adding missing column `$customerTypeCol` to table `$txTable`');
+        await db
+            .execute('ALTER TABLE $txTable ADD COLUMN $customerTypeCol TEXT');
+      }
+
       // products.image
       const prodTable = ProductTable.tableName;
       const imageCol = ProductTable.colImage;
@@ -188,6 +216,17 @@ class CoreDatabase {
       }
     } catch (e, stack) {
       _logger.warning('Error ensuring columns', e, stack);
+    }
+  }
+
+  /// Ensure essential indexes exist. This is defensive and idempotent.
+  Future<void> _ensureIndexes(Database db) async {
+    try {
+      // Create unique indexes for transaction details to prevent duplicates.
+      await db.execute(TransactionDetailTable.createUniqueIndexProduct);
+      await db.execute(TransactionDetailTable.createUniqueIndexPacket);
+    } catch (e, stack) {
+      _logger.warning('Error ensuring indexes', e, stack);
     }
   }
 }

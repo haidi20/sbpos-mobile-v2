@@ -16,7 +16,10 @@ class TransactionHistoryState {
   })  : transactions = transactions ?? const [],
         selectedDate = selectedDate ??
             DateTime(
-                DateTime.now().year, DateTime.now().month, DateTime.now().day);
+              DateTime.now().year,
+              DateTime.now().month,
+              DateTime.now().day,
+            );
 
   TransactionHistoryState._internal({
     required this.transactions,

@@ -364,9 +364,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
       // quantities and subtotals are persisted.
       if (txModel.details != null && txModel.details!.isNotEmpty) {
         try {
-          // remove existing details for this transaction then insert new ones
-          await local.deleteDetailsByTransactionId(txModel.id ?? 0);
-          await local.insertDetails(txModel.details!);
+          // Ganti detail secara atomik agar tidak terjadi duplikasi qty.
+          final txId = txModel.id ?? 0;
+          await local.replaceDetails(txId, txModel.details!);
         } catch (e, st) {
           _logger.warning(
               'updateTransaction: replacing details failed, continuing', e, st);

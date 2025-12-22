@@ -198,6 +198,28 @@ class TransactionLocalDataSource with BaseErrorHelper {
     }
   }
 
+  /// Replace details for a transaction atomically (DELETE then INSERT in one transaction).
+  Future<List<TransactionDetailModel>?> replaceDetails(
+      int txId, List<TransactionDetailModel> details) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database gagal dibuka/null');
+        return null;
+      }
+      final dao = createDao(db);
+      final maps =
+          details.map((d) => sanitizeForDb(d.toInsertDbLocal())).toList();
+      final inserted = await _withRetry(
+          () async => await dao.replaceDetailsForTransaction(txId, maps));
+      _logInfo('replaceDetails: success txId=$txId count=${inserted.length}');
+      return inserted;
+    } catch (e, st) {
+      _logSevere('Error replaceDetails', e, st);
+      rethrow;
+    }
+  }
+
   Future<int> deleteDetailsByTransactionId(int txId) async {
     try {
       final db = _testDb ?? await databaseHelper.database;

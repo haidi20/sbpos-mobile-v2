@@ -191,8 +191,7 @@ class _StatusRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPaid = transaction.isPaid;
     final paidAmount = transaction.paidAmount ?? 0;
-    final isPending = transaction.status == TransactionStatus.pending;
-    final statusColor = isPending ? AppColors.gray500 : AppColors.sbBlue;
+    final statusColor = transaction.status.color;
     final statusValue = transaction.status.name.toUpperCase();
 
     return Row(

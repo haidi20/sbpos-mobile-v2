@@ -49,6 +49,8 @@ class TransactionPosState {
   final CustomerEntity? selectedCustomer;
   final List<PacketEntity> packets;
   final List<TransactionDetailEntity> details;
+  final bool useTableNumber;
+  final int? tableNumber;
 
   TransactionPosState({
     this.error,
@@ -72,6 +74,8 @@ class TransactionPosState {
     this.showErrorSnackbar = false,
     List<TransactionDetailEntity>? details,
     List<PacketEntity>? packets,
+    this.useTableNumber = false,
+    this.tableNumber,
   })  : details = details ?? const [],
         packets = packets ?? const [],
         ojolProviders = (ojolProviders != null && ojolProviders.isNotEmpty)
@@ -100,6 +104,8 @@ class TransactionPosState {
     List<TransactionDetailEntity>? details,
     List<PacketEntity>? packets,
     bool? isPaid,
+    bool? useTableNumber,
+    int? tableNumber,
   }) {
     return TransactionPosState(
       error: error ?? this.error,
@@ -123,6 +129,8 @@ class TransactionPosState {
       activeNoteId: activeNoteId ?? this.activeNoteId,
       activeCategory: activeCategory ?? this.activeCategory,
       selectedCustomer: selectedCustomer ?? this.selectedCustomer,
+      useTableNumber: useTableNumber ?? this.useTableNumber,
+      tableNumber: tableNumber ?? this.tableNumber,
     );
   }
 
@@ -151,6 +159,8 @@ class TransactionPosState {
       transactionMode: ETransactionMode.create,
       isPaid: false,
       showErrorSnackbar: false,
+      useTableNumber: false,
+      tableNumber: null,
     );
   }
 }

@@ -49,7 +49,10 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
             if (searching) {
               return Row(
                 children: [
-                  const Icon(Icons.search, color: Colors.grey),
+                  const Icon(
+                    Icons.search,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(

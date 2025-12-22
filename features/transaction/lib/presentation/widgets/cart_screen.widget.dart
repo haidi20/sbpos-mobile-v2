@@ -106,7 +106,7 @@ class CustomerCard extends StatelessWidget {
               ],
             ),
             child: customer != null
-                ? CustomerInfoSelected(
+                ? _CustomerInfoSelected(
                     customer: customer,
                     viewModel: viewModel,
                   )
@@ -424,13 +424,14 @@ class _SummaryRow extends StatelessWidget {
   }
 }
 
-// CustomerInfoSelected widget is implemented as `CustomerInfoSelected` class above.
-class CustomerInfoSelected extends StatelessWidget {
+class _CustomerInfoSelected extends StatelessWidget {
   final CustomerEntity customer;
   final TransactionPosViewModel viewModel;
 
-  const CustomerInfoSelected(
-      {super.key, required this.customer, required this.viewModel});
+  const _CustomerInfoSelected({
+    required this.customer,
+    required this.viewModel,
+  });
 
   @override
   Widget build(BuildContext context) {

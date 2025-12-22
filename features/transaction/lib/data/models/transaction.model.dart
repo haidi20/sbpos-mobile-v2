@@ -1,4 +1,5 @@
 import 'package:transaction/data/models/transaction_detail.model.dart';
+import 'package:customer/data/models/customer.model.dart';
 import 'package:transaction/domain/entitties/transaction_status.extension.dart';
 
 class TransactionModel {
@@ -10,7 +11,11 @@ class TransactionModel {
   final int? orderTypeId;
   final String? categoryOrder;
   final int? userId;
+  final int? customerId;
+  final String? customerType;
+  final CustomerModel? customerSelected;
   final String? paymentMethod;
+  final int? numberTable;
   final DateTime? date;
   final String? notes;
   final int? totalAmount;
@@ -37,7 +42,11 @@ class TransactionModel {
     this.orderTypeId,
     this.categoryOrder,
     this.userId,
+    this.customerId,
+    this.customerType,
+    this.customerSelected,
     this.paymentMethod,
+    this.numberTable,
     this.date,
     this.notes,
     this.totalAmount,
@@ -65,7 +74,11 @@ class TransactionModel {
     int? orderTypeId,
     String? categoryOrder,
     int? userId,
+    int? customerId,
+    String? customerType,
+    CustomerModel? customerSelected,
     String? paymentMethod,
+    int? numberTable,
     DateTime? date,
     String? notes,
     int? totalAmount,
@@ -92,7 +105,11 @@ class TransactionModel {
       orderTypeId: orderTypeId ?? this.orderTypeId,
       categoryOrder: categoryOrder ?? this.categoryOrder,
       userId: userId ?? this.userId,
+      customerId: customerId ?? this.customerId,
+      customerType: customerType ?? this.customerType,
+      customerSelected: customerSelected ?? this.customerSelected,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      numberTable: numberTable ?? this.numberTable,
       date: date ?? this.date,
       notes: notes ?? this.notes,
       totalAmount: totalAmount ?? this.totalAmount,
@@ -122,7 +139,14 @@ class TransactionModel {
         categoryOrder: json['category_order'],
         ojolProvider: json['ojol_provider'] as String?,
         userId: _toInt(json['user_id']),
+        customerId: _toInt(json['customer_id']),
+        customerType: json['customer_type'] as String?,
+        customerSelected: (json['customer_selected'] is Map<String, dynamic>)
+            ? CustomerModel.fromJson(
+                json['customer_selected'] as Map<String, dynamic>)
+            : null,
         paymentMethod: json['payment_method'],
+        numberTable: _toInt(json['number_table']),
         date: json['date'] != null ? DateTime.tryParse(json['date']) : null,
         notes: json['notes'],
         totalAmount: _toInt(json['total_amount']),
@@ -165,7 +189,11 @@ class TransactionModel {
         'category_order': categoryOrder,
         'ojol_provider': ojolProvider,
         'user_id': userId,
+        'customer_id': customerId,
+        'customer_type': customerType,
+        'customer_selected': customerSelected?.toJson(),
         'payment_method': paymentMethod,
+        'number_table': numberTable,
         'date': date?.toIso8601String(),
         'notes': notes,
         'total_amount': totalAmount,
@@ -195,7 +223,10 @@ class TransactionModel {
         'category_order': categoryOrder,
         'ojol_provider': ojolProvider,
         'user_id': userId,
+        'customer_id': customerId,
+        'customer_type': customerType,
         'payment_method': paymentMethod,
+        'number_table': numberTable,
         'date': date?.toIso8601String(),
         'notes': notes,
         'total_amount': totalAmount,
@@ -227,7 +258,10 @@ class TransactionModel {
       orderTypeId: _toInt(map['order_type_id']),
       categoryOrder: map['category_order'] as String?,
       userId: _toInt(map['user_id']),
+      customerId: _toInt(map['customer_id']),
+      customerType: map['customer_type'] as String?,
       paymentMethod: map['payment_method'] as String?,
+      numberTable: _toInt(map['number_table']),
       date: _toDate(map['date']),
       notes: map['notes'] as String?,
       // migration defines total_amount and total_qty as NOT NULL

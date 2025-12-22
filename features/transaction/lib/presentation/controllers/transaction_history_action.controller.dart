@@ -10,6 +10,21 @@ class TransactionHistoryActionController {
 
   TransactionHistoryActionController(this.ref, this.context);
 
+  void _showSnack(String message, {bool error = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: 10,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   Future<void> onShow(TransactionEntity txn) async {
     try {
       Navigator.of(context).pop();
@@ -38,9 +53,7 @@ class TransactionHistoryActionController {
 
       context.pushNamed(AppRoutes.transactionPos);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error membuka POS: $e')),
-      );
+      _showSnack('Error membuka POS: $e', error: true);
     }
   }
 
@@ -53,13 +66,9 @@ class TransactionHistoryActionController {
     try {
       final res = await delete.call(txn.id!, isOffline: true);
       res.fold((f) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal hapus: $f')),
-        );
+        _showSnack('Gagal hapus: $f', error: true);
       }, (ok) async {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaksi dihapus')),
-        );
+        _showSnack('Transaksi dihapus');
         try {
           await ref
               .read(transactionHistoryViewModelProvider.notifier)
@@ -67,9 +76,61 @@ class TransactionHistoryActionController {
         } catch (_) {}
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      _showSnack('Error: $e', error: true);
+    }
+  }
+
+  Future<void> onComplete(TransactionEntity txn) async {
+    try {
+      Navigator.of(context).pop();
+    } catch (_) {}
+
+    final updater = ref.read(updateTransaction);
+    final updated = txn.copyWith(
+      status: TransactionStatus.lunas,
+      isPaid: true,
+    );
+    try {
+      final res = await updater.call(updated, isOffline: true);
+      res.fold((f) {
+        _showSnack('Gagal menyelesaikan: $f', error: true);
+      }, (ok) async {
+        _showSnack('Transaksi ditandai selesai');
+        try {
+          await ref
+              .read(transactionHistoryViewModelProvider.notifier)
+              .onRefresh();
+        } catch (_) {}
+      });
+    } catch (e) {
+      _showSnack('Error: $e', error: true);
+    }
+  }
+
+  Future<void> onCancel(TransactionEntity txn) async {
+    try {
+      Navigator.of(context).pop();
+    } catch (_) {}
+
+    final updater = ref.read(updateTransaction);
+    final updated = txn.copyWith(
+      status: TransactionStatus.batal,
+    );
+    try {
+      final res = await updater.call(updated, isOffline: true);
+
+      res.fold((f) {
+        _showSnack('Gagal membatalkan: $f', error: true);
+      }, (ok) async {
+        _showSnack('Transaksi dibatalkan');
+        try {
+          await ref
+              .read(transactionHistoryViewModelProvider.notifier)
+              .onRefresh();
+        } catch (_) {}
+      });
+    } catch (e) {
+      _showSnack('Error: $e', error: true);
     }
   }
 }

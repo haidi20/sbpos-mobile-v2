@@ -5,7 +5,8 @@ import 'package:transaction/presentation/view_models/transaction_pos/transaction
 import 'package:transaction/presentation/controllers/cart_payment.controller.dart';
 
 class CartPaymentScreen extends ConsumerStatefulWidget {
-  const CartPaymentScreen({super.key});
+  final ScrollController? outerScrollController;
+  const CartPaymentScreen({super.key, this.outerScrollController});
 
   @override
   ConsumerState<CartPaymentScreen> createState() => _CartPaymentScreenState();
@@ -14,18 +15,27 @@ class CartPaymentScreen extends ConsumerStatefulWidget {
 class _CartPaymentScreenState extends ConsumerState<CartPaymentScreen> {
   late final ScrollController _scrollController;
   late final CartPaymentController _controller;
+  late final bool _ownsScrollController;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    if (widget.outerScrollController != null) {
+      _scrollController = widget.outerScrollController!;
+      _ownsScrollController = false;
+    } else {
+      _scrollController = ScrollController();
+      _ownsScrollController = true;
+    }
     _controller = CartPaymentController(ref, context);
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _scrollController.dispose();
+    if (_ownsScrollController) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 
@@ -62,6 +72,13 @@ class _CartPaymentScreenState extends ConsumerState<CartPaymentScreen> {
                   onChanged: (v) => viewModel.setOjolProvider(v),
                   vm: viewModel,
                 ),
+              const SizedBox(height: 12),
+              TableNumberSection(
+                orderType: stateTransaction.orderType,
+                useTableNumber: stateTransaction.useTableNumber,
+                onUseTableNumberChanged: (v) => viewModel.setUseTableNumber(v),
+                tableNumberController: _controller.tableNumberController,
+              ),
               const SizedBox(height: 12),
               PaymentMethodSelector(
                 value: stateTransaction.paymentMethod,
