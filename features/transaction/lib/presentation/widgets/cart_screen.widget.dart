@@ -216,18 +216,7 @@ class SummaryBottomWidget extends StatefulWidget {
 }
 
 class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
-  bool _isEditing = false;
-
-  void _enterEdit() {
-    if (widget.readOnly) return;
-    setState(() => _isEditing = true);
-    widget.controller.orderFocusNode.requestFocus();
-  }
-
-  void _exitEdit() {
-    widget.controller.orderFocusNode.unfocus();
-    setState(() => _isEditing = false);
-  }
+  // Menggunakan editor full-screen, tidak lagi inline editing.
 
   @override
   Widget build(BuildContext context) {
@@ -262,9 +251,23 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
           ),
           const SizedBox(height: 8),
 
-          // Preview or editor
+          // Preview, ketuk untuk membuka FullScreenTextEditor
           GestureDetector(
-            onTap: _isEditing ? null : _enterEdit,
+            onTap: () async {
+              if (widget.readOnly) return;
+              final ctrl = controller.orderNoteController;
+              await FullScreenTextEditor.showAsBottomSheet(
+                context,
+                controller: ctrl,
+                title: 'Catatan Pesanan',
+                hintText: 'Contoh: Bungkus dipisah, Meja nomor 5...',
+                onSave: (value) async {
+                  ctrl.text = value;
+                  await viewModel.setOrderNote(value);
+                },
+              );
+              FocusScope.of(context).unfocus();
+            },
             child: Row(
               children: [
                 const Padding(
@@ -273,59 +276,26 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
                       size: 18, color: AppColors.gray600),
                 ),
                 Expanded(
-                  child: _isEditing && !widget.readOnly
-                      ? TextField(
-                          controller: controller.orderNoteController,
-                          focusNode: controller.orderFocusNode,
-                          maxLines: 3,
-                          keyboardType: TextInputType.multiline,
-                          textInputAction: TextInputAction.done,
-                          decoration: InputDecoration(
-                            hintText:
-                                "Contoh: Bungkus dipisah, Meja nomor 5...",
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade300,
-                              fontSize: 13,
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.all(8),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.grey.shade200),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.yellow.shade400),
-                            ),
-                          ),
-                          onSubmitted: (_) => _exitEdit(),
-                          onEditingComplete: _exitEdit,
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: Colors.grey.shade200, width: 1),
-                          ),
-                          child: Text(
-                            controller.orderNoteController.text.isNotEmpty
-                                ? controller.orderNoteController.text
-                                : 'Catatan Pesanan (opsional)',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color:
-                                  controller.orderNoteController.text.isNotEmpty
-                                      ? Colors.black87
-                                      : Colors.grey.shade400,
-                            ),
-                          ),
-                        ),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade200, width: 1),
+                    ),
+                    child: Text(
+                      controller.orderNoteController.text.isNotEmpty
+                          ? controller.orderNoteController.text
+                          : 'Catatan Pesanan (opsional)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: controller.orderNoteController.text.isNotEmpty
+                            ? Colors.black87
+                            : Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

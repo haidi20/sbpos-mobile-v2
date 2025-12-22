@@ -69,15 +69,17 @@ class FullScreenTextEditor extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: appBarBg,
         elevation: 0,
         title: Text(
           title,
           style: titleTextStyle ??
               const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600),
+                color: Colors.black87,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
         ),
         actions: [
           TextButton(
@@ -213,7 +215,7 @@ class FullScreenTextEditor extends StatelessWidget {
               ),
 
               // Small hint explaining how to open emoji via keyboard
-              const _EditorHint(),
+              // const _EditorHint(),
 
               Expanded(
                 child: FullScreenTextEditor(
@@ -255,7 +257,7 @@ class _EditorHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // const hint = 'Tekan ikon keyboard lalu pilih emoji dari keyboard HP';
+    const hint = 'Tekan ikon keyboard lalu pilih emoji dari keyboard HP';
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -268,11 +270,11 @@ class _EditorHint extends StatelessWidget {
                 Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
           ),
           const SizedBox(width: 6),
-          // Text(
-          //   hint,
-          //   style:
-          //       Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
-          // ),
+          Text(
+            hint,
+            style:
+                Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+          ),
         ],
       ),
     );

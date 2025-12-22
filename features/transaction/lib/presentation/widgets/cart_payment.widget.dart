@@ -5,6 +5,7 @@ import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:flutter/services.dart';
 import 'package:transaction/presentation/ui_models/payment_method.um.dart';
+import 'package:transaction/presentation/controllers/cart_payment.controller.dart';
 
 class OrderTypeSelector extends StatelessWidget {
   final void Function(String) onChanged;
@@ -318,7 +319,7 @@ class PaymentDetails extends StatelessWidget {
   final int cashReceived;
   final List cartDetails;
   final EPaymentMethod paymentMethod;
-  final void Function(int) onCashChanged;
+  final CartPaymentController controller;
   final int Function() computeCartTotal;
   final int Function() computeGrandTotal;
   final int Function(int) suggestQuickCash;
@@ -330,7 +331,7 @@ class PaymentDetails extends StatelessWidget {
     required this.cartDetails,
     required this.cashReceived,
     required this.paymentMethod,
-    required this.onCashChanged,
+    required this.controller,
     required this.computeCartTotal,
     required this.computeGrandTotal,
     required this.suggestQuickCash,
@@ -363,6 +364,7 @@ class PaymentDetails extends StatelessWidget {
                 controller: cashController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: controller.onCashTextChanged,
                 decoration: const InputDecoration(
                   prefixText: 'Rp ',
                   hintText: '0',
@@ -377,22 +379,14 @@ class PaymentDetails extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(children: [
                   ElevatedButton(
-                    onPressed: () {
-                      final v = computeGrandTotal();
-                      // Sinkronkan field input agar langsung terlihat oleh pengguna
-                      cashController.text = v > 0 ? v.toString() : '';
-                      onCashChanged(v);
-                    },
+                    onPressed: controller.setCashToExact,
                     child: const Text('Uang Pas'),
                   ),
                   const SizedBox(width: 8),
                   Builder(builder: (c) {
                     final sug = suggestQuickCash(grandTotal);
                     return ElevatedButton(
-                      onPressed: () {
-                        cashController.text = sug > 0 ? sug.toString() : '';
-                        onCashChanged(sug);
-                      },
+                      onPressed: controller.setCashToSuggested,
                       child: Text(formatRupiah(sug.toDouble())),
                     );
                   }),

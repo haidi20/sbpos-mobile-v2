@@ -142,4 +142,28 @@ class CartPaymentController {
       tableNumberController.dispose();
     } catch (_) {}
   }
+
+  // UI Handlers moved from widget into controller/VM layer
+  void onCashTextChanged(String txt) {
+    final raw = txt.trim();
+    final v = int.tryParse(raw) ?? 0;
+    _viewModel.setCashReceived(v);
+    final total = _viewModel.getGrandTotalValue;
+    _viewModel.setIsPaid(v >= total);
+  }
+
+  void setCashToExact() {
+    final total = _viewModel.getGrandTotalValue;
+    cashController.text = total > 0 ? total.toString() : '';
+    _viewModel.setCashReceived(total);
+    _viewModel.setIsPaid(true);
+  }
+
+  void setCashToSuggested() {
+    final total = _viewModel.getGrandTotalValue;
+    final sug = _viewModel.suggestQuickCash(total);
+    cashController.text = sug > 0 ? sug.toString() : '';
+    _viewModel.setCashReceived(sug);
+    _viewModel.setIsPaid(sug >= total);
+  }
 }

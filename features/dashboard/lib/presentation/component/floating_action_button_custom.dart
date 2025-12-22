@@ -12,6 +12,7 @@ class FloatingActionButtonCustom extends StatelessWidget {
       height: 64,
       margin: const EdgeInsets.only(top: 10),
       child: FloatingActionButton(
+        heroTag: 'dashboardFab',
         onPressed: onAddClick,
         elevation: 0,
         backgroundColor: Colors.transparent,

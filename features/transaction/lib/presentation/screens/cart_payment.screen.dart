@@ -90,7 +90,7 @@ class _CartPaymentScreenState extends ConsumerState<CartPaymentScreen> {
                 cartDetails: stateTransaction.details,
                 cashReceived: stateTransaction.cashReceived,
                 paymentMethod: stateTransaction.paymentMethod,
-                onCashChanged: (v) => viewModel.setCashReceived(v),
+                controller: _controller,
                 cashController: _controller.cashController,
                 computeCartTotal: () => viewModel.getCartTotalValue,
                 computeGrandTotal: () => viewModel.getGrandTotalValue,
