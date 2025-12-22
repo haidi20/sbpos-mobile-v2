@@ -58,7 +58,6 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
   final _logger = Logger('TransactionPosViewModel');
   late final TransactionPersistence _persistence;
   // Guard untuk mencegah pembuatan transaksi pending secara bersamaan
-  bool _isCreatingTx = false;
   Completer<void>? _createTxCompleter;
   // Guard untuk mencegah pemanggilan refreshProductsAndPackets yang bersamaan/terlalu cepat
   bool _isRefreshing = false;

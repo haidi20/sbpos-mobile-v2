@@ -60,7 +60,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                       focusNode: _controller.appBarSearchFocus,
                       onChanged: (v) => _controller.onSearchChanged(val: v),
                       decoration: const InputDecoration(
-                        hintText: 'Cari produk...',
+                        hintText: 'Cari menu...',
                         border: InputBorder.none,
                         isCollapsed: true,
                       ),
@@ -122,7 +122,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                   child: RefreshIndicator(
                     onRefresh: () async {
                       // Ensure pending transaction loaded and refresh products/packets
-                      await viewModel.ensureLocalPendingTransactionLoaded();
+                      // await viewModel.ensureLocalPendingTransactionLoaded();
                       await viewModel.refreshProductsAndPackets();
                     },
                     child: ContentArea(

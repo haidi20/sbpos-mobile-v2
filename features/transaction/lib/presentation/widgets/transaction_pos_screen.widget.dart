@@ -2,9 +2,9 @@ import 'package:core/core.dart';
 import 'package:product/presentation/components/packet_card.dart';
 import 'package:product/presentation/components/product_card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/controllers/transaction_pos.controller.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
-import 'package:transaction/presentation/controllers/transaction_pos.controller.dart';
 
 // Public widgets extracted from TransactionPosScreen
 
@@ -269,7 +269,7 @@ class ContentArea extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Resolve viewmodel/state for decision logic.
-    final state = ref.watch(transactionPosViewModelProvider);
+    // final state = ref.watch(transactionPosViewModelProvider);
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
     final combined = viewModel.combinedContent;
 
@@ -290,20 +290,20 @@ class ContentArea extends ConsumerWidget {
       );
     }
 
-    if (state.isLoading) {
-      return ListView(
-        controller: productGridController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: const [
-          SizedBox(
-            height: 240,
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.sbBlue),
-            ),
-          )
-        ],
-      );
-    }
+    // if (state.isLoading) {
+    //   return ListView(
+    //     controller: productGridController,
+    //     physics: const AlwaysScrollableScrollPhysics(),
+    //     children: const [
+    //       SizedBox(
+    //         height: 240,
+    //         child: Center(
+    //           child: CircularProgressIndicator(color: AppColors.sbBlue),
+    //         ),
+    //       )
+    //     ],
+    //   );
+    // }
 
     if (combined.items.isEmpty) {
       return ListView(
@@ -390,7 +390,8 @@ class _ContentData extends ConsumerWidget {
           final product = item.product!;
           return ProductCard(
             product: product,
-            onTap: () => unawaited(controller.onProductTap(product: product)),
+            onTap: () =>
+                unawaited(controller.onProductTapSmart(product: product)),
           );
         }
       },

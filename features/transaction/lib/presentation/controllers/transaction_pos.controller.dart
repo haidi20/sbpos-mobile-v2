@@ -26,7 +26,6 @@ class TransactionPosController {
   DateTime? _lastRefreshAt;
   // Jika true maka abaikan satu kali refresh saat route terlihat kembali
   // (digunakan saat sheet ditutup agar tidak langsung merefresh data).
-  bool _suppressNextRefresh = false;
   bool _isCartSheetOpen = false;
   late final TransactionPosViewModel _vm;
   late TransactionPosState _state;
@@ -70,11 +69,6 @@ class TransactionPosController {
   Future<void> maybeRefreshOnVisible(bool isCurrent) async {
     final now = DateTime.now();
     if (isCurrent) {
-      // Jika ada flag suppress, gunakan lalu kosongkan.
-      if (_suppressNextRefresh) {
-        _suppressNextRefresh = false;
-        return;
-      }
       // Jika kita baru saja melakukan refresh (misal karena sheet baru ditutup), lewati.
       if (_lastRefreshAt != null &&
           now.difference(_lastRefreshAt!).inSeconds < 2) {
@@ -94,15 +88,9 @@ class TransactionPosController {
     if (_isCartSheetOpen) return;
     _isCartSheetOpen = true;
     _vm.setTypeCart(ETypeCart.main);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const CartBottomSheet(),
-    ).whenComplete(() {
+    CartBottomSheet.open<void>(context).whenComplete(() {
       _isCartSheetOpen = false;
       // Tandai untuk mengabaikan satu kali refresh ketika sheet baru ditutup.
-      _suppressNextRefresh = true;
     });
   }
 
@@ -176,6 +164,20 @@ class TransactionPosController {
   // Ketuk produk: delegasikan aksi ke ViewModel
   Future<void> onProductTap({required ProductEntity product}) async =>
       await _vm.onAddToCart(product);
+
+  /// Ketuk produk dengan perilaku pintar: jika produk sudah ada di
+  /// `transaction details`, buka Cart Bottom Sheet. Jika belum ada,
+  /// tambahkan ke keranjang.
+  Future<void> onProductTapSmart({required ProductEntity product}) async {
+    final state = ref.read(transactionPosViewModelProvider);
+    final pid = product.id ?? 0;
+    final exists = state.details.any((d) => (d as dynamic).productId == pid);
+    if (exists) {
+      onShowCartBottomSheet();
+      return;
+    }
+    await onProductTap(product: product);
+  }
 
   // Bersihkan resource saat controller tidak lagi dipakai (dispose)
   // Disini hanya melepaskan `searchController`.

@@ -266,7 +266,7 @@ class _SummaryBottomWidgetState extends State<SummaryBottomWidget> {
                   await viewModel.setOrderNote(value);
                 },
               );
-              FocusScope.of(context).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
             },
             child: Row(
               children: [

@@ -74,7 +74,10 @@ class _TransactionHistoryScreenState
                     isLoading: state.isLoading,
                     onTap: (tx) async {
                       await _controller.showTransactionActions(
-                          context, ref, tx);
+                        context,
+                        ref,
+                        tx,
+                      );
                     },
                     onDateShift: (shiftDays) =>
                         _viewModel.shiftSelectedDate(shiftDays),
