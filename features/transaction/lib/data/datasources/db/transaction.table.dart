@@ -60,4 +60,14 @@ class TransactionTable {
       $colSyncedAt TEXT NULL
     )
   ''';
+
+  // Index untuk kolom yang sering dipakai pencarian/sort.
+  static const String createIndexSequenceNumber =
+      'CREATE INDEX IF NOT EXISTS idx_tx_sequence ON $tableName($colSequenceNumber)';
+
+  static const String createIndexNumberTable =
+      'CREATE INDEX IF NOT EXISTS idx_tx_number_table ON $tableName($colNumberTable)';
+
+  static const String createIndexDate =
+      'CREATE INDEX IF NOT EXISTS idx_tx_date ON $tableName($colDate)';
 }

@@ -30,6 +30,27 @@ class ProductDao {
     }
   }
 
+  /// Search products by name (case-insensitive) using LIKE.
+  Future<List<ProductModel>> searchProductsByName(String query,
+      {int? limit, int? offset}) async {
+    try {
+      final like = '%${query.replaceAll('%', r'\%')}%';
+      final rows = await database.query(
+        ProductTable.tableName,
+        where: '${ProductTable.colName} LIKE ? COLLATE NOCASE',
+        whereArgs: [like],
+        limit: limit,
+        offset: offset,
+      );
+      final result = rows.map((r) => ProductModel.fromDbLocal(r)).toList();
+      _logInfo('searchProductsByName: success count=${result.length}');
+      return result;
+    } catch (e, s) {
+      _logSevere('Error searchProductsByName: $e', e, s);
+      rethrow;
+    }
+  }
+
   Future<ProductModel?> getProductById(int id) async {
     try {
       final rows = await database.query(

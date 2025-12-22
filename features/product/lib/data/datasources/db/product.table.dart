@@ -62,4 +62,8 @@ class ProductTable {
       $colDeletedAt TEXT NULL
     )
   ''';
+
+  // Index untuk pencarian nama produk.
+  static const String createIndexName =
+      'CREATE INDEX IF NOT EXISTS idx_product_name ON $tableName($colName)';
 }

@@ -22,10 +22,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   Future<List<TransactionEntity>> _getLocalEntities(
       {QueryGetTransactions? query}) async {
-    final localResp = await local.getTransactions(query: query);
-    return localResp
-        .map((model) => TransactionEntity.fromModel(model))
-        .toList();
+    // Rely entirely on DAO-level filtering (including product name via JOINs)
+    final base = await local.getTransactions(query: query);
+    return base.map((model) => TransactionEntity.fromModel(model)).toList();
   }
 
   Future<List<TransactionModel>?> _saveToLocal(

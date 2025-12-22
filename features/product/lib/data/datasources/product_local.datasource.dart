@@ -58,6 +58,26 @@ class ProductLocalDataSource with BaseErrorHelper {
     }
   }
 
+  /// Cari produk berdasarkan nama (LIKE, case-insensitive)
+  Future<List<ProductModel>> searchProductsByName(String name,
+      {int? limit, int? offset}) async {
+    try {
+      final db = _testDb ?? await databaseHelper.database;
+      if (db == null) {
+        _logWarning('Database null saat searchProductsByName');
+        return [];
+      }
+      final dao = createDao(db);
+      final result =
+          await dao.searchProductsByName(name, limit: limit, offset: offset);
+      _logInfo('searchProductsByName: count=${result.length}');
+      return result;
+    } catch (e, st) {
+      _logSevere('Error searchProductsByName', e, st);
+      rethrow;
+    }
+  }
+
   Future<ProductModel?> getProductById(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;

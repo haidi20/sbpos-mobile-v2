@@ -15,6 +15,7 @@ class TransactionHistoryViewModel
 
   final GetTransactionsUsecase _getTransactions;
   final _logger = Logger('TransactionHistoryViewModel');
+  Timer? _searchDebounce;
 
   /// Getter yang mengembalikan daftar transaksi yang tersimpan secara offline
   /// (diambil dari state).
@@ -33,9 +34,22 @@ class TransactionHistoryViewModel
       .where((t) => t.status == TransactionStatus.lunas)
       .toList();
 
-  /// Setter untuk query pencarian; mempengaruhi `filteredTransactions`.
-  void setSearchQuery(String q) {
+  /// Event-based search with debounce; triggers local DB query.
+  void onSearchChanged(
+    String q, {
+    Duration debounce = const Duration(milliseconds: 500),
+  }) {
+    // update query immediately for UI reflect
     state = state.copyWith(searchQuery: q);
+    // debounce refresh to avoid excessive DB calls
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(debounce, () async {
+      try {
+        await onRefresh();
+      } catch (e, st) {
+        _logger.severe('Debounced search failed', e, st);
+      }
+    });
   }
 
   /// Set selected date filter (use null to clear)
@@ -102,5 +116,11 @@ class TransactionHistoryViewModel
     final today = DateTime(now.year, now.month, now.day);
     final start = today.subtract(Duration(days: daysToShow - 1));
     return List.generate(daysToShow, (i) => start.add(Duration(days: i)));
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
   }
 }

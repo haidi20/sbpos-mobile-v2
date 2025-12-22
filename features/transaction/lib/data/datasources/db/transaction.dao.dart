@@ -5,7 +5,12 @@ import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/domain/entitties/transaction_status.extension.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 
+/// DAO untuk operasi data transaksi pada database lokal (SQLite).
+/// Menyediakan fungsi membaca, menulis, dan memperbarui transaksi
+/// beserta detailnya dengan pendekatan yang aman dan efisien.
 class TransactionDao {
   final Database database;
   final _logger = Logger('TransactionDao');
@@ -15,7 +20,7 @@ class TransactionDao {
     if (isShowLog) _logger.info(message);
   }
 
-  // fine logging helper (not used currently)
+  // helper logging tambahan (tidak digunakan saat ini)
 
   void _logSevere(String message, [Object? error, StackTrace? stack]) {
     if (isShowLog) _logger.severe(message, error, stack);
@@ -23,37 +28,65 @@ class TransactionDao {
 
   TransactionDao(this.database);
 
+  /// Mengambil daftar transaksi beserta detailnya.
+  ///
+  /// Pencarian mendukung kata kunci pada: nomor urut (sequence), catatan,
+  /// nomor meja, nama pelanggan, nama produk, dan `product_name` di detail.
+  /// Dapat difilter berdasarkan tanggal (prefix `YYYY-MM-DD`).
   Future<List<TransactionModel>> getTransactions(
       {QueryGetTransactions? query}) async {
     try {
-      // Build where clause when query provided: match sequence_number or notes, and optional date
-      String? where;
+      // Susun SQL dengan LEFT JOIN ke customers, transaction_details, dan
+      // products untuk mendukung pencarian berdasarkan nama pelanggan dan produk.
+      // Gunakan DISTINCT agar baris transaksi tidak terduplikasi akibat hasil JOIN.
+      // COLLATE NOCASE untuk pencarian case-insensitive pada kolom teks.
       final List<Object?> whereArgs = [];
+      final parts = <String>[];
       if (query != null) {
-        final parts = <String>[];
         if (query.search != null && query.search!.isNotEmpty) {
           final like = '%${query.search!.replaceAll('%', r'\%')}%';
-          parts.add(
-              'CAST(${TransactionTable.colSequenceNumber} AS TEXT) LIKE ? OR ${TransactionTable.colNotes} LIKE ?');
-          whereArgs.addAll([like, like]);
+          parts.add('('
+              'CAST(t.${TransactionTable.colSequenceNumber} AS TEXT) LIKE ? OR '
+              't.${TransactionTable.colNotes} LIKE ? COLLATE NOCASE OR '
+              'CAST(t.${TransactionTable.colNumberTable} AS TEXT) LIKE ? OR '
+              'c.${CustomerTable.colName} LIKE ? COLLATE NOCASE OR '
+              'p.${ProductTable.colName} LIKE ? COLLATE NOCASE OR '
+              'td.${TransactionDetailTable.colProductName} LIKE ? COLLATE NOCASE'
+              ')');
+          whereArgs.addAll([like, like, like, like, like, like]);
         }
         if (query.date != null) {
-          // match date prefix (ISO yyyy-MM-dd)
           final prefix = '${query.date!.toIso8601String().substring(0, 10)}%';
-          parts.add('${TransactionTable.colDate} LIKE ?');
+          parts.add('t.${TransactionTable.colDate} LIKE ?');
           whereArgs.add(prefix);
-        }
-        if (parts.isNotEmpty) {
-          where = parts.join(' AND ');
         }
       }
 
-      final txs = await database.query(
-        TransactionTable.tableName,
-        where: where,
-        whereArgs: whereArgs.isEmpty ? null : whereArgs,
-        orderBy: '${TransactionTable.colCreatedAt} DESC',
-      );
+      final whereClause =
+          parts.isNotEmpty ? 'WHERE ${parts.join(' AND ')}' : '';
+      var sql = 'SELECT DISTINCT t.* FROM ${TransactionTable.tableName} t '
+          'LEFT JOIN ${CustomerTable.tableName} c ON c.${CustomerTable.colId} = t.${TransactionTable.colCustomerId} '
+          'LEFT JOIN ${TransactionDetailTable.tableName} td ON td.${TransactionDetailTable.colTransactionId} = t.${TransactionTable.colId} '
+          'LEFT JOIN ${ProductTable.tableName} p ON p.${ProductTable.colId} = td.${TransactionDetailTable.colProductId} '
+          '$whereClause '
+          'ORDER BY t.${TransactionTable.colCreatedAt} DESC';
+
+      // Tambahkan LIMIT/OFFSET jika disediakan.
+      if (query != null) {
+        if (query.limit != null && query.offset != null) {
+          sql = '$sql LIMIT ? OFFSET ?';
+          whereArgs.addAll([query.limit, query.offset]);
+        } else if (query.limit != null) {
+          sql = '$sql LIMIT ?';
+          whereArgs.add(query.limit);
+        } else if (query.offset != null) {
+          // SQLite memerlukan LIMIT jika menggunakan OFFSET; gunakan LIMIT -1.
+          sql = '$sql LIMIT -1 OFFSET ?';
+          whereArgs.add(query.offset);
+        }
+      }
+
+      final txs = await database.rawQuery(sql, whereArgs);
       List<TransactionModel> result = [];
       for (var t in txs) {
         final details = await database.query(
@@ -74,6 +107,7 @@ class TransactionDao {
     }
   }
 
+  /// Mengambil satu transaksi berdasarkan `id` (termasuk detailnya).
   Future<TransactionModel?> getTransactionById(int id) async {
     try {
       final txResult = await database.query(
@@ -100,11 +134,12 @@ class TransactionDao {
     }
   }
 
-  /// Get the latest pending transaction (status = 'Pending') by `created_at` descending (limit 1) with its details.
+  /// Mengambil transaksi Pending terbaru (status = 'Pending') berdasarkan
+  /// `created_at` menurun (limit 1), termasuk detailnya.
   Future<TransactionModel?> getPendingTransaction() async {
     try {
-      // Only consider transactions with status = 'Pending' when resolving
-      // the "latest" active transaction used by the POS flow.
+      // Hanya mempertimbangkan transaksi dengan status = 'Pending' saat
+      // menentukan transaksi aktif terbaru yang dipakai alur POS.
       final txResult = await database.query(
         TransactionTable.tableName,
         where: '${TransactionTable.colStatus} = ?',
@@ -136,15 +171,18 @@ class TransactionDao {
     }
   }
 
+  /// Menyisipkan transaksi baru ke tabel `transactions`.
+  /// Nilai `synced_at` diset NULL, status default 'Pending'.
+  /// Mengembalikan model transaksi tanpa detail (detail disimpan terpisah).
   Future<TransactionModel> insertTransaction(Map<String, dynamic> tx) async {
     try {
       final sw = Stopwatch()..start();
       final result = await database.transaction((txn) async {
-        // Pastikan record yang di-insert pertama kali memiliki `synced_at` = NULL
+        // Pastikan record awal memiliki `synced_at` = NULL
         tx[TransactionTable.colSyncedAt] = null;
         final cleanedTx = Map<String, dynamic>.from(tx)
           ..removeWhere((k, v) => v == null);
-        // Ensure status defaults to 'Pending' for newly inserted transactions
+        // Pastikan status default 'Pending' untuk transaksi baru
         cleanedTx[TransactionTable.colStatus] =
             cleanedTx[TransactionTable.colStatus] ?? 'Pending';
         final id = await txn.insert(TransactionTable.tableName, cleanedTx);
@@ -154,7 +192,7 @@ class TransactionDao {
           whereArgs: [id],
           limit: 1,
         );
-        // return model without details (caller can insert details separately)
+        // kembalikan model tanpa detail (pemanggil menyimpan detail terpisah)
         final model = TransactionModel.fromDbLocal(inserted.first);
         _logInfo('insertTransaction: success id=${model.id}');
         return model;
@@ -171,15 +209,15 @@ class TransactionDao {
     }
   }
 
-  /// Insert transaction beserta detailnya dalam satu transaksi DB.
-  /// `tx` adalah map untuk table transactions, `details` adalah list map untuk transaction_details.
+  /// Menyisipkan transaksi beserta detailnya dalam satu transaksi DB.
+  /// `tx` adalah map untuk tabel transactions, `details` adalah list map untuk transaction_details.
   Future<TransactionModel> insertSyncTransaction(
       Map<String, dynamic> tx, List<Map<String, dynamic>> details) async {
     try {
       return await database.transaction((txn) async {
         final cleanedTx = Map<String, dynamic>.from(tx)
           ..removeWhere((k, v) => v == null);
-        // Ensure status defaults to 'Pending' when inserting sync
+        // Pastikan status default 'Pending' saat insert sinkronisasi
         cleanedTx[TransactionTable.colStatus] =
             cleanedTx[TransactionTable.colStatus] ?? 'Pending';
         final id = await txn.insert(TransactionTable.tableName, cleanedTx);
@@ -223,9 +261,10 @@ class TransactionDao {
     }
   }
 
+  /// Menghapus transaksi beserta seluruh detailnya berdasarkan `id`.
   Future<int> deleteTransaction(int id) async {
     try {
-      // ensure details are removed as well to avoid orphaned rows
+      // pastikan detail ikut terhapus agar tidak ada baris yatim
       return await database.transaction((txn) async {
         await txn.delete(
           TransactionDetailTable.tableName,
@@ -246,6 +285,7 @@ class TransactionDao {
     }
   }
 
+  /// Menghapus seluruh baris pada tabel `transactions` (tidak menyentuh detail).
   Future<int> clearTransactions() async {
     try {
       final res = await database.delete(TransactionTable.tableName);
@@ -257,6 +297,7 @@ class TransactionDao {
     }
   }
 
+  /// Mengosongkan kolom `synced_at` pada transaksi tertentu.
   Future<int> clearSyncedAt(int id) async {
     try {
       final res = await database.rawUpdate(
@@ -271,12 +312,14 @@ class TransactionDao {
     }
   }
 
+  /// Memperbarui satu transaksi berdasarkan `id` di dalam map.
+  /// `id` akan dihapus dari payload update (hanya untuk klausa WHERE).
   Future<int> updateTransaction(Map<String, dynamic> tx) async {
     try {
       final id = tx['id'];
       final cleaned = Map<String, dynamic>.from(tx)
         ..removeWhere((k, v) => v == null);
-      // remove id from update map if present
+      // hapus `id` dari map update jika ada
       cleaned.remove('id');
       final res = await database.update(
         TransactionTable.tableName,
@@ -292,7 +335,8 @@ class TransactionDao {
     }
   }
 
-  /// Return the highest sequence_number in transactions table, or 0 if none.
+  /// Mengembalikan nomor urut (sequence_number) tertinggi pada tabel `transactions`.
+  /// Jika tidak ada, kembalikan 0.
   Future<int> getLastSequenceNumber() async {
     try {
       final rows = await database.rawQuery(
@@ -311,7 +355,8 @@ class TransactionDao {
     }
   }
 
-  // Detail operations
+  // Operasi detail
+  /// Mengambil list detail transaksi berdasarkan `transaction_id`.
   Future<List<TransactionDetailModel>> getDetailsByTransactionId(
       int txId) async {
     try {
@@ -331,6 +376,9 @@ class TransactionDao {
     }
   }
 
+  /// Menambahkan atau memperbarui detail transaksi secara batch.
+  /// Jika item (berdasarkan `packet_id` atau `product_id`) sudah ada, qty dijumlah
+  /// dan subtotal dihitung ulang; jika belum ada, akan di-insert.
   Future<List<TransactionDetailModel>> insertDetails(
       List<Map<String, dynamic>> details) async {
     try {
@@ -338,18 +386,18 @@ class TransactionDao {
       final result = await database.transaction((txn) async {
         if (details.isEmpty) return <TransactionDetailModel>[];
 
-        // All incoming details are assumed to belong to the same transaction id.
+        // Diasumsikan semua detail masuk untuk transaction_id yang sama.
         final txId = details.first[TransactionDetailTable.colTransactionId];
 
-        // Prefetch existing details for this transaction in one query to avoid
-        // per-item SELECTs which prolong transaction time and increase lock risk.
+        // Ambil detail yang sudah ada dalam satu query untuk menghindari SELECT
+        // per-item yang memperlama transaksi dan meningkatkan risiko lock.
         final existingRows = await txn.query(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
           whereArgs: [txId],
         );
 
-        // Build lookup maps for quick existing-row detection by packet_id or product_id
+        // Bangun map lookup untuk mendeteksi baris existing via packet_id atau product_id
         final Map<int, Map<String, Object?>> byPacket = {};
         final Map<int, Map<String, Object?>> byProduct = {};
         for (var r in existingRows) {
@@ -362,7 +410,7 @@ class TransactionDao {
 
         final batch = txn.batch();
 
-        // Prepare batch operations (updates or inserts)
+        // Siapkan operasi batch (update atau insert)
         for (var d in details) {
           final prodId = d[TransactionDetailTable.colProductId];
           final packetId = d[TransactionDetailTable.colPacketId];
@@ -375,7 +423,7 @@ class TransactionDao {
           }
 
           if (existing != null) {
-            // update existing: sum qty and recompute subtotal
+            // update existing: jumlahkan qty dan hitung ulang subtotal
             final existingModel = TransactionDetailModel.fromDbLocal(existing);
             final existingQty = existingModel.qty ?? 0;
             final incomingQty = (d[TransactionDetailTable.colQty] as int?) ?? 0;
@@ -412,10 +460,10 @@ class TransactionDao {
           }
         }
 
-        // Commit batch; using noResult: true reduces memory for result payload
+        // Commit batch; penggunaan noResult: true mengurangi beban memori
         await batch.commit(noResult: true);
 
-        // Re-query final rows for this transaction and return models.
+        // Query ulang baris final untuk transaksi ini dan kembalikan sebagai model.
         final finalRows = await txn.query(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
@@ -439,19 +487,20 @@ class TransactionDao {
     }
   }
 
-  /// Replace all details for a transaction atomically: DELETE old rows then INSERT new rows.
+  /// Mengganti seluruh detail untuk sebuah transaksi secara atomik:
+  /// DELETE baris lama lalu INSERT baris baru.
   Future<List<TransactionDetailModel>> replaceDetailsForTransaction(
       int txId, List<Map<String, dynamic>> details) async {
     try {
       final result = await database.transaction((txn) async {
-        // Delete existing rows for this transaction id
+        // Hapus baris existing untuk transaction_id ini
         await txn.delete(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
           whereArgs: [txId],
         );
 
-        // Insert new rows in a batch for efficiency
+        // Insert baris baru secara batch untuk efisiensi
         final batch = txn.batch();
         for (var d in details) {
           final map = Map<String, dynamic>.from(d)
@@ -462,7 +511,7 @@ class TransactionDao {
         }
         await batch.commit(noResult: true);
 
-        // Return the final set of rows
+        // Kembalikan set baris final
         final finalRows = await txn.query(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
@@ -481,9 +530,10 @@ class TransactionDao {
     }
   }
 
-  /// Sanitize a map for DB insertion/updating.
-  /// Mirrors the logic in TransactionLocalDataSource._sanitizeForDb to keep behavior consistent.
+  /// Sanitasi map untuk operasi insert/update DB (catatan internal).
+  /// Mencerminkan logika di `TransactionLocalDataSource._sanitizeForDb` agar konsisten.
 
+  /// Menghapus semua detail berdasarkan `transaction_id`.
   Future<int> deleteDetailsByTransactionId(int txId) async {
     try {
       final res = await database.delete(

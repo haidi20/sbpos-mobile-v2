@@ -8,6 +8,7 @@ class AuthUserTable {
   static const String colPassword = 'password';
   static const String colToken = 'token';
   static const String colEmail = 'email';
+  static const String colLastLogin = 'last_login';
 
   // 3. Table creation query (DDL)
   static const String createTableQuery = '''
@@ -16,7 +17,12 @@ class AuthUserTable {
       $colUsername TEXT,
       $colPassword TEXT,
       $colToken TEXT,
-      $colEmail TEXT UNIQUE
+      $colEmail TEXT UNIQUE,
+      $colLastLogin INTEGER
     )
   ''';
+
+  // Index untuk mempercepat lookup berdasarkan username.
+  static const String createIndexUsername =
+      'CREATE INDEX IF NOT EXISTS idx_auth_username ON $tableName($colUsername)';
 }

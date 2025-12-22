@@ -1,8 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:core/core.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/widgets/transaction_history_screen.widget.dart';
 import 'package:transaction/presentation/controllers/transaction_history.controller.dart';
 import 'package:transaction/presentation/widgets/transaction_history_tabtime.widget.dart';
@@ -52,7 +52,7 @@ class _TransactionHistoryScreenState
           children: [
             // extracted header widget
             TransactionHistoryHeader(
-              onSearch: _viewModel.setSearchQuery,
+              onSearch: _viewModel.onSearchChanged,
               onDateSelected: (_) =>
                   _controller.showDatePickerAndSelect(context, ref),
               onRefresh: () => _viewModel.onRefresh(),

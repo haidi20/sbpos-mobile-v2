@@ -44,31 +44,12 @@ class CoreDatabase {
         databasePath,
         version: versionDb,
         onCreate: _onCreate,
-        onUpgrade: _onUpgrade,
         onOpen: (Database db) async {
           // Ensure tables exist on open (helps when DB file exists but some tables are missing)
           try {
             await _ensureTables(db);
           } catch (e, stack) {
             _logger.warning('Failed to ensure tables on open', e, stack);
-          }
-
-          // Ensure required columns exist for known tables. This is a safe,
-          // best-effort fix for older DB files that were created before
-          // new columns (e.g. `is_paid`) were added to the schema. We try to
-          // add missing columns with ALTER TABLE so existing data is preserved.
-          try {
-            await _ensureColumns(db);
-          } catch (e, stack) {
-            _logger.warning('Failed to ensure table columns on open', e, stack);
-          }
-
-          // Ensure indexes exist (idempotent). This helps avoid duplicate
-          // rows for details by enforcing uniqueness on keys.
-          try {
-            await _ensureIndexes(db);
-          } catch (e, stack) {
-            _logger.warning('Failed to ensure indexes on open', e, stack);
           }
         },
       );
@@ -90,6 +71,9 @@ class CoreDatabase {
       await db.execute(AuthUserTable.createTableQuery);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
+
+      // Buat semua index berdasarkan definisi di tiap tabel.
+      await _createAllIndexes(db);
     } catch (e, stack) {
       _logger.severe('Failed to create tables', e, stack);
       rethrow;
@@ -116,117 +100,29 @@ class CoreDatabase {
     }
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    _logger.info('Upgrading database from v$oldVersion to v$newVersion');
-    // Apply incremental migrations for each version step
-    for (var v = oldVersion + 1; v <= newVersion; v++) {
-      try {
-        switch (v) {
-          case 2:
-            // Example migration v1 -> v2:
-            // - add `last_login` column to `auth_users`
-            // Note: ALTER TABLE ADD COLUMN is safe in SQLite (adds NULLable column)
-            await db.execute(
-                'ALTER TABLE ${AuthUserTable.tableName} ADD COLUMN last_login INTEGER');
-            _logger.info('Migration to v2 applied: add last_login column');
-            break;
+  // _onUpgrade tidak diperlukan pada tahap pengembangan saat ini.
 
-          case 3:
-            // Example migration v2 -> v3:
-            // - create a settings table
-            await db.execute(
-                'CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)');
-            _logger.info('Migration to v3 applied: create settings table');
-            break;
+  /// Membuat seluruh index berdasarkan definisi pada masing-masing tabel.
+  /// Idempotent: memakai IF NOT EXISTS sehingga aman dipanggil berulang.
+  Future<void> _createAllIndexes(Database db) async {
+    // transaction_details
+    await db.execute(TransactionDetailTable.createUniqueIndexProduct);
+    await db.execute(TransactionDetailTable.createUniqueIndexPacket);
+    await db.execute(TransactionDetailTable.createIndexProductId);
+    await db.execute(TransactionDetailTable.createIndexProductName);
 
-          // Add more cases here for future versions
+    // transactions
+    await db.execute(TransactionTable.createIndexSequenceNumber);
+    await db.execute(TransactionTable.createIndexNumberTable);
+    await db.execute(TransactionTable.createIndexDate);
 
-          default:
-            _logger.info('No migration defined for v$v');
-        }
-      } catch (e, stack) {
-        // Log and continue: avoid failing entire upgrade on single migration
-        _logger.warning('Migration to v$v failed', e, stack);
-      }
-    }
-  }
+    // customers
+    await db.execute(CustomerTable.createIndexName);
 
-  /// Ensure specific columns exist on tables. This is defensive and idempotent:
-  /// it checks `PRAGMA table_info(...)` and adds columns if they're missing.
-  Future<void> _ensureColumns(Database db) async {
-    try {
-      // Helper to check if a column exists in a table
-      Future<bool> columnExists(String table, String column) async {
-        final rows = await db.rawQuery('PRAGMA table_info($table)');
-        for (final r in rows) {
-          final name = r['name']?.toString();
-          if (name == column) return true;
-        }
-        return false;
-      }
+    // products
+    await db.execute(ProductTable.createIndexName);
 
-      // transactions.is_paid
-      const txTable = TransactionTable.tableName;
-      const isPaidCol = TransactionTable.colIsPaid;
-      final hasIsPaid = await columnExists(txTable, isPaidCol);
-      if (!hasIsPaid) {
-        _logger.info('Adding missing column `$isPaidCol` to table `$txTable`');
-        await db.execute(
-            'ALTER TABLE $txTable ADD COLUMN $isPaidCol INTEGER NOT NULL DEFAULT 0');
-      }
-
-      // transactions.customer_id
-      const customerIdCol = TransactionTable.colCustomerId;
-      final hasCustomerId = await columnExists(txTable, customerIdCol);
-      if (!hasCustomerId) {
-        _logger
-            .info('Adding missing column `$customerIdCol` to table `$txTable`');
-        await db
-            .execute('ALTER TABLE $txTable ADD COLUMN $customerIdCol INTEGER');
-      }
-
-      // transactions.customer_type
-      const customerTypeCol = TransactionTable.colCustomerType;
-      final hasCustomerType = await columnExists(txTable, customerTypeCol);
-      if (!hasCustomerType) {
-        _logger.info(
-            'Adding missing column `$customerTypeCol` to table `$txTable`');
-        await db
-            .execute('ALTER TABLE $txTable ADD COLUMN $customerTypeCol TEXT');
-      }
-
-      // products.image
-      const prodTable = ProductTable.tableName;
-      const imageCol = ProductTable.colImage;
-      final hasImage = await columnExists(prodTable, imageCol);
-      if (!hasImage) {
-        _logger.info('Adding missing column `$imageCol` to table `$prodTable`');
-        await db.execute('ALTER TABLE $prodTable ADD COLUMN $imageCol TEXT');
-      }
-
-      // packets.discount
-      const pktTable = PacketTable.tableName;
-      const discountCol = PacketTable.colDiscount;
-      final hasDiscount = await columnExists(pktTable, discountCol);
-      if (!hasDiscount) {
-        _logger
-            .info('Adding missing column `$discountCol` to table `$pktTable`');
-        await db
-            .execute('ALTER TABLE $pktTable ADD COLUMN $discountCol INTEGER');
-      }
-    } catch (e, stack) {
-      _logger.warning('Error ensuring columns', e, stack);
-    }
-  }
-
-  /// Ensure essential indexes exist. This is defensive and idempotent.
-  Future<void> _ensureIndexes(Database db) async {
-    try {
-      // Create unique indexes for transaction details to prevent duplicates.
-      await db.execute(TransactionDetailTable.createUniqueIndexProduct);
-      await db.execute(TransactionDetailTable.createUniqueIndexPacket);
-    } catch (e, stack) {
-      _logger.warning('Error ensuring indexes', e, stack);
-    }
+    // auth_users
+    await db.execute(AuthUserTable.createIndexUsername);
   }
 }

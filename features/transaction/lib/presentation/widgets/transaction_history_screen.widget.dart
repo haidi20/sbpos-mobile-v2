@@ -4,7 +4,7 @@ import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/transaction_history.card.dart';
 
-class TransactionHistoryHeader extends StatefulWidget {
+class TransactionHistoryHeader extends StatelessWidget {
   final ValueChanged<String> onSearch;
   final ValueChanged<DateTime?>? onDateSelected;
   final Future<void> Function()? onRefresh;
@@ -18,58 +18,7 @@ class TransactionHistoryHeader extends StatefulWidget {
     this.isLoading = false,
   });
 
-  @override
-  State<TransactionHistoryHeader> createState() =>
-      _TransactionHistoryHeaderState();
-}
-
-class _TransactionHistoryHeaderState extends State<TransactionHistoryHeader> {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-    _focusNode = FocusNode();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  Future<void> _openNameSelector() async {
-    final res = await showModalBottomSheet<Map<String, String>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: _NameTableSelectionSheet(),
-        );
-      },
-    );
-
-    if (res != null) {
-      final name = res['name'] ?? '';
-      final table = res['table'] ?? '';
-      final suffix = name.isNotEmpty
-          ? ' | $name${table.isNotEmpty ? ' (#$table)' : ''}'
-          : '';
-      // Append or replace suffix in search
-      final base = _controller.text.split(' | ').first;
-      _controller.text = base + suffix;
-      widget.onSearch(_controller.text);
-    }
-  }
+  // Removed name/table selector: search now supports name and table directly.
 
   @override
   Widget build(BuildContext context) {
@@ -92,49 +41,48 @@ class _TransactionHistoryHeaderState extends State<TransactionHistoryHeader> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (widget.onDateSelected != null)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: AppColors.sbBlue,
-                    ),
-                    onPressed: () async {
-                      final now = DateTime.now();
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: now,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(now.year + 2),
-                        builder: (ctx, child) => Theme(
-                          data: Theme.of(ctx).copyWith(
-                            colorScheme: const ColorScheme.light(
-                              primary: AppColors.sbBlue,
-                              onPrimary: Colors.white,
-                              onSurface: Colors.black87,
-                            ),
-                          ),
-                          child: child!,
-                        ),
-                      );
-                      widget.onDateSelected?.call(picked);
-                    },
-                  ),
-                ),
+              // if (onDateSelected != null)
+              //   Container(
+              //     decoration: BoxDecoration(
+              //       color: Colors.white,
+              //       borderRadius: BorderRadius.circular(12),
+              //       border: Border.all(color: Colors.grey.shade200),
+              //     ),
+              //     child: IconButton(
+              //       icon: const Icon(
+              //         Icons.filter_list,
+              //         color: AppColors.sbBlue,
+              //       ),
+              //       onPressed: () async {
+              //         final now = DateTime.now();
+              //         final picked = await showDatePicker(
+              //           context: context,
+              //           initialDate: now,
+              //           firstDate: DateTime(2000),
+              //           lastDate: DateTime(now.year + 2),
+              //           builder: (ctx, child) => Theme(
+              //             data: Theme.of(ctx).copyWith(
+              //               colorScheme: const ColorScheme.light(
+              //                 primary: AppColors.sbBlue,
+              //                 onPrimary: Colors.white,
+              //                 onSurface: Colors.black87,
+              //               ),
+              //             ),
+              //             child: child!,
+              //           ),
+              //         );
+              //         onDateSelected?.call(picked);
+              //       },
+              //     ),
+              //   ),
             ],
           ),
           const SizedBox(height: 16),
           // Search Bar with suffix selector for name/table
           TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            onChanged: widget.onSearch,
+            onChanged: onSearch,
             textInputAction: TextInputAction.search,
+            onTapOutside: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(
               hintText: 'Cari menu, No. Order atau Catatan...',
               hintStyle: TextStyle(
@@ -145,37 +93,7 @@ class _TransactionHistoryHeaderState extends State<TransactionHistoryHeader> {
                 Icons.search,
                 color: Colors.grey.shade400,
               ),
-              suffix: GestureDetector(
-                onTap: _openNameSelector,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 6,
-                    horizontal: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        ' | Nama',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.gray700,
-                        ),
-                      ),
-                      SizedBox(width: 6),
-                      Icon(
-                        Icons.person,
-                        size: 16,
-                        color: AppColors.gray500,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // suffix removed: dedicated selector no longer needed
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -196,114 +114,6 @@ class _TransactionHistoryHeaderState extends State<TransactionHistoryHeader> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Bottom sheet to select name and table number
-class _NameTableSelectionSheet extends StatefulWidget {
-  @override
-  State<_NameTableSelectionSheet> createState() =>
-      _NameTableSelectionSheetState();
-}
-
-class _NameTableSelectionSheetState extends State<_NameTableSelectionSheet> {
-  final TextEditingController _nameCtrl = TextEditingController();
-  final TextEditingController _tableCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    _tableCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 48,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ),
-          const Text('Pilih Nama / Nomor Meja',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _nameCtrl,
-            decoration: InputDecoration(
-              labelText: 'Nama',
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _tableCtrl,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Nomor Meja (opsional)',
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Batal'),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop({
-                    'name': _nameCtrl.text.trim(),
-                    'table': _tableCtrl.text.trim()
-                  });
-                },
-                child: const Text('Pilih'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-}
-
-// Optional status TabBar used by older designs. Kept here so it's reusable
-// when needed by screens. Indicator spans full tab width.
-class TransactionHistoryStatusTabBar extends StatelessWidget {
-  const TransactionHistoryStatusTabBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return TabBar(
-      // make underline indicator span full tab width
-      indicatorSize: TabBarIndicatorSize.tab,
-      indicatorWeight: 3.0,
-      indicatorColor: AppColors.sbBlue,
-      labelColor: AppColors.sbBlue,
-      unselectedLabelColor: AppColors.gray600,
-      tabs: const [
-        Tab(text: 'Main'),
-        Tab(text: 'Proses'),
-        Tab(text: 'Selesai'),
-      ],
     );
   }
 }

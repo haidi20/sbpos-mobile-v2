@@ -34,10 +34,15 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardViewModelProvider);
     final viewModel = ref.read(dashboardViewModelProvider.notifier);
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       backgroundColor: AppColors.sbBg,
-// --- 2. SETTING HEADER (APPBAR) ---
+      // Jangan naik saat keyboard muncul
+      resizeToAvoidBottomInset: false,
+      // Biarkan body menggambar sampai ke belakang bottom bar untuk tampilan mulus
+      extendBody: true,
+      // --- 2. SETTING HEADER (APPBAR) ---
       // Penting: extendBodyBehindAppBar true agar konten bisa discroll
       // melewati belakang header, sehingga efek BLUR terlihat.
       // extendBodyBehindAppBar: true,
@@ -47,14 +52,18 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
           ? const DashboardScreen()
           : const TransactionHistoryScreen(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButtonCustom(
-        onAddClick: () => _controller.onAddClick(),
-      ),
+      floatingActionButton: isKeyboardOpen
+          ? null
+          : FloatingActionButtonCustom(
+              onAddClick: () => _controller.onAddClick(),
+            ),
       // 2. Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBarCustom(
-        activeTab: state.activeTab,
-        onTabChange: viewModel.onTabChange,
-      ),
+      bottomNavigationBar: isKeyboardOpen
+          ? const SizedBox.shrink()
+          : BottomNavigationBarCustom(
+              activeTab: state.activeTab,
+              onTabChange: viewModel.onTabChange,
+            ),
     );
   }
 }

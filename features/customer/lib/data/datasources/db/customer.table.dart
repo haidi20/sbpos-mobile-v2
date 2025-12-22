@@ -26,4 +26,8 @@ class CustomerTable {
       $colDeletedAt TEXT NULL
     )
   ''';
+
+  // Index untuk pencarian nama pelanggan.
+  static const String createIndexName =
+      'CREATE INDEX IF NOT EXISTS idx_customer_name ON $tableName($colName)';
 }

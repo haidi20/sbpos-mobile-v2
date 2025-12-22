@@ -46,4 +46,11 @@ class TransactionDetailTable {
 
   static const String createUniqueIndexPacket =
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_tx_detail_unique_packet ON $tableName ($colTransactionId, $colPacketId)';
+
+  // Index tambahan untuk akselerasi pencarian.
+  static const String createIndexProductId =
+      'CREATE INDEX IF NOT EXISTS idx_tx_detail_product_id ON $tableName($colProductId)';
+
+  static const String createIndexProductName =
+      'CREATE INDEX IF NOT EXISTS idx_tx_detail_product_name ON $tableName($colProductName)';
 }

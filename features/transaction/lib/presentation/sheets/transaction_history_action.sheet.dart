@@ -18,6 +18,29 @@ Future<void> showTransactionHistoryActionSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Header dengan tombol close (X) di kanan atas
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 4, 4),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Aksi',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Tutup',
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.visibility),
               title: const Text('Lihat'),
