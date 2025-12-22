@@ -273,7 +273,38 @@ class TransactionEntity {
 
   @override
   String toString() {
-    return 'TransactionEntity(id: $id, idServer: $idServer, shiftId: $shiftId, outletId: $outletId, sequenceNumber: $sequenceNumber, orderTypeId: $orderTypeId, categoryOrder: $categoryOrder, userId: $userId, customerId: $customerId, customerType: $customerType, paymentMethod: $paymentMethod, date: $date, notes: $notes, totalAmount: $totalAmount, totalQty: $totalQty, paidAmount: $paidAmount, changeMoney: $changeMoney, status: $status, cancelationOtp: $cancelationOtp, cancelationReason: $cancelationReason, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, syncedAt: $syncedAt, details: $details)';
+    return '''
+      TransactionEntity(
+        id: $id,
+        idServer: $idServer,
+        shiftId: $shiftId,
+        outletId: $outletId,
+        sequenceNumber: $sequenceNumber,
+        orderTypeId: $orderTypeId,
+        categoryOrder: $categoryOrder,
+        userId: $userId,
+        customerId: $customerId,
+        customerType: $customerType,
+        customerSelected: $customerSelected,
+        paymentMethod: $paymentMethod,
+        numberTable: $numberTable,
+        date: $date,
+        notes: $notes,
+        totalAmount: $totalAmount,
+        totalQty: $totalQty,
+        paidAmount: $paidAmount,
+        changeMoney: $changeMoney,
+        status: $status,
+        isPaid: $isPaid,
+        cancelationOtp: $cancelationOtp,
+        cancelationReason: $cancelationReason,
+        ojolProvider: $ojolProvider,
+        createdAt: $createdAt,
+        updatedAt: $updatedAt,
+        deletedAt: $deletedAt,
+        syncedAt: $syncedAt,
+        details: $details
+      )''';
   }
 
   Color get statusColor => status.color;
