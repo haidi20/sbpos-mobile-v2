@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:flutter/services.dart';
 import 'package:transaction/presentation/ui_models/payment_method.um.dart';
 

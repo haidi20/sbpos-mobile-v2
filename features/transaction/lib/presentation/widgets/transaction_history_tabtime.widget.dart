@@ -1,161 +1,226 @@
 import 'package:core/core.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/controllers/transaction_history_tabtime.controller.dart';
+import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
-class TransactionHistoryTabtime extends StatefulWidget {
+class TransactionHistoryTabtime extends ConsumerStatefulWidget {
   /// Number of consecutive dates to show (including today).
   final int daysToShow;
   final ValueChanged<DateTime>? onDateSelected;
+  final ValueChanged<DateTime>? onSwipeLeft;
+  final ValueChanged<DateTime>? onSwipeRight;
   final DateTime? selectedDate;
   final double itemWidth;
   final double height;
+  final Widget body;
 
   const TransactionHistoryTabtime({
     super.key,
     this.daysToShow = 90,
     this.onDateSelected,
+    this.onSwipeLeft,
+    this.onSwipeRight,
     this.selectedDate,
     this.itemWidth = 88,
     this.height = 72,
+    required this.body,
   }) : assert(daysToShow > 0);
 
   @override
-  State<TransactionHistoryTabtime> createState() =>
+  ConsumerState<TransactionHistoryTabtime> createState() =>
       _TransactionHistoryTabtimeState();
 }
 
-class _TransactionHistoryTabtimeState extends State<TransactionHistoryTabtime> {
-  final ScrollController _controller = ScrollController();
-  late final List<DateTime> _dates;
-  late DateTime _selected;
+class _TransactionHistoryTabtimeState
+    extends ConsumerState<TransactionHistoryTabtime>
+    with TickerProviderStateMixin {
+  late final TabController _tabController;
+  late List<DateTime> _dates;
+  late final TransactionHistoryTabtimeController _ctrl;
 
   @override
   void initState() {
     super.initState();
 
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final start = today.subtract(Duration(days: widget.daysToShow - 1));
+    _ctrl = TransactionHistoryTabtimeController();
 
-    _dates =
-        List.generate(widget.daysToShow, (i) => start.add(Duration(days: i)));
-    _selected = widget.selectedDate ?? _dates.last;
+    // Generate date list via ViewModel so logic lives in VM.
+    _dates = ref
+        .read(transactionHistoryViewModelProvider.notifier)
+        .generateDateList(widget.daysToShow);
+    // determine initial selected date (VM has precedence; fallback to widget.selectedDate)
+    final vmSel = ref.read(transactionHistoryViewModelProvider).selectedDate;
+    final initialSelected = vmSel ?? widget.selectedDate ?? _dates.last;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Small delay to ensure list has laid out its scroll extent on various devices.
-      await Future.delayed(const Duration(milliseconds: 50));
-      if (!_controller.hasClients) return;
-      // If selected is at end use maxScrollExtent else scroll to selected index
-      final idx = _dates.indexWhere((d) =>
-          d.year == _selected.year &&
-          d.month == _selected.month &&
-          d.day == _selected.day);
-      if (idx == -1) return;
-      final target = (idx) * (widget.itemWidth + 8);
-      final max = _controller.position.maxScrollExtent;
-      _controller.jumpTo(target > max ? max : target);
+    final initIdx = _dates.indexWhere((d) =>
+        d.year == initialSelected.year &&
+        d.month == initialSelected.month &&
+        d.day == initialSelected.day);
+
+    _tabController = TabController(
+      length: _dates.length,
+      vsync: this,
+      initialIndex: initIdx == -1 ? (_dates.length - 1) : initIdx,
+    );
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      final idx = _tabController.index;
+      if (idx < 0 || idx >= _dates.length) return;
+      final d = _dates[idx];
+      // Push selected date into VM state via controller
+      _ctrl.selectDate(ref, d);
+      widget.onDateSelected?.call(d);
     });
   }
 
   @override
-  void didUpdateWidget(covariant TransactionHistoryTabtime oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedDate != null) {
-      final sel = DateTime(widget.selectedDate!.year,
-          widget.selectedDate!.month, widget.selectedDate!.day);
-      if (sel.year != _selected.year ||
-          sel.month != _selected.month ||
-          sel.day != _selected.day) {
-        setState(() => _selected = sel);
-        // animate to the new index
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_controller.hasClients) return;
-          final idx = _dates.indexWhere((d) =>
-              d.year == _selected.year &&
-              d.month == _selected.month &&
-              d.day == _selected.day);
-          if (idx == -1) return;
-          final target = (idx) * (widget.itemWidth + 8);
-          final max = _controller.position.maxScrollExtent;
-          final t = target > max ? max : target;
-          try {
-            _controller.animateTo(t,
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut);
-          } catch (_) {}
-        });
-      }
-    }
-  }
-
-  @override
   void dispose() {
-    _controller.dispose();
+    _tabController.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
-  String _formatDate(DateTime d) {
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final yy = (d.year % 100).toString().padLeft(2, '0');
-    return '$dd/$mm/$yy';
-  }
+  // date formatting handled by controller now
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: widget.height,
-      child: ListView.separated(
-        controller: _controller,
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        itemCount: _dates.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final date = _dates[index];
-          final isSelected = date.year == _selected.year &&
-              date.month == _selected.month &&
-              date.day == _selected.day;
+    // Listen to VM selectedDate changes and animate TabController accordingly.
+    ref.listen<TransactionHistoryState>(transactionHistoryViewModelProvider,
+        (previous, next) {
+      final sel = next.selectedDate;
+      if (sel == null) return;
+      final idx = _dates.indexWhere((d) =>
+          d.year == sel.year && d.month == sel.month && d.day == sel.day);
+      if (idx != -1 && _tabController.index != idx) {
+        try {
+          _tabController.animateTo(idx,
+              duration: const Duration(milliseconds: 220));
+        } catch (_) {}
+      }
+    });
 
-          return InkWell(
-            onTap: () {
-              setState(() => _selected = date);
-              widget.onDateSelected?.call(date);
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: widget.itemWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4, top: 8),
-                    child: Text(
-                      _formatDate(date),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? AppColors.sbBlue : null,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Fixed-height area for the date TabBar with per-tab underlines
+        Material(
+          color: AppColors.sbBg,
+          child: SizedBox(
+            height: widget.height,
+            child: Stack(
+              children: [
+                // base TabBar
+                TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  // use default Flutter indicator for active tab (underline)
+                  indicatorColor: AppColors.sbBlue,
+                  indicatorWeight: 3.0,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: AppColors.sbBlue,
+                  unselectedLabelColor: AppColors.gray600,
+                  onTap: (idx) {
+                    if (idx < 0 || idx >= _dates.length) return;
+                    final d = _dates[idx];
+                    widget.onDateSelected?.call(d);
+                    try {
+                      _tabController.animateTo(idx);
+                    } catch (_) {}
+                  },
+                  tabs: List.generate(
+                    _dates.length,
+                    (idx) {
+                      final d = _dates[idx];
+
+                      // label via controller (moved logic to controller)
+                      final label = _ctrl.labelForDate(d);
+
+                      final sel = ref
+                              .watch(transactionHistoryViewModelProvider)
+                              .selectedDate ??
+                          widget.selectedDate ??
+                          _dates.last;
+                      final isSelected = sel.year == d.year &&
+                          sel.month == d.month &&
+                          sel.day == d.day;
+
+                      return Tab(
+                        child: SizedBox(
+                          width: widget.itemWidth,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                label,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? AppColors.sbBlue
+                                          : AppColors.gray700,
+                                    ),
+                              ),
+                            ],
                           ),
-                      textAlign: TextAlign.center,
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                  // underline
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 3,
-                    width: widget.itemWidth * 0.6,
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.sbBlue : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Caller-provided body. Use a loose Flexible so this widget can be
+        // embedded in unbounded or bounded parents safely. Apply a container
+        // that can get rounded corners depending on the left/right shadow
+        // state so the body visually matches edge conditions.
+        Flexible(
+          fit: FlexFit.loose,
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              // swipe left -> next tab (negative velocity on x)
+              if (details.primaryVelocity == null) return;
+              final v = details.primaryVelocity!;
+              final idx = _tabController.index;
+              if (v < -200 && idx < _dates.length - 1) {
+                try {
+                  _tabController.animateTo(idx + 1,
+                      duration: const Duration(milliseconds: 220));
+                  // notify swipe-left (user swiped left to move to next)
+                  widget.onSwipeLeft?.call(_dates[idx + 1]);
+                } catch (_) {}
+              } else if (v > 200 && idx > 0) {
+                try {
+                  _tabController.animateTo(idx - 1,
+                      duration: const Duration(milliseconds: 220));
+                  // notify swipe-right (user swiped right to move to prev)
+                  widget.onSwipeRight?.call(_dates[idx - 1]);
+                } catch (_) {}
+              }
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.zero,
+              child: Stack(
+                children: [
+                  // main body content
+                  Container(
+                    color: AppColors.sbBg,
+                    child: widget.body,
                   ),
+
+                  // shadows removed
                 ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        ),
+      ],
     );
   }
 }

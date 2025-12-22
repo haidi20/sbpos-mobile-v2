@@ -1,9 +1,10 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 // Header + Search widget (extracted for testability)
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/transaction_history.card.dart';
 
-class TransactionHistoryHeader extends StatelessWidget {
+class TransactionHistoryHeader extends StatefulWidget {
   final ValueChanged<String> onSearch;
   final ValueChanged<DateTime?>? onDateSelected;
   final Future<void> Function()? onRefresh;
@@ -18,16 +19,69 @@ class TransactionHistoryHeader extends StatelessWidget {
   });
 
   @override
+  State<TransactionHistoryHeader> createState() =>
+      _TransactionHistoryHeaderState();
+}
+
+class _TransactionHistoryHeaderState extends State<TransactionHistoryHeader> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openNameSelector() async {
+    final res = await showModalBottomSheet<Map<String, String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: _NameTableSelectionSheet(),
+        );
+      },
+    );
+
+    if (res != null) {
+      final name = res['name'] ?? '';
+      final table = res['table'] ?? '';
+      final suffix = name.isNotEmpty
+          ? ' | $name${table.isNotEmpty ? ' (#$table)' : ''}'
+          : '';
+      // Append or replace suffix in search
+      final base = _controller.text.split(' | ').first;
+      _controller.text = base + suffix;
+      widget.onSearch(_controller.text);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
       color: AppColors.sbBg,
       child: Column(
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
                   'Riwayat Transaksi',
                   style: TextStyle(
@@ -38,57 +92,90 @@ class TransactionHistoryHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Row(
-              //   children: [
-              //     Container(
-              //       decoration: BoxDecoration(
-              //         color: Colors.white,
-              //         borderRadius: BorderRadius.circular(12),
-              //         border: Border.all(color: Colors.grey.shade200),
-              //       ),
-              //       child: IconButton(
-              //         icon: const Icon(
-              //           Icons.filter_list,
-              //           color: AppColors.sbBlue,
-              //         ),
-              //         onPressed: () async {
-              //           if (onDateSelected == null) return;
-              //           final now = DateTime.now();
-              //           final picked = await showDatePicker(
-              //             context: context,
-              //             initialDate: now,
-              //             firstDate: DateTime(2000),
-              //             lastDate: DateTime(now.year + 2),
-              //             builder: (ctx, child) => Theme(
-              //               data: Theme.of(ctx).copyWith(
-              //                 colorScheme: const ColorScheme.light(
-              //                   primary: AppColors.sbBlue,
-              //                   onPrimary: Colors.white,
-              //                   onSurface: Colors.black87,
-              //                 ),
-              //               ),
-              //               child: child!,
-              //             ),
-              //           );
-              //           onDateSelected!(picked);
-              //         },
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              if (widget.onDateSelected != null)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.filter_list,
+                      color: AppColors.sbBlue,
+                    ),
+                    onPressed: () async {
+                      final now = DateTime.now();
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: now,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(now.year + 2),
+                        builder: (ctx, child) => Theme(
+                          data: Theme.of(ctx).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: AppColors.sbBlue,
+                              onPrimary: Colors.white,
+                              onSurface: Colors.black87,
+                            ),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      widget.onDateSelected?.call(picked);
+                    },
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 16),
-          // Search Bar
+          // Search Bar with suffix selector for name/table
           TextField(
-            onChanged: onSearch,
+            controller: _controller,
+            focusNode: _focusNode,
+            onChanged: widget.onSearch,
+            textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: 'Cari No. Order atau Catatan...',
+              hintText: 'Cari menu, No. Order atau Catatan...',
               hintStyle: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade400,
               ),
-              prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+              prefixIcon: Icon(
+                Icons.search,
+                color: Colors.grey.shade400,
+              ),
+              suffix: GestureDetector(
+                onTap: _openNameSelector,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        ' | Nama',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.gray700,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.person,
+                        size: 16,
+                        color: AppColors.gray500,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -109,6 +196,114 @@ class TransactionHistoryHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Bottom sheet to select name and table number
+class _NameTableSelectionSheet extends StatefulWidget {
+  @override
+  State<_NameTableSelectionSheet> createState() =>
+      _NameTableSelectionSheetState();
+}
+
+class _NameTableSelectionSheetState extends State<_NameTableSelectionSheet> {
+  final TextEditingController _nameCtrl = TextEditingController();
+  final TextEditingController _tableCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _tableCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 48,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const Text('Pilih Nama / Nomor Meja',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nameCtrl,
+            decoration: InputDecoration(
+              labelText: 'Nama',
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _tableCtrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Nomor Meja (opsional)',
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Batal'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop({
+                    'name': _nameCtrl.text.trim(),
+                    'table': _tableCtrl.text.trim()
+                  });
+                },
+                child: const Text('Pilih'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}
+
+// Optional status TabBar used by older designs. Kept here so it's reusable
+// when needed by screens. Indicator spans full tab width.
+class TransactionHistoryStatusTabBar extends StatelessWidget {
+  const TransactionHistoryStatusTabBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return TabBar(
+      // make underline indicator span full tab width
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorWeight: 3.0,
+      indicatorColor: AppColors.sbBlue,
+      labelColor: AppColors.sbBlue,
+      unselectedLabelColor: AppColors.gray600,
+      tabs: const [
+        Tab(text: 'Main'),
+        Tab(text: 'Proses'),
+        Tab(text: 'Selesai'),
+      ],
     );
   }
 }
@@ -138,37 +333,7 @@ class TransactionHistoryList extends StatefulWidget {
 }
 
 class _TransactionHistoryListState extends State<TransactionHistoryList> {
-  double _accumulatedDx = 0.0;
-  // UI hint shadows while dragging
-  double _leftShadowOpacity = 0.0;
-  double _rightShadowOpacity = 0.0;
-
-  void _resetAccum() => _accumulatedDx = 0.0;
-
-  void _updateShadows() {
-    // Normalize accumulated drag distance into an opacity value.
-    // Use a slightly more aggressive scale so the shadow is visible earlier.
-    final v = (_accumulatedDx.abs() / 100).clamp(0.0, 0.85);
-    if (_accumulatedDx > 0) {
-      // Dragging to the right -> show left-side content hint on the left edge
-      _leftShadowOpacity = v;
-      _rightShadowOpacity = 0.0;
-    } else if (_accumulatedDx < 0) {
-      // Dragging to the left -> show right-side content hint on the right edge
-      _rightShadowOpacity = v;
-      _leftShadowOpacity = 0.0;
-    } else {
-      _leftShadowOpacity = 0.0;
-      _rightShadowOpacity = 0.0;
-    }
-  }
-
-  void _clearShadows() {
-    setState(() {
-      _leftShadowOpacity = 0.0;
-      _rightShadowOpacity = 0.0;
-    });
-  }
+  // Shadow state removed per request.
 
   @override
   Widget build(BuildContext context) {
@@ -217,92 +382,26 @@ class _TransactionHistoryListState extends State<TransactionHistoryList> {
 
     return Stack(
       children: [
-        // Use pan gestures to better capture horizontal swipes while
-        // allowing the inner ListView to handle vertical scrolls.
+        // Use pan gestures to capture horizontal swipes for date shifting.
         GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onPanStart: (_) => _resetAccum(),
-          onPanUpdate: (details) {
-            final dx = details.delta.dx;
-            if (dx == 0) return;
-            _accumulatedDx += dx;
-            setState(() {
-              _updateShadows();
-            });
-          },
+          onPanStart: (_) {},
+          onPanUpdate: (details) {},
           onPanEnd: (details) {
             final vx = details.velocity.pixelsPerSecond.dx;
-            const distanceThreshold = 60; // pixels
-            // Accept either a sufficient drag distance or a fling velocity.
-            if (_accumulatedDx.abs() >= distanceThreshold || vx.abs() >= 200) {
-              if (_accumulatedDx > 0 || vx > 0) {
-                // user moved to right -> request previous date (shift -1)
+            const velocityThreshold = 200; // pixels/sec
+            if (vx.abs() >= velocityThreshold) {
+              if (vx > 0) {
+                // fling to right -> previous date
                 widget.onDateShift?.call(-1);
               } else {
-                // user moved to left -> request next date (shift +1)
+                // fling to left -> next date
                 widget.onDateShift?.call(1);
               }
             }
-            _resetAccum();
-            _clearShadows();
           },
-          onPanCancel: () {
-            _resetAccum();
-            _clearShadows();
-          },
+          onPanCancel: () {},
           child: listContent,
-        ),
-
-        // Left shadow
-        Positioned(
-          left: 0,
-          top: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 180),
-              opacity: _leftShadowOpacity,
-              child: Container(
-                width: 32,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Colors.black.withOpacity(0.28),
-                      Colors.transparent
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        // Right shadow
-        Positioned(
-          right: 0,
-          top: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 180),
-              opacity: _rightShadowOpacity,
-              child: Container(
-                width: 32,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                    colors: [
-                      Colors.black.withOpacity(0.28),
-                      Colors.transparent
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         ),
       ],
     );

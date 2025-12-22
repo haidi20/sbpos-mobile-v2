@@ -30,7 +30,7 @@ class BottomNavigationBarCustom extends StatelessWidget {
               _buildTabItem(
                 context,
                 icon: Icons.home_outlined,
-                label: "Dashboard",
+                label: "Utama",
                 tab: AppTab.dashboard,
                 isActive: activeTab == AppTab.dashboard,
                 onTap: () => onTabChange(AppTab.dashboard),
@@ -39,7 +39,7 @@ class BottomNavigationBarCustom extends StatelessWidget {
               _buildTabItem(
                 context,
                 icon: Icons.list_alt,
-                label: "Orders",
+                label: "Pesanan",
                 tab: AppTab.orders,
                 isActive: activeTab == AppTab.orders,
                 onTap: () => onTabChange(AppTab.orders),

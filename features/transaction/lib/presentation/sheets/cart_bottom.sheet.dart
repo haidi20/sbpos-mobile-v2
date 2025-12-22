@@ -1,7 +1,7 @@
 ﻿import 'package:core/core.dart';
 import 'package:transaction/presentation/screens/cart.screen.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
 import 'package:transaction/presentation/screens/cart_payment.screen.dart';
 

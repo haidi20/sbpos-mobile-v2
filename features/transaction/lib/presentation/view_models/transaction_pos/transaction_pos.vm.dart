@@ -19,11 +19,11 @@ import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/presentation/helpers/order_type_icon.helper.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/domain/usecases/get_last_secuence_number_transaction.usecase.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.persistence.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.calculations.dart';
 
 part 'transaction_pos.getters.dart';
 part 'transaction_pos.setters.dart';

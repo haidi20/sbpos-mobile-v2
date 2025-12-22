@@ -6,7 +6,7 @@ import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/domain/usecases/get_last_secuence_number_transaction.usecase.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 
 class TransactionPersistence {
   final CreateTransaction _createTransaction;
@@ -203,10 +203,13 @@ class TransactionPersistence {
         );
         _logger.fine(
             'persistAndUpdateState: update succeeded, clearing isLoadingPersistent');
-        setState(currentState.copyWith(
+        setState(
+          currentState.copyWith(
             transaction: enforcedUpdated,
             details: safeDetails,
-            isLoadingPersistent: false));
+            isLoadingPersistent: false,
+          ),
+        );
       });
     } catch (e, st) {
       _logger.severe('PersistAndUpdateState failed', e, st);

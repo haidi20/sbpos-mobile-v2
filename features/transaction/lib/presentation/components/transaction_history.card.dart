@@ -119,7 +119,7 @@ class _OrderInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Order #$sequence',
+          'Pesanan #$sequence',
           style: const TextStyle(
             fontSize: 16,
             color: AppColors.gray700,

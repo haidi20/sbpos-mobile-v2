@@ -1,10 +1,9 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/sheets/transaction_history_action.sheet.dart';
-// (removed unused import)
+import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 
-/// Controller yang menyediakan helper untuk menampilkan detail transaksi.
 class TransactionHistoryController {
   TransactionHistoryController();
 
@@ -37,5 +36,33 @@ class TransactionHistoryController {
       ref,
       tx,
     );
+  }
+
+  /// Tampilkan date picker dan set selected date pada ViewModel.
+  Future<void> showDatePickerAndSelect(
+      BuildContext context, WidgetRef ref) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(now.year + 2),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: AppColors.sbBlue,
+            onPrimary: Colors.white,
+            onSurface: Colors.black87,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    // Panggil ViewModel untuk menyimpan pilihan tanggal (boleh null)
+    try {
+      final vm = ref.read(transactionHistoryViewModelProvider.notifier);
+      vm.setSelectedDate(picked);
+    } catch (_) {}
   }
 }

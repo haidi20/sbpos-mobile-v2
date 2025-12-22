@@ -20,6 +20,19 @@ class TransactionHistoryViewModel
   /// (diambil dari state).
   List<TransactionEntity> get getTransactions => state.transactions;
 
+  /// Daftar transaksi untuk tab "Main" (status pending)
+  List<TransactionEntity> get mainTransactions => state.transactions.toList();
+
+  /// Daftar transaksi untuk tab "Proses" (status proses)
+  List<TransactionEntity> get prosesTransactions => state.transactions
+      .where((t) => t.status == TransactionStatus.proses)
+      .toList();
+
+  /// Daftar transaksi untuk tab "Selesai" (status lunas)
+  List<TransactionEntity> get selesaiTransactions => state.transactions
+      .where((t) => t.status == TransactionStatus.lunas)
+      .toList();
+
   /// Setter untuk query pencarian; mempengaruhi `filteredTransactions`.
   void setSearchQuery(String q) {
     state = state.copyWith(searchQuery: q);
@@ -51,14 +64,20 @@ class TransactionHistoryViewModel
         date: state.selectedDate,
         search: state.searchQuery,
       );
+
+      // _logger.info(
+      //     'tanggal filter: ${state.selectedDate}, search: ${state.searchQuery}');
+
       final res = await _getTransactions.call(
         query: q,
         isOffline: true,
       );
+
       res.fold((f) {
         _logger.info('Load transactions (offline) failed: $f');
         state = state.copyWith(isLoading: false, error: f.toString());
       }, (list) {
+        // _logger.info('jumlah data: ${list.length}');
         state = state.copyWith(isLoading: false, transactions: list);
       });
     } catch (e, st) {
@@ -74,5 +93,14 @@ class TransactionHistoryViewModel
     final current = state.selectedDate ?? DateTime.now();
     final newDate = current.add(Duration(days: shiftDays));
     await setSelectedDate(newDate);
+  }
+
+  /// Generate a list of consecutive dates ending today with length [daysToShow].
+  /// The list is ordered from older -> newer (start .. today).
+  List<DateTime> generateDateList(int daysToShow) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = today.subtract(Duration(days: daysToShow - 1));
+    return List.generate(daysToShow, (i) => start.add(Duration(days: i)));
   }
 }

@@ -2,8 +2,8 @@ import 'package:core/core.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/presentation/screens/customer.sheet.dart';
 import 'package:transaction/presentation/components/order.card.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:transaction/presentation/controllers/cart_screen.controller.dart';
 
 class CartHeader extends StatelessWidget {

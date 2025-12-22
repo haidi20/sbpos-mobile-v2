@@ -13,7 +13,7 @@ class FloatingActionButtonCustom extends StatelessWidget {
       margin: const EdgeInsets.only(top: 10),
       child: FloatingActionButton(
         onPressed: onAddClick,
-        elevation: 8,
+        elevation: 0,
         backgroundColor: Colors.transparent,
         shape: const CircleBorder(),
         child: Ink(
@@ -27,13 +27,6 @@ class FloatingActionButtonCustom extends StatelessWidget {
                 Color(0xFFFB923C),
               ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Color.fromRGBO(249, 115, 22, 0.4),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
           ),
           child: const Center(
             child: Icon(

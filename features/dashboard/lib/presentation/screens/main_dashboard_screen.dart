@@ -46,16 +46,10 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
       body: state.activeTab == AppTab.dashboard
           ? const DashboardScreen()
           : const TransactionHistoryScreen(),
-
-      // --- BAGIAN INI YANG PENTING (MENGGANTIKAN BottomNav React) ---
-
-      // 1. Tombol Tengah (Floating Action Button)
-      // Lokasi: centerDocked membuat tombol "duduk" di bibir BottomAppBar
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButtonCustom(
         onAddClick: () => _controller.onAddClick(),
       ),
-
       // 2. Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBarCustom(
         activeTab: state.activeTab,

@@ -3,8 +3,8 @@ import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:transaction/presentation/widgets/filter_products_transaction.widget.dart';
 import 'package:product/presentation/screens/packet_selection.sheet.dart'
     show PacketSelectionSheet;
