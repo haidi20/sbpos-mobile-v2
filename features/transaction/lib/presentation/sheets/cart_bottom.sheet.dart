@@ -43,9 +43,6 @@ class CartBottomScreen extends ConsumerWidget {
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(24),
-          ),
         ),
         child: SizedBox.expand(
           child: Column(

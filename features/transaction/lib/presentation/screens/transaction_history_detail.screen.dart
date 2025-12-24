@@ -7,6 +7,7 @@ import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/summary_row.card.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 
 class TransactionHistoryDetailScreen extends StatelessWidget {
   final TransactionEntity tx;
@@ -38,10 +39,10 @@ class TransactionHistoryDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _TransactionFullFieldsGrid(tx: tx),
-                  const SizedBox(height: 24),
+                  // _TransactionFullFieldsGrid(tx: tx),
+                  // const SizedBox(height: 24),
                   const Text(
-                    'Rincian Item',
+                    'Rincian Pesanan',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -184,11 +185,6 @@ class _TransactionDetailHeader extends StatelessWidget {
   }
 }
 
-// `_TransactionDetailInfoGrid` has been replaced by
-// `_TransactionFullFieldsGrid`. Kept intentionally removed to avoid
-// duplicate UI implementations.
-
-/// Full grid presenting all `TransactionEntity` fields in a responsive layout.
 class _TransactionFullFieldsGrid extends StatelessWidget {
   final TransactionEntity tx;
 
@@ -211,6 +207,20 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Build pairs of label + value for all fields
+    // Determine order type from stored id (orderTypeId = enum.index + 1)
+    final idx = tx.orderTypeId - 1;
+    final EOrderType? orderType = (idx >= 0 && idx < EOrderType.values.length)
+        ? EOrderType.values[idx]
+        : null;
+
+    final orderTypeLabel = orderType != null
+        ? (orderType == EOrderType.dineIn
+            ? 'Makan di Tempat'
+            : orderType == EOrderType.takeAway
+                ? 'Bawa Pulang'
+                : 'Online')
+        : '-';
+
     final items = <MapEntry<String, Widget>>[
       // MapEntry('ID', _valueWidget(tx.id?.toString() ?? '-')),
       // MapEntry('Server ID', _valueWidget(tx.idServer?.toString() ?? '-')),
@@ -220,6 +230,7 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
       MapEntry('No. Order', _valueWidget('#${tx.sequenceNumber}')),
       // MapEntry('OrderType ID', _valueWidget(tx.orderTypeId.toString())),
       MapEntry('Kategori', _valueWidget(tx.categoryOrder ?? '-')),
+      MapEntry('Jenis Pesanan', _valueWidget(orderTypeLabel)),
       // MapEntry('Kasir (User)', _valueWidget(tx.userId?.toString() ?? '-')),
       MapEntry('Metode Bayar',
           _valueWidget(_friendlyPaymentLabel(tx.paymentMethod))),
@@ -241,7 +252,12 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
       MapEntry('Status', _valueWidget(tx.statusValue)),
       // MapEntry('OTP Batal', _valueWidget(tx.cancelationOtp ?? '-')),
       MapEntry('Alasan Batal', _valueWidget(tx.cancelationReason ?? '-')),
-      MapEntry('Ojol Provider', _valueWidget(tx.ojolProvider ?? '-')),
+      // Show ojol provider only for online orders
+      if (orderType == EOrderType.online)
+        MapEntry('Ojol Provider', _valueWidget(tx.ojolProvider ?? '-')),
+      // Show table number only for dine-in
+      if (orderType == EOrderType.dineIn)
+        MapEntry('Nomor Meja', _valueWidget(tx.numberTable?.toString() ?? '-')),
       // MapEntry('Created', _valueWidget(_dateOrDash(tx.createdAt))),
       // MapEntry('Updated', _valueWidget(_dateOrDash(tx.updatedAt))),
       // MapEntry('Deleted', _valueWidget(_dateOrDash(tx.deletedAt))),
@@ -310,7 +326,17 @@ class _TransactionDetailItemsList extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    if (item.note != null && item.note!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        item.note!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
                     Text(
                       '${item.qty ?? 0} x ${formatRupiah((item.productPrice ?? 0).toDouble())}',
                       style: TextStyle(

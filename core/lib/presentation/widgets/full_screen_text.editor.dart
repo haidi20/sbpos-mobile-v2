@@ -215,7 +215,7 @@ class FullScreenTextEditor extends StatelessWidget {
               ),
 
               // Small hint explaining how to open emoji via keyboard
-              // const _EditorHint(),
+              // (hint widget removed — unused)
 
               Expanded(
                 child: FullScreenTextEditor(
@@ -250,36 +250,7 @@ class FullScreenTextEditor extends StatelessWidget {
   }
 }
 
-/// Small informative hint shown under the sheet grabber.
-/// Extracted to a private widget for easier testing and readability.
-class _EditorHint extends StatelessWidget {
-  const _EditorHint();
-
-  @override
-  Widget build(BuildContext context) {
-    const hint = 'Tekan ikon keyboard lalu pilih emoji dari keyboard HP';
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 14,
-            color:
-                Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            hint,
-            style:
-                Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// Note: the small editor hint widget was removed because it was unused.
 
 /// Toolbar action encapsulated in a small widget to allow unit testing of
 /// tooltip and onPressed behaviors separately from the editor layout.

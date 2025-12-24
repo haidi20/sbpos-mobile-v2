@@ -15,6 +15,7 @@ class CartPaymentController {
   late final TextEditingController cashController;
   late final TextEditingController tableNumberController;
   final Logger _logger = Logger('CartPaymentController');
+  int? _cachedCashForEdit;
 
   CartPaymentController(this.ref, this.context) {
     _state = ref.read(transactionPosViewModelProvider);
@@ -43,6 +44,38 @@ class CartPaymentController {
       }
     };
     tableNumberController.addListener(_tableListener!);
+  }
+
+  /// Toggle flag isPaid dengan perilaku khusus saat mode edit.
+  ///
+  /// - Mode create: hanya set isPaid seperti biasa.
+  /// - Mode edit:
+  ///   * Saat uncheck: simpan nominal lama ke cache, kosongkan cashReceived
+  ///     dan field input (cashController).
+  ///   * Saat check lagi: kembalikan nominal dari cache (jika ada).
+  void onToggleIsPaid(bool newValue) {
+    final isEditMode = _state.transactionMode == ETransactionMode.edit;
+
+    if (!isEditMode) {
+      _viewModel.setIsPaid(newValue);
+      return;
+    }
+
+    if (!newValue) {
+      // Uncheck di mode edit: simpan nilai lama lalu kosongkan.
+      _cachedCashForEdit = _state.cashReceived;
+      _viewModel.setIsPaid(false);
+      _viewModel.setCashReceived(0);
+      cashController.text = '';
+    } else {
+      // Check kembali di mode edit: pulihkan nilai jika tersedia.
+      _viewModel.setIsPaid(true);
+      if (_cachedCashForEdit != null) {
+        final v = _cachedCashForEdit!;
+        _viewModel.setCashReceived(v);
+        cashController.text = v > 0 ? v.toString() : '';
+      }
+    }
   }
 
   Future<void> onProcess() async {

@@ -90,7 +90,9 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(
+          color: Colors.black87,
+        ),
         actions: [
           ValueListenableBuilder<bool>(
             valueListenable: _controller.isSearching,

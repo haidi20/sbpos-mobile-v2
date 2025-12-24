@@ -298,7 +298,7 @@ class TableNumberSection extends StatelessWidget {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       textInputAction: TextInputAction.done,
                       decoration: InputDecoration(
-                        labelText: 'Nomor Meja',
+                        labelText: 'misal: 1',
                         filled: true,
                         fillColor: cs.surface,
                         border: OutlineInputBorder(
@@ -325,6 +325,9 @@ class PaymentDetails extends StatelessWidget {
   final int Function(int) suggestQuickCash;
   final int Function() computeChange;
   final TextEditingController cashController;
+  final bool isPaid;
+  final bool isShowIsPaid;
+  final void Function(bool) onIsPaidChanged;
 
   const PaymentDetails({
     super.key,
@@ -337,6 +340,9 @@ class PaymentDetails extends StatelessWidget {
     required this.suggestQuickCash,
     required this.computeChange,
     required this.cashController,
+    required this.isPaid,
+    this.isShowIsPaid = true,
+    required this.onIsPaidChanged,
   });
 
   @override
@@ -347,70 +353,111 @@ class PaymentDetails extends StatelessWidget {
     final change = cashReceived - grandTotal;
 
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: paymentMethod == EPaymentMethod.cash
-          ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text(
-                'Uang Diterima',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: cashController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                onChanged: controller.onCashTextChanged,
-                decoration: const InputDecoration(
-                  prefixText: 'Rp ',
-                  hintText: '0',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                    Radius.circular(12),
-                  )),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: [
-                  ElevatedButton(
-                    onPressed: controller.setCashToExact,
-                    child: const Text('Uang Pas'),
-                  ),
-                  const SizedBox(width: 8),
-                  Builder(builder: (c) {
-                    final sug = suggestQuickCash(grandTotal);
-                    return ElevatedButton(
-                      onPressed: controller.setCashToSuggested,
-                      child: Text(formatRupiah(sug.toDouble())),
-                    );
-                  }),
-                ]),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color:
-                      change >= 0 ? Colors.green.shade100 : Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Langsung Bayar checkbox — tappable single-row label
+                InkWell(
+                  onTap: () => onIsPaidChanged(!isPaid),
+                  child: Row(
                     children: [
-                      const Text(
-                        'Kembalian',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      if (isShowIsPaid)
+                        Checkbox(
+                          value: isPaid,
+                          onChanged: (v) => onIsPaidChanged(v ?? false),
+                        ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Langsung Bayar',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      Text(formatRupiah(change.toDouble()))
-                    ]),
-              ),
-            ])
+                    ],
+                  ),
+                ),
+                // Hanya tampilkan field uang diterima dan tombol cepat bila isPaid true
+                if (isPaid) ...[
+                  Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Uang Diterima',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: cashController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          onChanged: controller.onCashTextChanged,
+                          decoration: const InputDecoration(
+                            prefixText: 'Rp ',
+                            hintText: '0',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                              Radius.circular(12),
+                            )),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              ElevatedButton(
+                                onPressed: controller.setCashToExact,
+                                child: const Text('Uang Pas'),
+                              ),
+                              const SizedBox(width: 8),
+                              Builder(builder: (c) {
+                                final sug = suggestQuickCash(grandTotal);
+                                return ElevatedButton(
+                                  onPressed: controller.setCashToSuggested,
+                                  child: Text(formatRupiah(sug.toDouble())),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: change >= 0
+                                ? Colors.green.shade100
+                                : Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Kembalian',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              Text(formatRupiah(change.toDouble()))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ]
+              ],
+            )
           : paymentMethod == EPaymentMethod.qris
               ? Column(children: [
                   Container(
@@ -593,27 +640,6 @@ class FooterSummary extends ConsumerWidget {
                 ),
               )
             ],
-          ),
-          const SizedBox(height: 12),
-          // Langsung Bayar checkbox — tappable single-row label
-          InkWell(
-            onTap: () => onIsPaidChanged(!state.isPaid),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: state.isPaid,
-                  onChanged: (v) => onIsPaidChanged(v ?? false),
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'Langsung Bayar',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 8),
           ElevatedButton(

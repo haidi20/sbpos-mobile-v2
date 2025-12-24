@@ -276,41 +276,11 @@ class ContentArea extends ConsumerWidget {
     // Ensure ContentArea always returns a scrollable so RefreshIndicator
     // can work reliably. Use ListView fallback for loading/empty states.
     if (combined.isLoadingCombined) {
-      return ListView(
-        controller: productGridController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: const [
-          SizedBox(
-            height: 240,
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.sbBlue),
-            ),
-          )
-        ],
-      );
+      return _ContentLoading(productGridController: productGridController);
     }
 
-    // if (state.isLoading) {
-    //   return ListView(
-    //     controller: productGridController,
-    //     physics: const AlwaysScrollableScrollPhysics(),
-    //     children: const [
-    //       SizedBox(
-    //         height: 240,
-    //         child: Center(
-    //           child: CircularProgressIndicator(color: AppColors.sbBlue),
-    //         ),
-    //       )
-    //     ],
-    //   );
-    // }
-
     if (combined.items.isEmpty) {
-      return ListView(
-        controller: productGridController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: const [SizedBox(height: 240, child: _ContentEmpty())],
-      );
+      return _ContentEmpty(productGridController: productGridController);
     }
 
     return _ContentData(
@@ -320,29 +290,60 @@ class ContentArea extends ConsumerWidget {
   }
 }
 
-class _ContentEmpty extends StatelessWidget {
-  const _ContentEmpty();
+class _ContentLoading extends StatelessWidget {
+  final ScrollController productGridController;
+
+  const _ContentLoading({required this.productGridController});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.expand(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 56,
-              color: Colors.grey,
+    return ListView(
+      controller: productGridController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: const [
+        SizedBox(
+          height: 240,
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.sbBlue),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class _ContentEmpty extends StatelessWidget {
+  final ScrollController productGridController;
+
+  const _ContentEmpty({required this.productGridController});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      controller: productGridController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: const [
+        SizedBox(
+          height: 240,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.search_off,
+                  size: 56,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Produk tidak ditemukan',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
             ),
-            SizedBox(height: 12),
-            Text(
-              'Produk tidak ditemukan',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -362,7 +363,7 @@ class _ContentData extends ConsumerWidget {
     final combined = viewModel.combinedContent;
 
     if (combined.items.isEmpty) {
-      return const _ContentEmpty();
+      return _ContentEmpty(productGridController: productGridController);
     }
 
     return GridView.builder(
@@ -390,13 +391,12 @@ class _ContentData extends ConsumerWidget {
           final product = item.product!;
           return ProductCard(
             product: product,
-            onTap: () =>
-                unawaited(controller.onProductTapSmart(product: product)),
+            onTap: () => unawaited(
+              controller.onProductTapSmart(product: product),
+            ),
           );
         }
       },
     );
   }
 }
-
-/* Removed unused _ContentDataLoading widget (was unused private helper). */
