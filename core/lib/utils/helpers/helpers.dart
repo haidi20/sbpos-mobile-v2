@@ -101,8 +101,8 @@ extension DateTimeReadableId on DateTime {
       final formatter = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID');
       return formatter.format(this);
     } catch (e) {
-      // In unit tests intl locale data may not be initialized. Fallback
-      // to a simple ISO-like format to avoid throwing during widget tests.
+      // Pada unit test data locale untuk intl mungkin belum diinisialisasi. Gunakan
+      // fallback ke format mirip ISO sederhana agar tidak melempar error saat widget test.
       final fallback = DateFormat('yyyy-MM-dd HH:mm');
       return fallback.format(this);
     }
@@ -110,7 +110,7 @@ extension DateTimeReadableId on DateTime {
 }
 
 extension DateTimeDisplay on DateTime {
-  /// Returns a compact localized date time string in format `dd/MM/yyyy HH:mm`.
+  /// Mengembalikan string tanggal-waktu terlokalisasi compact dengan format `dd/MM/yyyy HH:mm`.
   String toDisplayDateTime() {
     final d = this;
     final dd = d.day.toString().padLeft(2, '0');
@@ -135,7 +135,7 @@ extension DateDisplay on DateTime {
     return '$dd/$mm/$yyyy';
   }
 
-  /// Returns time portion in `HH:mm` format.
+  /// Mengembalikan bagian waktu dalam format `HH:mm`.
   String toDisplayTime() {
     final hh = hour.toString().padLeft(2, '0');
     final min = minute.toString().padLeft(2, '0');

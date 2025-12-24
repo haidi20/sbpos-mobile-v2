@@ -1,0 +1,13 @@
+Singkatnya — apa yang diperbaiki dan kenapa sekarang muncul:
+
+Inti masalah
+
+Web menggunakan Sembast, tapi kode platform/DAO kadang memilih jalur SQL atau mengabaikan fallback sehingga pembacaan lokal tidak melihat data yang di-seed. Juga ada penulisan ke provider lain saat inisialisasi Riverpod yang memicu error dan ganggu alur refresh.
+Perbaikan yang saya terapkan
+
+Core DB web adapter: inisialisasi Sembast lalu kembalikan null sehingga DAO akan memakai LocalDatabase Sembast secara konsisten (core_database_io.dart).
+Datasource/DAO: ubah agar menerima Database? dan tidak mengembalikan lebih awal saat database==null — sehingga ketika CoreDatabase memberi null, DAO melakukan operasi ke Sembast fallback (files: product_local.datasource.dart, packet_local.datasource.dart, DAOs).
+Seeding & repositori: perbaiki logging seeding dan tambahkan debug read langsung dari store Sembast setelah seeding untuk memastikan data benar-benar tersimpan (product.repository.impl.dart, packet.repository.impl.dart).
+Instrumentasi Sembast: tambahkan log pada init/insert/getAll di LocalDatabase untuk melihat inisialisasi dan jumlah record (local_database_sembast.dart).
+Riverpod/provider fix: hapus modifikasi provider saat inisialisasi; tambahkan productAfterCrudHookProvider dan daftarkan hook di controller (post-frame) agar refresh produk berjalan aman tanpa assertion error.
+ViewModel tracing: tambahkan log pada TransactionPosViewModel saat memanggil GetProducts/GetPackets sehingga kita bisa melihat apakah

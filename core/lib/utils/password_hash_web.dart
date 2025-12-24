@@ -1,6 +1,6 @@
 import 'package:bcrypt/bcrypt.dart';
 
-/// Web implementation using pure-Dart `bcrypt`.
+/// Implementasi web menggunakan `bcrypt` murni-Dart.
 class PasswordHash {
   static Future<String> hashPassword(String password, {String? salt}) async {
     final gensalt = salt ?? BCrypt.gensalt();

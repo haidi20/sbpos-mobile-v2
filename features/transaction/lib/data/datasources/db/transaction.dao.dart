@@ -279,7 +279,7 @@ class TransactionDao {
           where: '${TransactionDetailTable.colTransactionId} = ?',
           whereArgs: [id],
         );
-        final res = await _ensureDb().delete(
+        final res = await txn.delete(
           TransactionTable.tableName,
           where: '${TransactionTable.colId} = ?',
           whereArgs: [id],

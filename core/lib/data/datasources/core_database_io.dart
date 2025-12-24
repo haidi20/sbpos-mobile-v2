@@ -1,4 +1,4 @@
-// Platform detection shim: uses `dart:io` on IO platforms and `kIsWeb` on web.
+// Shim deteksi platform: menggunakan `dart:io` pada platform IO dan `kIsWeb` pada web.
 import 'platform_detect_io.dart'
     if (dart.library.html) 'platform_detect_web.dart';
 
@@ -9,12 +9,12 @@ import 'core_database_mobile.dart';
 import 'core_database_desktop.dart';
 import 'local_database_sembast.dart' as sembast_local;
 
-/// Dispatcher that chooses the correct CoreDatabase implementation at runtime.
+/// Dispatcher yang memilih implementasi CoreDatabase yang tepat saat runtime.
 ///
-/// Selection order:
-/// 1. Environment override via `CORE_DB_PLATFORM` in dotenv: 'mobile' or 'desktop'.
-/// 2. Platform detection: Android/iOS/Fuchsia => mobile; Windows/Linux/MacOS => desktop.
-/// 3. Fallback to mobile.
+/// Urutan pemilihan:
+/// 1. Override dari environment melalui `CORE_DB_PLATFORM` di dotenv: 'mobile' atau 'desktop'.
+/// 2. Deteksi platform: Android/iOS/Fuchsia => mobile; Windows/Linux/MacOS => desktop.
+/// 3. Jika gagal, fallback ke mobile.
 class CoreDatabase {
   static CoreDatabase? _instance;
   CoreDatabase._internal();
@@ -36,7 +36,7 @@ class CoreDatabase {
 
   void _ensureImpl() {
     if (_impl != null) return;
-    // 0) If running on web, use Sembast-backed LocalDatabase adapter.
+    // 0) Jika berjalan di web, gunakan adapter LocalDatabase berbasis Sembast.
     try {
       if (PlatformDetect.isWeb) {
         _logger.info('CoreDatabase: selected web implementation (sembast)');
@@ -47,7 +47,7 @@ class CoreDatabase {
       _logger.fine('PlatformDetect.isWeb check failed', e, st);
     }
 
-    // 1) Runtime override (highest priority) - can be set programmatically
+    // 1) Override runtime (prioritas tertinggi) - dapat di-set secara programatis
     try {
       final runtime = _runtimeOverride?.toLowerCase();
       if (runtime != null && runtime.isNotEmpty) {
@@ -67,7 +67,7 @@ class CoreDatabase {
       _logger.fine('Runtime override check failed', e, st);
     }
 
-    // 2) Env override (useful for tests or explicit forcing via .env)
+    // 2) Override dari env (berguna untuk pengujian atau memaksa lewat .env)
     try {
       final override = dotenv.env['CORE_DB_PLATFORM']?.toLowerCase();
       if (override != null && override.isNotEmpty) {
@@ -87,7 +87,7 @@ class CoreDatabase {
       _logger.fine('CORE_DB_PLATFORM override check failed', e, st);
     }
 
-    // 2) Platform detection
+    // 2) Deteksi platform
     try {
       if (PlatformDetect.isAndroid ||
           PlatformDetect.isIOS ||
@@ -114,25 +114,25 @@ class CoreDatabase {
     _impl = CoreDatabaseMobile();
   }
 
-  /// Programmatically force the platform selection. Use 'mobile', 'desktop',
-  /// or null to clear the runtime override and fall back to env/platform.
+  /// Memaksa pemilihan platform secara programatis. Gunakan 'mobile', 'desktop',
+  /// atau null untuk menghapus override runtime dan kembali ke pengecekan env/platform.
   static void setPlatformOverride(String? platform) {
     _runtimeOverride = platform?.toLowerCase();
-    // reset instance so next access re-evaluates selection
+    // reset instance agar akses berikutnya mengevaluasi ulang pemilihan
     if (_instance != null) _instance!._impl = null;
   }
 
-  /// Inspect the currently chosen platform without forcing initialization.
-  /// Returns 'mobile' or 'desktop'. If not yet selected, attempts to evaluate
-  /// overrides and platform detection heuristics.
+  /// Periksa platform yang dipilih saat ini tanpa memaksa inisialisasi.
+  /// Mengembalikan 'mobile' atau 'desktop'. Jika belum dipilih, mencoba mengevaluasi
+  /// override dan heuristik deteksi platform.
   String selectedPlatform() {
-    // if already decided
+    // jika sudah diputuskan
     if (_impl != null) {
       final name = _impl.runtimeType.toString().toLowerCase();
       return name.contains('desktop') ? 'desktop' : 'mobile';
     }
 
-    // evaluate without creating implementation
+    // evaluasi tanpa membuat implementasi
     final runtime = _runtimeOverride?.toLowerCase();
     if (runtime == 'desktop' || runtime == 'mobile') return runtime!;
     final override = dotenv.env['CORE_DB_PLATFORM']?.toLowerCase();
@@ -154,15 +154,15 @@ class CoreDatabase {
   }
 }
 
-/// Minimal web adapter that initializes `LocalDatabase` (Sembast) and returns
-/// `null` for `.database` to preserve existing DAO fallback logic that uses
-/// `LocalDatabase` when CoreDatabase returns `null`.
+/// Adapter web minimal yang menginisialisasi `LocalDatabase` (Sembast) dan mengembalikan
+/// `null` untuk `.database` agar mempertahankan logika fallback DAO yang menggunakan
+/// `LocalDatabase` ketika CoreDatabase mengembalikan `null`.
 class _WebCoreImpl {
   Future<dynamic> get database async {
     try {
       await sembast_local.LocalDatabase.instance.init();
-      // Return null intentionally: DAO-level code treats a null `.database`
-      // as the signal to use the web Sembast `LocalDatabase` fallback.
+      // Mengembalikan null dengan sengaja: kode di level DAO memperlakukan null `.database`
+      // sebagai sinyal untuk menggunakan fallback `LocalDatabase` Sembast di web.
       return null;
     } catch (e, st) {
       Logger('CoreDatabaseWeb').severe('Failed to init LocalDatabase', e, st);
