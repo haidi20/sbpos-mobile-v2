@@ -512,7 +512,7 @@ void main() {
     final p = ProductEntity(id: 902, name: 'FailUpdate', price: 2000.0);
     await vmFail.onAddToCart(p);
 
-    // ensure transaction exists now
+    // pastikan transaksi sekarang ada
     expect(vmFail.state.transaction, isNotNull);
 
     // trigger an update path

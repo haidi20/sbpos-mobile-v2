@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io' if (dart.library.html) 'package:core/utils/io_stub.dart';
 
 class CoreRemoteDataSource with BaseErrorHelper {
   final String host = HOST;
@@ -75,7 +76,9 @@ class CoreRemoteDataSource with BaseErrorHelper {
     if (!kDebugMode) return;
 
     try {
-      final dir = await getApplicationDocumentsDirectory();
+      // Avoid filesystem ops on web; io_stub no-ops there.
+      final dir = await getApplicationDocumentsDirectory() as dynamic;
+      if (dir == null) return;
       final filePath = '${dir.path}/response_api.json';
       final file = File(filePath);
       await file.writeAsString(response.body, flush: true);

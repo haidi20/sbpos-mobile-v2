@@ -15,10 +15,6 @@ class PacketLocalDataSource with BaseErrorHelper {
     if (isShowLog) _logger.info(msg);
   }
 
-  void _logWarning(String msg) {
-    if (isShowLog) _logger.warning(msg);
-  }
-
   void _logSevere(String msg, [Object? e, StackTrace? st]) {
     if (isShowLog) _logger.severe(msg, e, st);
   }
@@ -39,14 +35,16 @@ class PacketLocalDataSource with BaseErrorHelper {
   }
 
   @visibleForTesting
-  PacketDao createDao(Database db) => PacketDao(db);
+  // Accept nullable Database so DAO can decide whether to use the native
+  // `database` or fall back to the Sembast `LocalDatabase` implementation.
+  PacketDao createDao(Database? db) => PacketDao(db);
 
   Future<List<PacketModel>> getPackets({int? limit, int? offset}) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat getPackets');
-        return [];
+        _logInfo(
+            'Database is null; delegating to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       final result = await dao.getPackets(limit: limit, offset: offset);
@@ -62,8 +60,8 @@ class PacketLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat getPacketById');
-        return null;
+        _logInfo(
+            'Database is null; delegating getPacketById to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       return await dao.getPacketById(id);
@@ -78,8 +76,8 @@ class PacketLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat insertPacket');
-        return null;
+        _logInfo(
+            'Database is null; delegating insertPacket to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       final map = sanitizeForDb(model.toInsertDbLocal());
@@ -98,8 +96,8 @@ class PacketLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat upsertPacket');
-        return null;
+        _logInfo(
+            'Database is null; delegating upsertPacket to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       final map = sanitizeForDb(model.toInsertDbLocal());
@@ -118,8 +116,8 @@ class PacketLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat updatePacket');
-        return 0;
+        _logInfo(
+            'Database is null; delegating updatePacket to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       final map = sanitizeForDb(Map<String, dynamic>.from(data));
@@ -137,8 +135,8 @@ class PacketLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat deletePacket');
-        return 0;
+        _logInfo(
+            'Database is null; delegating deletePacket to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       final count = await dao.deletePacket(id);
@@ -154,8 +152,8 @@ class PacketLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database null saat clearPackets');
-        return 0;
+        _logInfo(
+            'Database is null; delegating clearPackets to Sembast LocalDatabase (web).');
       }
       final dao = createDao(db);
       return await dao.clearPackets();

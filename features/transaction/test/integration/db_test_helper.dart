@@ -6,7 +6,7 @@ Future<Database> createTestDatabase() async {
   // Set global factory for sqflite
   databaseFactory = databaseFactoryFfi;
 
-  // Use in-memory database for isolation
+  // Gunakan database in-memory untuk isolasi
   final db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
   return db;
 }

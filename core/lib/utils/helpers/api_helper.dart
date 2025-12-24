@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'dart:io' if (dart.library.html) 'package:core/utils/io_stub.dart';
 import 'package:path/path.dart';
 import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
@@ -19,17 +19,18 @@ class ApiHelper {
 
   factory ApiHelper() => _apiHelper ?? ApiHelper._instance();
 
-  static HttpClient? _apiClient;
+  static dynamic _apiClient;
 
-  Future<HttpClient?> get apiClient async {
+  Future<dynamic> get apiClient async {
     _apiClient ??= await _initClient();
     return _apiClient;
   }
 
-  Future<HttpClient> _initClient() async {
+  Future<dynamic> _initClient() async {
     final client = HttpClient();
-    client.badCertificateCallback =
-        (X509Certificate cert, String host, int port) => false;
+    // Gunakan parameter tanpa tipe untuk menghindari kesalahan tanda tangan
+    // antara dart:io X509Certificate dan X509Certificate pada io_stub web.
+    client.badCertificateCallback = (cert, host, port) => false;
     return client;
   }
 
@@ -37,8 +38,7 @@ class ApiHelper {
     required String url,
     Map<String, dynamic>? params,
   }) async {
-    final client =
-        await apiClient; // Anda harus memastikan apiClient didefinisikan
+    final client = await apiClient; // Ensure apiClient is defined
     final ioClient = IOClient(client);
 
     // Menambahkan user_id ke dalam params jika ada

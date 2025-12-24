@@ -1,9 +1,10 @@
 import 'package:core/core.dart';
+// platform detection is used dynamically via `PlatformDetect`; no direct import required here
 import 'package:product/data/datasources/product_remote.datasource.dart';
 import 'package:sbpos_v2/main.dart';
-// Provide a simple default wiring for the `product` feature so examples
-// and screens work without requiring the app composition root to override
-// providers. This can be replaced by a better composition in production.
+// Menyediakan wiring default sederhana untuk fitur `product` agar contoh dan
+// layar berfungsi tanpa perlu composition root aplikasi mengoverride provider.
+// Ini dapat digantikan dengan komposisi yang lebih baik di produksi.
 import 'package:product/data/datasources/packet_local.datasource.dart';
 import 'package:product/data/repositories/packet.repository.impl.dart';
 import 'package:product/presentation/providers/product_repository.provider.dart'
@@ -23,14 +24,26 @@ Future<void> main() async {
     // Setup logging sekali di awal app
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((record) {
+      final logMsg = '[${record.loggerName}] '
+          '${record.level.name.padRight(7)} | '
+          '${record.time.hour.toString().padLeft(2, '0')}:${record.time.minute.toString().padLeft(2, '0')} | '
+          '${record.message}';
       if (kDebugMode) {
-        debugPrint('[${record.loggerName}] '
-            '${record.level.name.padRight(7)} | '
-            '${record.time.hour.toString().padLeft(2, '0')}:${record.time.minute.toString().padLeft(2, '0')} | '
-            '${record.message}');
+        debugPrint(logMsg);
         // optional: print stack trace in debug
         if (record.error != null) debugPrint(record.error.toString());
         if (record.stackTrace != null) debugPrint(record.stackTrace.toString());
+        // Print to browser console if running on web
+        try {
+          // PlatformDetect from core package
+          // if (PlatformDetect.isWeb) {
+          //   print('[WEB] $logMsg');
+          //   if (record.error != null) print('[WEB] ERROR: ${record.error}');
+          //   if (record.stackTrace != null) {
+          //     print('[WEB] STACK: ${record.stackTrace}');
+          //   }
+          // }
+        } catch (_) {}
       }
     });
 

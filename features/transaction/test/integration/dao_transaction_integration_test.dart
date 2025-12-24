@@ -92,7 +92,7 @@ void main() {
         subtotal: 100,
       ).toInsertDbLocal();
 
-      // ensure transaction id is set on detail map
+      // pastikan id transaksi diset pada map detail
       detailMap[TransactionDetailTable.colTransactionId] = txId;
 
       // first insert
@@ -100,7 +100,7 @@ void main() {
       expect(first, isNotEmpty);
       expect(first.first.qty, equals(1));
 
-      // second insert of same product -> should update existing row (qty becomes 2)
+      // insert kedua produk yang sama -> harus memperbarui baris yang ada (qty menjadi 2)
       final second = await dao.insertDetails([detailMap]);
       expect(second, isNotEmpty);
       // verify DB has only one detail for this tx and product with qty == 2
@@ -135,7 +135,7 @@ void main() {
       ).toInsertDbLocal();
       detailMap[TransactionDetailTable.colTransactionId] = txId;
 
-      // this should not throw and should insert without causing sqflite null-arg warning
+      // ini tidak boleh melempar dan harus menyisip tanpa menyebabkan peringatan null-arg sqflite
       final inserted = await dao.insertDetails([detailMap]);
       expect(inserted, isNotEmpty);
       expect(inserted.first.productId, equals(55));

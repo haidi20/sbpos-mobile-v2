@@ -125,8 +125,8 @@ class TransactionHistoryList extends StatefulWidget {
   final Future<void> Function(TransactionEntity)? onLongPress;
   final bool isLoading;
 
-  /// Callback invoked when the user swipes horizontally on the list.
-  /// Passes number of days to shift: positive -> add days (next), negative -> subtract days (previous).
+  /// Callback dipanggil saat pengguna menggeser horizontal pada daftar.
+  /// Mengirim jumlah hari untuk digeser: positif -> maju (hari berikutnya), negatif -> mundur (hari sebelumnya).
   final ValueChanged<int>? onDateShift;
 
   const TransactionHistoryList({

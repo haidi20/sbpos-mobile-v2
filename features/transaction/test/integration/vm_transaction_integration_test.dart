@@ -79,11 +79,11 @@ void main() {
       final fetched = await dao.getTransactionById(txIdNonNull);
       expect(fetched, isNotNull);
       final fetchedModel = fetched!;
-      // totalQty should be updated to 2 and totalAmount = 15000 * 2
+      // totalQty harus diperbarui menjadi 2 dan totalAmount = 15000 * 2
       expect(fetchedModel.totalQty, equals(2));
       expect(fetchedModel.totalAmount, equals(15000 * 2));
 
-      // detail qty should be 2
+      // qty detail harus bernilai 2
       final details = await dao.getDetailsByTransactionId(txIdNonNull);
       expect(details, isNotEmpty);
       final detailsList = details;

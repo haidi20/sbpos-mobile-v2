@@ -20,20 +20,39 @@ class PacketRepositoryImpl implements PacketRepository {
 
   Future<void> _ensureSeededLocal() async {
     try {
+      _logger.info('[WEB] Packet seeding: checking local DB');
       final existing = await local.getPackets(limit: 1);
       if (existing.isEmpty) {
+        int success = 0;
         for (final p in initialPackets) {
           final model = PacketModel.fromEntity(p);
           try {
-            await local.upsertPacket(model,
+            final res = await local.upsertPacket(model,
                 items: model.items?.map((it) => it.toInsertDbLocal()).toList());
-          } catch (_) {
-            // ignore individual insert errors
+            if (res != null) {
+              success++;
+              _logger
+                  .info('[WEB] Seeded packet: id=${res.id} name=${res.name}');
+            } else {
+              _logger.warning(
+                  '[WEB] Packet seed returned null for packet name=${p.name}');
+            }
+          } catch (e, st) {
+            _logger.warning('[WEB] Gagal insert seed packet: ${p.name}', e, st);
           }
         }
+        if (success == 0) {
+          _logger
+              .severe('[WEB] Packet seeding failed: nothing saved to local DB');
+        } else {
+          _logger.info('[WEB] Packet seeding success: $success packets saved');
+        }
+      } else {
+        _logger.info(
+            '[WEB] Packet local DB already seeded (${existing.length} packets)');
       }
     } catch (e, st) {
-      _logger.warning('Gagal cek/seed packet lokal: $e', e, st);
+      _logger.severe('[WEB] Gagal cek/seed packet lokal', e, st);
     }
   }
 

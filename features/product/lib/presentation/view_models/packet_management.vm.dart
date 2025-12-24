@@ -31,10 +31,10 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
   // -------------------------
   PacketEntity get draft => _draft;
 
-  /// Returns an immutable view of selected ids and their quantities.
+  /// Mengembalikan tampilan tak dapat diubah dari id terpilih dan kuantitasnya.
   Map<int, int> get selectedMap => Map<int, int>.unmodifiable(_qtys);
 
-  /// Immutable view of selected product ids.
+  /// Tampilan tak dapat diubah dari id produk yang dipilih.
   Set<int> get selectedIds => Set<int>.unmodifiable(_selectedIds);
 
   // -------------------------
@@ -49,7 +49,7 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
   // -------------------------
   // Public helpers / actions
   // -------------------------
-  /// Initialize selection state from a packet's items.
+  /// Inisialisasi state seleksi dari item paket.
   void initSelectionFromPacket(PacketEntity packet) {
     _selectedIds = {
       for (final it in packet.items ?? [])
@@ -74,7 +74,7 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
       _qtys[productId] = 0;
     } else {
       _selectedIds.add(productId);
-      // ensure qty at least 1 when selected
+      // pastikan qty minimal 1 saat dipilih
       final current = _qtys[productId] ?? 0;
       _qtys[productId] = current <= 0 ? 1 : current;
     }

@@ -23,11 +23,12 @@ dependencies:
     path: features/transaction
   cupertino_icons: ^1.0.8
   dotted_border: ^2.1.0
+  sqflite_common_ffi: ^2.3.3
+  # Web-friendly implementations moved to core package
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-  sqflite_common_ffi: ^2.3.3
   integration_test:
     sdk: flutter
   network_image_mock: ^2.1.1

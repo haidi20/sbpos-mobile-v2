@@ -3,7 +3,6 @@
 import 'package:core/core.dart';
 import 'package:flutter/services.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
-// detail_info.card not used by the full fields grid; kept imports minimal
 import 'package:transaction/presentation/components/summary_row.card.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -185,6 +184,7 @@ class _TransactionDetailHeader extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _TransactionFullFieldsGrid extends StatelessWidget {
   final TransactionEntity tx;
 

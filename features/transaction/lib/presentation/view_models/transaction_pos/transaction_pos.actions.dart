@@ -198,12 +198,14 @@ mixin TransactionPosViewModelActions on StateNotifier<TransactionPosState> {
         return;
       }
 
+      _vm._logger.info('calling GetProducts usecase (offline)...');
       final res = await _vm._getProductsUsecase!(isOffline: true);
       res.fold((f) {
-        _vm._logger.info('no products loaded');
+        _vm._logger.info('GetProducts returned failure: $f');
         _vm._cachedProducts = [];
         _vm._rebuildCombinedCache();
       }, (list) {
+        _vm._logger.info('GetProducts returned ${list.length} products');
         _vm._cachedProducts = list;
         if (state.activeCategory.isEmpty) {
           state = state.copyWith(activeCategory: 'Semua');

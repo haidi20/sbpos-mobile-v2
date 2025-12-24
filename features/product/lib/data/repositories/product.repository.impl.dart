@@ -7,6 +7,10 @@ import 'package:product/data/responses/product.response.dart';
 import 'package:product/domain/repositories/product.repository.dart';
 import 'package:product/data/datasources/product_local.datasource.dart';
 import 'package:product/data/datasources/product_remote.datasource.dart';
+import 'package:core/data/datasources/local_database_sembast.dart'
+    as sembast_db;
+import 'package:product/data/datasources/db/product.table.dart'
+    as product_table;
 
 class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDataSource local;
@@ -49,13 +53,36 @@ class ProductRepositoryImpl implements ProductRepository {
         // seed products from dummy data
         try {
           final models = initialProducts.map((e) => e.toModel()).toList();
-          await _saveToLocal(models);
+          final saved = await _saveToLocal(models);
+          if (saved == null || saved.isEmpty) {
+            _logger.severe(
+                '[WEB] Product seeding failed: nothing saved to local DB (Sembast?)');
+          } else {
+            _logger.info(
+                '[WEB] Product seeding success: ${saved.length} products saved');
+            // Debug: read raw sembast store contents to validate persistence
+            try {
+              final raw = await sembast_db.LocalDatabase.instance
+                  .getAll(product_table.ProductTable.tableName);
+              _logger.info(
+                  '[WEB] Debug: sembast raw products count=${raw.length}');
+              if (raw.isNotEmpty) {
+                final sample = raw.take(3).map((r) => r['name']).toList();
+                _logger.info('[WEB] Debug: sample product names=$sample');
+              }
+            } catch (e, st) {
+              _logger.warning('[WEB] Debug read sembast failed: $e', e, st);
+            }
+          }
         } catch (e, st) {
-          _logger.warning('Gagal seed product lokal: $e', e, st);
+          _logger.severe('[WEB] Gagal seed product lokal: $e', e, st);
         }
+      } else {
+        _logger.info(
+            '[WEB] Product local DB already seeded (${localResp.length} products)');
       }
     } catch (e, st) {
-      _logger.warning('Gagal cek/seed product lokal: $e', e, st);
+      _logger.severe('[WEB] Gagal cek/seed product lokal: $e', e, st);
     }
   }
 

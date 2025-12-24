@@ -146,8 +146,8 @@ void main() {
     testWidgets('screens build with provider overrides', (tester) async {
       await initializeDateFormatting();
 
-      // Provide both viewmodel overrides in a single ProviderScope to avoid
-      // changing overrides mid-test (Riverpod limitation).
+      // Berikan kedua override viewmodel dalam satu ProviderScope untuk menghindari
+      // mengganti override di tengah-tes (keterbatasan Riverpod).
       await tester.pumpWidget(ProviderScope(overrides: [
         transactionHistoryViewModelProvider.overrideWith((ref) =>
             TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo))),

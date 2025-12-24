@@ -12,7 +12,7 @@ import 'package:product/data/datasources/db/product.table.dart';
 /// Menyediakan fungsi membaca, menulis, dan memperbarui transaksi
 /// beserta detailnya dengan pendekatan yang aman dan efisien.
 class TransactionDao {
-  final Database database;
+  final Database? database;
   final _logger = Logger('TransactionDao');
   final bool isShowLog = false;
 
@@ -27,6 +27,14 @@ class TransactionDao {
   }
 
   TransactionDao(this.database);
+
+  Database _ensureDb() {
+    if (database == null) {
+      throw UnsupportedError(
+          'TransactionDao: database is null (web). Use web data source implementations.');
+    }
+    return database!;
+  }
 
   /// Mengambil daftar transaksi beserta detailnya.
   ///
@@ -86,10 +94,10 @@ class TransactionDao {
         }
       }
 
-      final txs = await database.rawQuery(sql, whereArgs);
+      final txs = await _ensureDb().rawQuery(sql, whereArgs);
       List<TransactionModel> result = [];
       for (var t in txs) {
-        final details = await database.query(
+        final details = await _ensureDb().query(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
           whereArgs: [t[TransactionTable.colId]],
@@ -110,7 +118,7 @@ class TransactionDao {
   /// Mengambil satu transaksi berdasarkan `id` (termasuk detailnya).
   Future<TransactionModel?> getTransactionById(int id) async {
     try {
-      final txResult = await database.query(
+      final txResult = await _ensureDb().query(
         TransactionTable.tableName,
         where: '${TransactionTable.colId} = ?',
         whereArgs: [id],
@@ -118,7 +126,7 @@ class TransactionDao {
       );
       if (txResult.isEmpty) return null;
 
-      final details = await database.query(
+      final details = await _ensureDb().query(
         TransactionDetailTable.tableName,
         where: '${TransactionDetailTable.colTransactionId} = ?',
         whereArgs: [id],
@@ -140,7 +148,7 @@ class TransactionDao {
     try {
       // Hanya mempertimbangkan transaksi dengan status = 'Pending' saat
       // menentukan transaksi aktif terbaru yang dipakai alur POS.
-      final txResult = await database.query(
+      final txResult = await _ensureDb().query(
         TransactionTable.tableName,
         where: '${TransactionTable.colStatus} = ?',
         whereArgs: [TransactionStatus.pending.value],
@@ -154,7 +162,7 @@ class TransactionDao {
       final id = row[TransactionTable.colId] as int?;
       if (id == null) return null;
 
-      final details = await database.query(
+      final details = await _ensureDb().query(
         TransactionDetailTable.tableName,
         where: '${TransactionDetailTable.colTransactionId} = ?',
         whereArgs: [id],
@@ -177,7 +185,7 @@ class TransactionDao {
   Future<TransactionModel> insertTransaction(Map<String, dynamic> tx) async {
     try {
       final sw = Stopwatch()..start();
-      final result = await database.transaction((txn) async {
+      final result = await _ensureDb().transaction((txn) async {
         // Pastikan record awal memiliki `synced_at` = NULL
         tx[TransactionTable.colSyncedAt] = null;
         final cleanedTx = Map<String, dynamic>.from(tx)
@@ -214,7 +222,7 @@ class TransactionDao {
   Future<TransactionModel> insertSyncTransaction(
       Map<String, dynamic> tx, List<Map<String, dynamic>> details) async {
     try {
-      return await database.transaction((txn) async {
+      return await _ensureDb().transaction((txn) async {
         final cleanedTx = Map<String, dynamic>.from(tx)
           ..removeWhere((k, v) => v == null);
         // Pastikan status default 'Pending' saat insert sinkronisasi
@@ -265,13 +273,13 @@ class TransactionDao {
   Future<int> deleteTransaction(int id) async {
     try {
       // pastikan detail ikut terhapus agar tidak ada baris yatim
-      return await database.transaction((txn) async {
+      return await _ensureDb().transaction((txn) async {
         await txn.delete(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
           whereArgs: [id],
         );
-        final res = await txn.delete(
+        final res = await _ensureDb().delete(
           TransactionTable.tableName,
           where: '${TransactionTable.colId} = ?',
           whereArgs: [id],
@@ -288,7 +296,7 @@ class TransactionDao {
   /// Menghapus seluruh baris pada tabel `transactions` (tidak menyentuh detail).
   Future<int> clearTransactions() async {
     try {
-      final res = await database.delete(TransactionTable.tableName);
+      final res = await _ensureDb().delete(TransactionTable.tableName);
       _logInfo('clearTransactions: success rows=$res');
       return res;
     } catch (e, s) {
@@ -300,7 +308,7 @@ class TransactionDao {
   /// Mengosongkan kolom `synced_at` pada transaksi tertentu.
   Future<int> clearSyncedAt(int id) async {
     try {
-      final res = await database.rawUpdate(
+      final res = await _ensureDb().rawUpdate(
         'UPDATE ${TransactionTable.tableName} SET ${TransactionTable.colSyncedAt} = NULL WHERE ${TransactionTable.colId} = ?',
         [id],
       );
@@ -321,7 +329,7 @@ class TransactionDao {
         ..removeWhere((k, v) => v == null);
       // hapus `id` dari map update jika ada
       cleaned.remove('id');
-      final res = await database.update(
+      final res = await _ensureDb().update(
         TransactionTable.tableName,
         cleaned,
         where: '${TransactionTable.colId} = ?',
@@ -339,7 +347,7 @@ class TransactionDao {
   /// Jika tidak ada, kembalikan 0.
   Future<int> getLastSequenceNumber() async {
     try {
-      final rows = await database.rawQuery(
+      final rows = await _ensureDb().rawQuery(
         'SELECT MAX(${TransactionTable.colSequenceNumber}) as max_seq FROM ${TransactionTable.tableName}',
       );
       if (rows.isEmpty) return 0;
@@ -360,7 +368,7 @@ class TransactionDao {
   Future<List<TransactionDetailModel>> getDetailsByTransactionId(
       int txId) async {
     try {
-      final results = await database.query(
+      final results = await _ensureDb().query(
         TransactionDetailTable.tableName,
         where: '${TransactionDetailTable.colTransactionId} = ?',
         whereArgs: [txId],
@@ -383,7 +391,7 @@ class TransactionDao {
       List<Map<String, dynamic>> details) async {
     try {
       final sw = Stopwatch()..start();
-      final result = await database.transaction((txn) async {
+      final result = await _ensureDb().transaction((txn) async {
         if (details.isEmpty) return <TransactionDetailModel>[];
 
         // Diasumsikan semua detail masuk untuk transaction_id yang sama.
@@ -492,7 +500,7 @@ class TransactionDao {
   Future<List<TransactionDetailModel>> replaceDetailsForTransaction(
       int txId, List<Map<String, dynamic>> details) async {
     try {
-      final result = await database.transaction((txn) async {
+      final result = await _ensureDb().transaction((txn) async {
         // Hapus baris existing untuk transaction_id ini
         await txn.delete(
           TransactionDetailTable.tableName,
@@ -536,7 +544,7 @@ class TransactionDao {
   /// Menghapus semua detail berdasarkan `transaction_id`.
   Future<int> deleteDetailsByTransactionId(int txId) async {
     try {
-      final res = await database.delete(
+      final res = await _ensureDb().delete(
         TransactionDetailTable.tableName,
         where: '${TransactionDetailTable.colTransactionId} = ?',
         whereArgs: [txId],

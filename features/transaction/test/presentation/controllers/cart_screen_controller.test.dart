@@ -127,7 +127,7 @@ void main() {
         tester.state<_ControllerHarnessState>(find.byType(_ControllerHarness));
     final controller = state.controller;
 
-    // set details after controller created to avoid async init races
+    // set details setelah controller dibuat untuk menghindari race init async
     final vmNotifier = state.ref.read(transactionPosViewModelProvider.notifier);
     vmNotifier.state = vmNotifier.state.copyWith(details: [detail1, detail2]);
     await tester.pumpAndSettle();
@@ -162,7 +162,7 @@ void main() {
     // initial from provided state
     expect(controller.orderNoteController.text, 'initial');
 
-    // change the controller text should propagate to viewmodel.state immediately
+    // perubahan teks controller harus langsung dipropagasikan ke viewmodel.state
     controller.orderNoteController.text = 'changed-note';
     // advance time to allow debounce/timers to complete and avoid pending timers
     await tester.pump(const Duration(milliseconds: 600));
@@ -232,8 +232,8 @@ void main() {
     final next2 = vm.state.copyWith(details: [detail]);
     controller.onStateChanged(prev2, next2);
     await tester.pump();
-    // after re-added, controller should restore active id to 5
-    // the controller sets active id via viewmodel when restoring
+    // setelah ditambahkan kembali, controller harus mengembalikan active id ke 5
+    // controller mengatur active id melalui viewmodel saat merestore
     expect(vm.state.activeNoteId, 5);
   });
 
@@ -277,7 +277,7 @@ void main() {
     controller.onUpdateQuantity(7, -1);
     await tester.pumpAndSettle();
 
-    // after update, vm state's details should be empty
+    // setelah update, details pada vm.state harus kosong
     final vm = state.ref.read(transactionPosViewModelProvider.notifier);
     expect(vm.state.details.length, 0);
   });
@@ -339,7 +339,7 @@ void main() {
         tester.state<_ControllerHarnessState>(find.byType(_ControllerHarness));
     final controller = state.controller;
 
-    // disposing should not throw
+    // dispose tidak boleh melempar
     expect(() => controller.dispose(), returnsNormally);
   });
 }

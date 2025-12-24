@@ -34,7 +34,7 @@ class TransactionHistoryViewModel
       .where((t) => t.status == TransactionStatus.lunas)
       .toList();
 
-  /// Event-based search with debounce; triggers local DB query.
+  /// Pencarian berbasis event dengan debounce; memicu kueri ke DB lokal.
   void onSearchChanged(
     String q, {
     Duration debounce = const Duration(milliseconds: 500),
@@ -52,7 +52,7 @@ class TransactionHistoryViewModel
     });
   }
 
-  /// Set selected date filter (use null to clear)
+  /// Atur filter tanggal terpilih (pakai null untuk membersihkan)
   Future<void> setSelectedDate(DateTime? date) async {
     // set selected date in state immediately
     if (date == null) {
@@ -100,17 +100,18 @@ class TransactionHistoryViewModel
     }
   }
 
-  /// Shift the currently selected date by [shiftDays]. If no date is selected,
-  /// shift relative to today. This delegates to `setSelectedDate` which will
-  /// trigger a refresh.
+  /// Geser tanggal terpilih saat ini sebesar [shiftDays]. Jika tidak ada tanggal
+  /// terpilih, geser relatif terhadap hari ini. Ini mendelegasikan ke
+  /// `setSelectedDate` yang akan memicu refresh.
   Future<void> shiftSelectedDate(int shiftDays) async {
     final current = state.selectedDate ?? DateTime.now();
     final newDate = current.add(Duration(days: shiftDays));
     await setSelectedDate(newDate);
   }
 
-  /// Generate a list of consecutive dates ending today with length [daysToShow].
-  /// The list is ordered from older -> newer (start .. today).
+  /// Hasilkan daftar tanggal berturut-turut yang berakhir hari ini dengan panjang
+  /// [daysToShow].
+  /// Daftar diurutkan dari yang lebih lama ke yang lebih baru (mulai .. hari ini).
   List<DateTime> generateDateList(int daysToShow) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

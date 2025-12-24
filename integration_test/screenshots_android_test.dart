@@ -52,7 +52,7 @@ void main() {
       if (msg.contains('convertFlutterSurfaceToImage')) {
         try {
           await binding.convertFlutterSurfaceToImage();
-          // Ensure a stable surface size for consistent layout
+          // Pastikan ukuran surface stabil untuk konsistensi tata letak
           await binding.setSurfaceSize(const ui.Size(1080, 1920));
           await binding.takeScreenshot(name);
           return;

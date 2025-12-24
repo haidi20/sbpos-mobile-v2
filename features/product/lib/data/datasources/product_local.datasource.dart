@@ -15,10 +15,6 @@ class ProductLocalDataSource with BaseErrorHelper {
     if (isShowLog) _logger.info(msg);
   }
 
-  void _logWarning(String msg) {
-    if (isShowLog) _logger.warning(msg);
-  }
-
   void _logSevere(String msg, [Object? e, StackTrace? st]) {
     if (isShowLog) _logger.severe(msg, e, st);
   }
@@ -39,17 +35,18 @@ class ProductLocalDataSource with BaseErrorHelper {
   }
 
   @visibleForTesting
-  ProductDao createDao(Database db) => ProductDao(db);
+  ProductDao createDao(Database? db) => ProductDao(db);
 
   Future<List<ProductModel>> getProducts({int? limit, int? offset}) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat getProducts');
-        return [];
-      }
+      // Log db selection for debugging: null => use Sembast fallback.
+      _logger.info(
+          'ProductLocalDataSource.getProducts: using ${db == null ? 'Sembast (web)' : 'SQL (native)'} database');
       final dao = createDao(db);
       final result = await dao.getProducts(limit: limit, offset: offset);
+      _logger.info(
+          'ProductLocalDataSource.getProducts: returned ${result.length} items');
       _logInfo('getProducts: count=${result.length}');
       return result;
     } catch (e, st) {
@@ -63,10 +60,6 @@ class ProductLocalDataSource with BaseErrorHelper {
       {int? limit, int? offset}) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat searchProductsByName');
-        return [];
-      }
       final dao = createDao(db);
       final result =
           await dao.searchProductsByName(name, limit: limit, offset: offset);
@@ -81,10 +74,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<ProductModel?> getProductById(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat getProductById');
-        return null;
-      }
       final dao = createDao(db);
       return await dao.getProductById(id);
     } catch (e, st) {
@@ -96,10 +85,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<ProductModel?> insertProduct(ProductModel model) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat insertProduct');
-        return null;
-      }
       final dao = createDao(db);
       final map = sanitizeForDb(model.toInsertDbLocal());
       final inserted =
@@ -115,10 +100,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<ProductModel?> upsertProduct(ProductModel model) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat upsertProduct');
-        return null;
-      }
       final dao = createDao(db);
       final map = sanitizeForDb(model.toInsertDbLocal());
       final upserted =
@@ -134,10 +115,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<int> updateProduct(Map<String, dynamic> data) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat updateProduct');
-        return 0;
-      }
       final dao = createDao(db);
       final map = sanitizeForDb(Map<String, dynamic>.from(data));
       if (data.containsKey('id')) map['id'] = data['id'];
@@ -153,10 +130,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<int> deleteProduct(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat deleteProduct');
-        return 0;
-      }
       final dao = createDao(db);
       final count = await dao.deleteProduct(id);
       _logInfo('deleteProduct: rows=$count');
@@ -170,10 +143,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<int> clearProducts() async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat clearProducts');
-        return 0;
-      }
       final dao = createDao(db);
       return await dao.clearProducts();
     } catch (e, st) {
@@ -185,10 +154,6 @@ class ProductLocalDataSource with BaseErrorHelper {
   Future<int> clearSyncedAt(int id) async {
     try {
       final db = _testDb ?? await databaseHelper.database;
-      if (db == null) {
-        _logWarning('Database null saat clearSyncedAt');
-        return 0;
-      }
       final dao = createDao(db);
       final count = await dao.clearSyncedAt(id);
       _logInfo('clearSyncedAt: rows=$count');

@@ -114,7 +114,7 @@ void main() {
     // should show 'Stok rendah' or 'Stok menipis' depending on qty
     expect(find.textContaining('Stok rendah'), findsOneWidget);
 
-    // ensure no exceptions during render (overflow, parent data, null errors)
+    // pastikan tidak ada exception saat render (overflow, parent data, error null)
     final ex = tester.takeException();
     expect(ex, isNull, reason: 'Unexpected exception during widget build/pump');
   });

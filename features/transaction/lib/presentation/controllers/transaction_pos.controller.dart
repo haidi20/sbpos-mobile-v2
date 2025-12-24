@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/presentation/providers/product.provider.dart';
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
@@ -12,6 +13,7 @@ import 'package:product/domain/entities/packet_selected_item.entity.dart';
 
 class TransactionPosController {
   final WidgetRef ref;
+  final Logger _logger = Logger('TransactionPosController');
   final BuildContext context;
   final TextEditingController searchController = TextEditingController();
 
@@ -61,12 +63,26 @@ class TransactionPosController {
     _state = ref.read(transactionPosViewModelProvider);
     // initialize appbar focus node used by screens
     appBarSearchFocus = FocusNode();
+    // Install product-after-CRUD hook at runtime (deferred) so we don't
+    // modify providers during the widget build/init lifecycle. Use a
+    // post-frame callback to perform the update after the first frame.
+    try {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          ref.read(productAfterCrudHookProvider.notifier).state = () {
+            return _vm.refreshProducts();
+          };
+        } catch (_) {}
+      });
+    } catch (_) {}
   }
 
   /// Dipanggil oleh screen saat visibilitas route berubah (post-frame).
   /// Memastikan `refreshProductsAndPackets` hanya dijalankan sekali per
   /// kali visibilitas muncul.
   Future<void> maybeRefreshOnVisible(bool isCurrent) async {
+    _logger.info(
+        'maybeRefreshOnVisible dipanggil: isCurrent=$isCurrent, isCartSheetOpen=$_isCartSheetOpen');
     final now = DateTime.now();
     if (isCurrent) {
       // Jika kita baru saja melakukan refresh (misal karena sheet baru ditutup), lewati.

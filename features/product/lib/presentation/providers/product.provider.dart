@@ -5,7 +5,9 @@ import 'package:product/domain/usecases/update_product.usecase.dart';
 import 'package:product/domain/usecases/get_product.usecase.dart';
 import 'package:product/domain/usecases/delete_product.usecase.dart';
 import 'package:product/presentation/view_models/product_management.vm.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
+// Removed direct dependency on transaction.provider to avoid circular
+// provider initialization. Instead a hook provider is exposed below that
+// consumers (e.g. transaction feature) can set to react to CRUD events.
 import 'package:product/presentation/view_models/product_management.state.dart';
 import 'package:product/presentation/providers/product_repository.provider.dart';
 
@@ -52,12 +54,15 @@ final productManagementViewModelProvider =
   // so it's shared for the provider lifetime.
   Timer? refreshDebounce;
 
+  /// Hook-based wrapper: read a function from `productAfterCrudHookProvider`
+  /// and call it after debounced CRUD operations. This avoids importing the
+  /// transaction provider here and prevents a circular provider dependency.
   Future<void> onAfterCrudWrapper() async {
     refreshDebounce?.cancel();
     refreshDebounce = Timer(const Duration(milliseconds: 300), () {
-      final f =
-          ref.read(transactionPosViewModelProvider.notifier).refreshProducts();
-      unawaited(f.catchError((e, st) =>
+      final hook = ref.read(productAfterCrudHookProvider);
+      final f = hook?.call();
+      unawaited(f?.catchError((e, st) =>
           Logger('ProductProvider').warning('refreshProducts failed', e, st)));
     });
     return Future.value();
@@ -71,3 +76,9 @@ final productManagementViewModelProvider =
     onAfterCrud: onAfterCrudWrapper,
   );
 });
+
+/// A hook that can be set by another feature (for example, the transaction
+/// feature) to react to product CRUD events. The default is `null` (no-op).
+final productAfterCrudHookProvider = StateProvider<Future<void> Function()?>(
+  (ref) => null,
+);

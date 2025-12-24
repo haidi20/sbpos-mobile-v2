@@ -224,12 +224,14 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
         return;
       }
 
+      _vm._logger.info('calling GetPackets usecase (offline)...');
       final res = await _vm._getPacketsUsecase!(isOffline: true, query: query);
       res.fold((f) {
         _vm._logger.warning('getPacketsList failed: $f');
         state = state.copyWith(packets: []);
         _vm._rebuildCombinedCache();
       }, (list) {
+        _vm._logger.info('GetPackets returned ${list.length} packets');
         state = state.copyWith(packets: list);
         _vm._rebuildCombinedCache();
       });

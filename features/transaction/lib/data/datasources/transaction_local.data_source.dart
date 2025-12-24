@@ -1,12 +1,14 @@
-// dart:typed_data not needed here
+// dart:typed_data tidak diperlukan di sini
 import 'package:core/core.dart';
 import 'package:core/data/datasources/core_database.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
+import 'transaction_local_web.data_source.dart';
 
-class TransactionLocalDataSource with BaseErrorHelper {
+class TransactionLocalDataSource
+    with BaseErrorHelper, TransactionLocalDataSourceWeb {
   final CoreDatabase databaseHelper = CoreDatabase();
   final Database? _testDb;
   final _logger = Logger('TransactionLocalDataSource');
@@ -53,8 +55,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return [];
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webGetTransactions(query: query);
       }
       final dao = createDao(db);
       final result = await dao.getTransactions(query: query);
@@ -70,8 +72,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webGetTransactionById(id);
       }
       final query = createDao(db);
       // reuse getTransactions and filter or implement DAO helper
@@ -93,8 +95,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webGetPendingTransaction();
       }
       final query = createDao(db);
       final latest = await query.getPendingTransaction();
@@ -110,8 +112,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return 0;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webGetLastSequenceNumber();
       }
       final dao = createDao(db);
       final res = await dao.getLastSequenceNumber();
@@ -127,8 +129,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webInsertTransaction(tx);
       }
       final query = createDao(db);
       final raw = tx.toInsertDbLocal();
@@ -153,8 +155,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webInsertSyncTransaction(tx);
       }
 
       final query = createDao(db);
@@ -181,8 +183,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webInsertDetails(details);
       }
       final query = createDao(db);
       final maps =
@@ -204,8 +206,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return null;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webReplaceDetailsForTransaction(txId, details);
       }
       final dao = createDao(db);
       final maps =
@@ -224,8 +226,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return 0;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webDeleteDetailsByTransactionId(txId);
       }
       final query = createDao(db);
       final res = await query.deleteDetailsByTransactionId(txId);
@@ -241,12 +243,12 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return 0;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webUpdateTransaction(tx);
       }
       final query = TransactionDao(db);
       final sanitized = sanitizeForDb(Map<String, dynamic>.from(tx));
-      // keep id in map for DAO.updateTransaction to use; ensure it's present
+      // simpan id di map agar DAO.updateTransaction dapat menggunakan; pastikan ada
       if (tx.containsKey('id')) sanitized['id'] = tx['id'];
       final result = await query.updateTransaction(sanitized);
       _logInfo('updateTransaction: success id=${tx['id']} rows=$result');
@@ -261,8 +263,8 @@ class TransactionLocalDataSource with BaseErrorHelper {
     try {
       final db = _testDb ?? await databaseHelper.database;
       if (db == null) {
-        _logWarning('Database gagal dibuka/null');
-        return 0;
+        _logWarning('Database gagal dibuka/null - using LocalDatabase (web)');
+        return await webDeleteTransaction(id);
       }
       final query = createDao(db);
       final result = await query.deleteTransaction(id);
@@ -294,4 +296,5 @@ class TransactionLocalDataSource with BaseErrorHelper {
   /// Overridable factory for DAO to support testing (e.g. injecting flaky DAO).
   @visibleForTesting
   TransactionDao createDao(Database db) => TransactionDao(db);
+  // Web helpers moved to transaction_local_web.data_source.dart (mixin)
 }

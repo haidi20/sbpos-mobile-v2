@@ -4,7 +4,7 @@ import 'package:transaction/presentation/controllers/transaction_history_tabtime
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
 class TransactionHistoryTabtime extends ConsumerStatefulWidget {
-  /// Number of consecutive dates to show (including today).
+  /// Jumlah tanggal berturut-turut yang ditampilkan (termasuk hari ini).
   final int daysToShow;
   final ValueChanged<DateTime>? onDateSelected;
   final ValueChanged<DateTime>? onSwipeLeft;
@@ -114,7 +114,7 @@ class _TransactionHistoryTabtimeState
                 TabBar(
                   controller: _tabController,
                   isScrollable: true,
-                  // use default Flutter indicator for active tab (underline)
+                  // gunakan indikator default Flutter untuk tab aktif (garis bawah)
                   indicatorColor: AppColors.sbBlue,
                   indicatorWeight: 3.0,
                   indicatorSize: TabBarIndicatorSize.tab,
@@ -176,10 +176,10 @@ class _TransactionHistoryTabtimeState
           ),
         ),
 
-        // Caller-provided body. Use a loose Flexible so this widget can be
-        // embedded in unbounded or bounded parents safely. Apply a container
-        // that can get rounded corners depending on the left/right shadow
-        // state so the body visually matches edge conditions.
+        // Body yang diberikan pemanggil. Gunakan Flexible longgar sehingga widget ini dapat
+        // disematkan di parent yang bounded atau unbounded dengan aman. Terapkan container
+        // yang bisa membulatkan sudut tergantung kondisi bayangan kiri/kanan agar tampilan
+        // body konsisten dengan kondisi tepi.
         Flexible(
           fit: FlexFit.loose,
           child: GestureDetector(

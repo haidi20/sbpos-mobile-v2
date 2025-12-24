@@ -21,7 +21,7 @@ class TransactionPersistence {
 
   final GetLastSequenceNumberTransaction? _getLastSequenceUsecase;
 
-  // Guard to ensure local transaction is loaded at most once unless forced.
+  // Guard untuk memastikan transaksi lokal dimuat paling banyak sekali kecuali dipaksa.
   bool _isLoadingLocal = false;
   bool _didLoadLocal = false;
   Completer<void>? _loadLocalCompleter;
@@ -100,7 +100,7 @@ class TransactionPersistence {
               'persistAndUpdateState: clearing isLoadingPersistent (create failed)');
           setState(currentState.copyWith(isLoadingPersistent: false));
         }, (created) {
-          // Ensure in-memory state reflects paid status when caller marked it paid.
+          // Pastikan state di memori mencerminkan status lunas ketika pemanggil menandai sudah dibayar.
           final updatedDetailsFromServer = created.details ?? updatedDetails;
           final enforced = created.copyWith(
             status:

@@ -181,7 +181,7 @@ class PaymentMethodSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // use methods passed from parent (VM)
+    // gunakan metode yang diberikan dari parent (VM)
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text(
         'Metode Pembayaran',

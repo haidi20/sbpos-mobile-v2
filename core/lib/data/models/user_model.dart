@@ -1,4 +1,4 @@
-import 'package:flutter_bcrypt/flutter_bcrypt.dart';
+import 'package:core/utils/password_hash.dart';
 import 'package:core/domain/entities/user_entity.dart';
 
 class UserModel {
@@ -68,8 +68,7 @@ class UserModel {
       if (alreadyHashed) {
         hashedPassword = p;
       } else {
-        final salt = await FlutterBcrypt.saltWithRounds(rounds: 12);
-        hashedPassword = await FlutterBcrypt.hashPw(password: p, salt: salt);
+        hashedPassword = await PasswordHash.hashPassword(p);
       }
     }
 
@@ -129,8 +128,7 @@ class UserModel {
       if (alreadyHashed) {
         return password;
       } else {
-        final salt = await FlutterBcrypt.saltWithRounds(rounds: 12);
-        return await FlutterBcrypt.hashPw(password: password!, salt: salt);
+        return await PasswordHash.hashPassword(password!);
       }
     }
     return null;

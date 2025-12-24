@@ -273,8 +273,8 @@ class ContentArea extends ConsumerWidget {
     final viewModel = ref.read(transactionPosViewModelProvider.notifier);
     final combined = viewModel.combinedContent;
 
-    // Ensure ContentArea always returns a scrollable so RefreshIndicator
-    // can work reliably. Use ListView fallback for loading/empty states.
+    // Pastikan ContentArea selalu mengembalikan widget yang dapat discroll sehingga RefreshIndicator
+    // dapat bekerja dengan andal. Gunakan ListView sebagai fallback untuk state loading/empty.
     if (combined.isLoadingCombined) {
       return _ContentLoading(productGridController: productGridController);
     }

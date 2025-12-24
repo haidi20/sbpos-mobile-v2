@@ -8,6 +8,8 @@ import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
 import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
 import 'package:transaction/data/dummy/transaction.dummy.dart';
+import 'package:transaction/data/datasources/db/transaction.table.dart';
+import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final TransactionRemoteDataSource remote;
@@ -90,9 +92,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return Left(fallbackFailure);
   }
 
-  /// Ensure local DB has some sample transactions when empty.
-  /// Useful for fallback/offline scenarios so UI shows data.
+  /// Pastikan DB lokal memiliki beberapa transaksi contoh jika kosong.
+  /// Berguna untuk skenario fallback/offline agar UI tetap menampilkan data.
   Future<void> _ensureSeededLocal() async {
+    _logger.info('Memeriksa/menyisipkan seed transaksi lokal...');
     try {
       final existing = await local.getTransactions();
       if (existing.isEmpty) {
@@ -100,7 +103,26 @@ class TransactionRepositoryImpl implements TransactionRepository {
           try {
             await local.insertSyncTransaction(t);
           } catch (e, st) {
-            _logger.warning('Failed seeding transaction local: $e', e, st);
+            _logger.warning(
+                'Failed seeding transaction local (DAO path): $e', e, st);
+            // fallback for web: write directly to LocalDatabase (sembast)
+            try {
+              final db = LocalDatabase.instance;
+              // masukkan transaksi dan gunakan kunci yang dikembalikan sebagai id lokal untuk detail
+              final txMap = t.toInsertDbLocal();
+              final txKey = await db.insert(TransactionTable.tableName, txMap);
+              final details = t.details ?? [];
+              for (var d in details) {
+                final detailMap = d.toInsertDbLocal();
+                detailMap[TransactionDetailTable.colTransactionId] = txKey;
+                await db.insert(TransactionDetailTable.tableName, detailMap);
+              }
+            } catch (e2, st2) {
+              _logger.warning(
+                  'Failed seeding transaction local (sembast fallback): $e2',
+                  e2,
+                  st2);
+            }
           }
         }
       }
@@ -115,7 +137,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
     QueryGetTransactions? query,
   }) async {
     // Jika pemanggil memaksa mode offline, langsung ambil dari local.
-    // Return local list even when empty to avoid surfacing network errors
+    // Kembalikan daftar lokal bahkan ketika kosong untuk menghindari menampilkan kesalahan jaringan
     // when caller explicitly requested offline mode.
     if (isOffline == true) {
       final localEntities = await _getLocalEntities(query: query);
@@ -330,7 +352,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       final txModel = transaction.toModel();
 
-      // If the transaction has no local id, treat this as a create to ensure
+      // Jika transaksi tidak memiliki id lokal, perlakukan ini sebagai create untuk
+      // memastikan baris lokal ada sebelum mencoba update.
       // a local row exists before attempting an update. This prevents
       // returning UnknownFailure when callers try to update an unsaved tx.
       if (txModel.id == null) {
@@ -339,7 +362,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         return await setTransaction(transaction, isOffline: isOffline);
       }
 
-      // update local first - ensure 'id' is present in map for update
+      // update lokal terlebih dahulu - pastikan 'id' ada di map untuk proses update
       final txMapForUpdate =
           Map<String, dynamic>.from(txModel.toInsertDbLocal())
             ..['id'] = txModel.id;

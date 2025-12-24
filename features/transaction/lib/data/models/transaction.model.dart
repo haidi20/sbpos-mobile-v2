@@ -199,7 +199,7 @@ class TransactionModel {
         'total_amount': totalAmount,
         'total_qty': totalQty,
         'paid_amount': paidAmount,
-        // DB migration expects change_money NOT NULL DEFAULT 0
+        // DB migration mengharapkan change_money NOT NULL DEFAULT 0
         'change_money': changeMoney ?? 0,
         'is_paid': (isPaid == true) ? 1 : 0,
         // store enum as string for DB/JSON
@@ -232,7 +232,7 @@ class TransactionModel {
         'total_amount': totalAmount,
         'total_qty': totalQty,
         'paid_amount': paidAmount,
-        // ensure DB non-null default
+        // pastikan DB default non-null
         'change_money': changeMoney ?? 0,
         'is_paid': (isPaid == true) ? 1 : 0,
         // store enum as string (use enum value)
@@ -245,8 +245,8 @@ class TransactionModel {
         'synced_at': syncedAt?.toIso8601String(),
       };
 
-  // Conversion to domain entity is provided by `TransactionEntity.fromModel` to
-  // avoid circular imports. Use that constructor where needed.
+  // Konversi ke entitas domain disediakan oleh `TransactionEntity.fromModel`
+  // untuk menghindari impor sirkular. Gunakan konstruktor itu bila dibutuhkan.
 
   factory TransactionModel.fromDbLocal(Map<String, dynamic> map) {
     return TransactionModel(
@@ -268,7 +268,7 @@ class TransactionModel {
       totalAmount: _toInt(map['total_amount']) ?? 0,
       totalQty: _toInt(map['total_qty']) ?? 0,
       paidAmount: _toInt(map['paid_amount']),
-      // ensure changeMoney defaults to 0
+      // pastikan changeMoney bernilai default 0
       changeMoney: _toInt(map['change_money']) ?? 0,
       // read is_paid as int -> bool
       isPaid: ((_toInt(map['is_paid']) ?? 0) == 1),

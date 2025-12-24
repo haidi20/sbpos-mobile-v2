@@ -70,7 +70,7 @@ void main() {
       expect(ins1, isNotNull);
       expect(ins2, isNotNull);
 
-      // sanity: ensure local datasource returns inserted rows directly
+      // sanity: pastikan datasource lokal mengembalikan baris yang disisipkan secara langsung
       final direct = await local.getTransactions();
       expect(direct.length, greaterThanOrEqualTo(2));
 
@@ -106,7 +106,7 @@ void main() {
       await local.insertSyncTransaction(txToday);
       await local.insertSyncTransaction(txOther);
 
-      // VM init auto-calls refresh; ensure we have data
+      // VM init memanggil refresh otomatis; pastikan kita memiliki data
       await vm.refresh();
       expect(vm.getTransactionsOffline.length, greaterThanOrEqualTo(2));
 

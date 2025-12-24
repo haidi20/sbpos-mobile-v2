@@ -7,7 +7,7 @@ import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 
-/// Flaky DAO that fails first N calls then delegates to real DAO.
+/// DAO yang tidak stabil: gagal pada N pemanggilan pertama lalu mendelegasikan ke DAO asli.
 class FlakyDao extends TransactionDao {
   int failTimes;
 
@@ -68,7 +68,7 @@ void main() {
         totalQty: 1,
       );
 
-      // Should succeed because TransactionLocalDataSource has retry logic
+      // Harus berhasil karena TransactionLocalDataSource memiliki logika retry
       final inserted = await flaky.insertSyncTransaction(model);
       expect(inserted, isNotNull);
       expect(inserted!.id, isNotNull);

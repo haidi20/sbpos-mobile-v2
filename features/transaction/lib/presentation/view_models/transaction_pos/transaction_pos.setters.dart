@@ -177,8 +177,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     );
   }
 
-  /// Set order type from a raw id string (supports numeric ids from dummy
-  /// data or localized/canonical keys) and persist via `setOrderType`.
+  /// Set order type dari string id mentah (mendukung id numerik dari data dummy
+  /// atau kunci lokal/kanonikal) dan persist melalui `setOrderType`.
   void setOrderTypeById(String rawId) {
     final id = rawId.toLowerCase();
     if (id == '1' ||

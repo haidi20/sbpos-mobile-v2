@@ -135,7 +135,7 @@ void main() {
 
     expect(fakeVm.lastSearch, 'apple');
 
-    // ensure no exceptions (no RenderFlex overflow, no null-check errors, etc.)
+    // pastikan tidak ada exception (tidak ada RenderFlex overflow, tidak ada kesalahan null-check, dll.)
     final ex = tester.takeException();
     expect(ex, isNull, reason: 'Unexpected exception during widget build/pump');
   });
