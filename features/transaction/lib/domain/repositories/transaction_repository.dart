@@ -11,7 +11,7 @@ abstract class TransactionRepository {
       TransactionEntity transaction,
       {bool? isOffline});
 
-  /// Create a new transaction (named create to follow convention)
+  /// Buat a new transaction (named buat to follow convention)
   Future<Either<Failure, TransactionEntity>> createTransaction(
       TransactionEntity transaction,
       {bool? isOffline});
@@ -20,7 +20,7 @@ abstract class TransactionRepository {
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
       {bool? isOffline, QueryGetTransactions? query});
 
-  /// Get the active pending transaction (status = 'Pending'), latest by created_at desc
+  /// Get the active pending transaction (status = 'Pending'), latest by buatd_at desc
   Future<Either<Failure, TransactionEntity>> getPendingTransaction(
       {bool? isOffline});
 
@@ -33,11 +33,11 @@ abstract class TransactionRepository {
   Future<Either<Failure, TransactionEntity>> getTransaction(int id,
       {bool? isOffline});
 
-  /// Update existing transaction
+  /// Perbarui sudah ada transaction
   Future<Either<Failure, TransactionEntity>> updateTransaction(
       TransactionEntity transaction,
       {bool? isOffline});
 
-  /// Delete transaction by id
+  /// Hapus transaction by id
   Future<Either<Failure, bool>> deleteTransaction(int id, {bool? isOffline});
 }

@@ -49,8 +49,8 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
   // Cache konten gabungan (paket + produk) agar UI tidak menghitung ulang berulang kali
   List<ContentItemEntity> _combinedCache = [];
 
-  // Pembungkus yang mengekspos daftar dan flag loading supaya UI dapat merespon
-  // status loading konten gabungan tanpa harus mengakses flag internal VM.
+  // Pembungkus yang mengekspos daftar dan flag muating supaya UI dapat merespon
+  // status muating konten gabungan tanpa harus mengakses flag internal VM.
   CombinedContent get combinedContent => CombinedContent(
         isLoadingCombined: state.isLoadingContent,
         items: _combinedCache,
@@ -61,7 +61,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
   Completer<void>? _createTxCompleter;
   // Guard untuk mencegah pemanggilan refreshProductsAndPackets yang bersamaan/terlalu cepat
   bool _isRefreshing = false;
-  // Timer debounce untuk pembaruan catatan (note)
+  // Timer debounce untuk pembaruan catatan (catatan)
   Timer? _orderNoteDebounce;
   final Map<int, Timer> _itemNoteDebounces = {};
 
@@ -85,7 +85,7 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
     _getPacketsUsecase = getPackets;
     _getProductsUsecase = getProducts;
     (() async {
-      // await _persistence.loadLocalTransaction(
+      // await _persistence.muatLocalTransaction(
       //   _getTransactionActive,
       //   () => state,
       //   (s) => state = s,

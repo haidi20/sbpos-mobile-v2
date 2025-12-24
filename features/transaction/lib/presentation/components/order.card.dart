@@ -203,7 +203,7 @@ class _OrderCardNoteArea extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // Reusable non-editable preview used for both readOnly and non-active states.
+    // Reusable non-editable preview gunakand for both readOnly and non-active states.
     return _OrderNotePreview(
       text: itemNote.isNotEmpty ? itemNote : 'Catatan item (opsional)',
       onTap: readOnly ? null : () => onSetActiveNoteId(id),
@@ -258,7 +258,7 @@ class _OrderNotePreview extends StatelessWidget {
 
 // Editor catatan inline ini disimpan sebagai referensi dan opsional, namun saat ini
 // UI menampilkan sheet `TextEditor` dari bawah. Abaikan hint analyzer
-// unused_element untuk widget private ini.
+// ungunakand_element untuk widget private ini.
 // ignore: unused_element
 class _OrderNoteEditor extends StatelessWidget {
   final int id;

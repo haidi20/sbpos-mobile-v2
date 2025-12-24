@@ -48,7 +48,7 @@ class _TransactionHistoryTabtimeState
     _dates = ref
         .read(transactionHistoryViewModelProvider.notifier)
         .generateDateList(widget.daysToShow);
-    // determine initial selected date (VM has precedence; fallback to widget.selectedDate)
+    // determine initial selected date (VM has precedence; cadangan to widget.selectedDate)
     final vmSel = ref.read(transactionHistoryViewModelProvider).selectedDate;
     final initialSelected = vmSel ?? widget.selectedDate ?? _dates.last;
 
@@ -192,14 +192,14 @@ class _TransactionHistoryTabtimeState
                 try {
                   _tabController.animateTo(idx + 1,
                       duration: const Duration(milliseconds: 220));
-                  // notify swipe-left (user swiped left to move to next)
+                  // notify swipe-left (gunakanr swiped left to move to next)
                   widget.onSwipeLeft?.call(_dates[idx + 1]);
                 } catch (_) {}
               } else if (v > 200 && idx > 0) {
                 try {
                   _tabController.animateTo(idx - 1,
                       duration: const Duration(milliseconds: 220));
-                  // notify swipe-right (user swiped right to move to prev)
+                  // notify swipe-right (gunakanr swiped right to move to prev)
                   widget.onSwipeRight?.call(_dates[idx - 1]);
                 } catch (_) {}
               }
@@ -214,7 +214,7 @@ class _TransactionHistoryTabtimeState
                     child: widget.body,
                   ),
 
-                  // shadows removed
+                  // shadows dihapus
                 ],
               ),
             ),

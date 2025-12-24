@@ -22,7 +22,7 @@ class TransactionHistoryController {
     );
   }
 
-  /// Backwards-compatible alias used by some screens.
+  /// Backwards-compatible alias gunakand by some screens.
   Future<void> showTransactionDetail(
       BuildContext context, TransactionEntity tx) {
     return onShowTransactionDetail(context, tx);

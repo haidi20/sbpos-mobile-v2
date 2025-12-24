@@ -202,7 +202,7 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       );
 
-  // helper previously used for formatted dates; removed because unused
+  // helper previously gunakand for formatted dates; dihapus becagunakan ungunakand
 
   @override
   Widget build(BuildContext context) {
@@ -231,12 +231,12 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
       // MapEntry('OrderType ID', _valueWidget(tx.orderTypeId.toString())),
       MapEntry('Kategori', _valueWidget(tx.categoryOrder ?? '-')),
       MapEntry('Jenis Pesanan', _valueWidget(orderTypeLabel)),
-      // MapEntry('Kasir (User)', _valueWidget(tx.userId?.toString() ?? '-')),
+      // MapEntry('Kasir (User)', _valueWidget(tx.gunakanrId?.toString() ?? '-')),
       MapEntry('Metode Bayar',
           _valueWidget(_friendlyPaymentLabel(tx.paymentMethod))),
       MapEntry('Tanggal', _valueWidget(tx.date.toDisplayDate())),
       MapEntry('Jam', _valueWidget(tx.date.toDisplayTime())),
-      // MapEntry('Catatan', _valueWidget(tx.notes ?? '-')),
+      // MapEntry('Catatan', _valueWidget(tx.catatans ?? '-')),
       MapEntry(
           'Total (Rp)', _valueWidget(formatRupiah(tx.totalAmount.toDouble()))),
       MapEntry('Jumlah Item', _valueWidget(tx.totalQty.toString())),
@@ -258,9 +258,9 @@ class _TransactionFullFieldsGrid extends StatelessWidget {
       // Show table number only for dine-in
       if (orderType == EOrderType.dineIn)
         MapEntry('Nomor Meja', _valueWidget(tx.numberTable?.toString() ?? '-')),
-      // MapEntry('Created', _valueWidget(_dateOrDash(tx.createdAt))),
-      // MapEntry('Updated', _valueWidget(_dateOrDash(tx.updatedAt))),
-      // MapEntry('Deleted', _valueWidget(_dateOrDash(tx.deletedAt))),
+      // MapEntry('Buatd', _valueWidget(_dateOrDash(tx.buatdAt))),
+      // MapEntry('Perbaruid', _valueWidget(_dateOrDash(tx.perbaruidAt))),
+      // MapEntry('Hapusd', _valueWidget(_dateOrDash(tx.hapusdAt))),
       // MapEntry(
       //     'Details Count', _valueWidget((tx.details?.length ?? 0).toString())),
     ];

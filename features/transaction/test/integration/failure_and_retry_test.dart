@@ -79,7 +79,7 @@ void main() {
 
     test('insertSyncTransaction ultimately fails if retries exhausted',
         () async {
-      // Create flaky that will always fail (failCount > retry attempts in source)
+      // Buat flaky that will always fail (failCount > retry attempts in source)
       final alwaysFail = FlakyLocal(testDb: db, failCount: 10);
       final model = TransactionModel(
         outletId: 1,

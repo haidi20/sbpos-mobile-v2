@@ -45,7 +45,7 @@ class TransactionEntity {
     required this.sequenceNumber,
     required this.orderTypeId,
     this.categoryOrder,
-    // user atau customer
+    // gunakanr atau customer
     this.userId,
     this.customerId,
     this.customerType,
@@ -207,7 +207,7 @@ class TransactionEntity {
   }
 
   // status conversion helpers moved to the data model where DB/JSON
-  // serialization occurs. Keep this entity focused on domain logic.
+  // serialization occurs. Keep this entity focgunakand on domain logic.
 
   @override
   bool operator ==(Object other) {

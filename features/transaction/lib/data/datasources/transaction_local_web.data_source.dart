@@ -52,7 +52,7 @@ mixin TransactionLocalDataSourceWeb {
       }
     }
 
-    // sort by created_at desc
+    // sort by buatd_at desc
     rows.sort((a, b) {
       final ad = a[TransactionTable.colCreatedAt] as String?;
       final bd = b[TransactionTable.colCreatedAt] as String?;
@@ -217,10 +217,10 @@ mixin TransactionLocalDataSourceWeb {
   Future<int> webDeleteTransaction(int id) async {
     final db = LocalDatabase.instance;
     await db.init();
-    // delete details first
+    // hapus details first
     await db.deleteWhereEquals(TransactionDetailTable.tableName,
         TransactionDetailTable.colTransactionId, id);
-    // delete transaction record
+    // hapus transaction record
     final deleted =
         await db.deleteWhereEquals(TransactionTable.tableName, 'id', id);
     return deleted;

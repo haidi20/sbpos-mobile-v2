@@ -71,7 +71,7 @@ void main() {
     });
 
     test('insertDetails upserts by transaction_id + product_id', () async {
-      // create empty transaction
+      // buat empty transaction
       final txMap = TransactionModel(
         outletId: 1,
         sequenceNumber: 3,
@@ -125,7 +125,7 @@ void main() {
       final insertedTx = await dao.insertSyncTransaction(txMap, []);
       final txId = insertedTx.id!;
 
-      // create detail map with some null fields
+      // buat detail map with some null fields
       final detailMap = TransactionDetailModel(
         productId: 55,
         productName: null,

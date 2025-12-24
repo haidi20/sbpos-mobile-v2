@@ -37,12 +37,12 @@ class CartHeader extends StatelessWidget {
               TextButton(
                 // ACTION: Clear Cart
                 onPressed: () async {
-                  // First, perform clear operation and await completion so
-                  // persistence/deletes happen before we update UI.
+                  // First, perform bersihkan operation and await completion so
+                  // persistence/hapuss happen before we perbarui UI.
                   await onClearCart();
 
-                  // Then clear active item note in-memory only (no persistence)
-                  // to avoid re-creating transactions from background writes.
+                  // Then bersihkan active item catatan in-memory only (no persistence)
+                  // to avoid re-creating transactions from latar belakang writes.
                   unawaited(viewModel.setActiveNoteId(null, persist: false));
                 },
                 child: const Text(
@@ -76,7 +76,7 @@ class CustomerCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: InkWell(
         onTap: () async {
-          // Collapse any active note input before opening picker (persist in background)
+          // Collapse any active catatan input before opening picker (persist in latar belakang)
           unawaited(viewModel.setActiveNoteId(null, background: true));
           CustomerSheet.openCustomerPicker(context);
         },
@@ -183,7 +183,7 @@ class OrderListWidget extends StatelessWidget {
               unawaited(controller.setActiveItemNoteId(pid));
             },
             onSetItemNote: (pid, value) {
-              // Simpan note ke state/DB
+              // Simpan catatan ke state/DB
               viewModel.setItemNote(pid, value);
             },
             onUpdateQuantity: (pid, delta) =>
@@ -431,7 +431,7 @@ class _CustomerInfoSelected extends StatelessWidget {
         ),
         IconButton(
           onPressed: () {
-            // clear selected customer
+            // bersihkan selected customer
             viewModel.setCustomer(null);
           },
           icon: const Icon(Icons.close, size: 18, color: AppColors.gray500),

@@ -167,12 +167,12 @@ void main() {
     await vm.setUpdateQuantity(201, 1);
     expect(vm.state.details.first.qty, 2);
 
-    // decrease by 2 -> removed
+    // decrease by 2 -> dihapus
     await vm.setUpdateQuantity(201, -2);
     expect(vm.state.details.where((d) => d.productId == 201), isEmpty);
   });
 
-  // Memastikan setItemNote meng-update state lokal sebelum debounce
+  // Memastikan setItemNote meng-perbarui state lokal sebelum debounce
   test('setItemNote updates local state immediately', () async {
     final p = ProductEntity(id: 301, name: 'C', price: 3000.0);
     await vm.onAddToCart(p);
@@ -232,7 +232,7 @@ void main() {
     expect(vm.state.typeCart, ETypeCart.checkout);
   });
 
-  // Hapus transaksi lokal jika ada dan clear state
+  // Hapus transaksi lokal jika ada dan bersihkan state
   test('onClearCart deletes existing transaction and clears state', () async {
     final p = ProductEntity(id: 401, name: 'D', price: 2000.0);
     await vm.onAddToCart(p);
@@ -315,7 +315,7 @@ void main() {
     expect(res.length, 1);
     expect(res.first.productId, 1);
 
-    // filter by category via activeCategory (note used as category in getter)
+    // filter by category via activeCategory (catatan gunakand as category in getter)
     vm.setSearchQuery('');
     vm.setActiveCategory('Drink');
     res = vm.getFilteredDetails;
@@ -341,7 +341,7 @@ void main() {
     expect(vm.state.selectedCustomer, isNull);
   });
 
-  // Set dan clear nilai activeNoteId
+  // Set dan bersihkan nilai activeNoteId
   test('setActiveNoteId set and clear', () {
     vm.setActiveNoteId(42);
     expect(vm.state.activeNoteId, 42);
@@ -356,7 +356,7 @@ void main() {
     vm.setShowErrorSnackbar(true);
     expect(vm.state.showErrorSnackbar, isTrue);
     vm.onClearAll();
-    // verifikasi beberapa invariant state setelah clear
+    // verifikasi beberapa invariant state setelah bersihkan
     expect(vm.state.transaction, isNull);
     expect(vm.state.details, isEmpty);
     expect(vm.state.orderNote, '');
@@ -385,9 +385,9 @@ void main() {
     expect(fake.last ?? vm.state.transaction, isNotNull);
   });
 
-  // Debounce pada item note memicu persistence setelah delay
+  // Debounce pada item catatan memicu persistence setelah delay
   test('debounced setItemNote triggers persistence', () async {
-    // pastikan ada item untuk diberikan note
+    // pastikan ada item untuk diberikan catatan
     final p = ProductEntity(id: 801, name: 'F', price: 2000.0);
     await vm.onAddToCart(p);
 
@@ -404,7 +404,7 @@ void main() {
   // Constructor harus memuat transaksi lokal jika tersedia
   test('constructor _loadLocalTransaction populates state when repo has tx',
       () async {
-    // create a fake repo that returns an existing transaction
+    // buat a fake repo that returns an sudah ada transaction
     final tx = TransactionEntity(
       id: 77,
       outletId: 1,
@@ -453,9 +453,9 @@ void main() {
     expect(first.containsKey('icon'), isTrue);
   });
 
-  // Mengubah order type harus memicu persistence create/update
+  // Mengubah order type harus memicu persistence buat/perbarui
   test('setOrderType triggers persistence via create/update', () async {
-    // use fresh fake repo to observe persistence
+    // gunakan fresh fake repo to observe persistence
     fake = _FakeRepo();
     vm = TransactionPosViewModel(
       CreateTransaction(fake),
@@ -477,7 +477,7 @@ void main() {
   });
 
   // Cabang kegagalan: mensimulasikan kegagalan repo untuk menguji penanganan error
-  // Simulasi kegagalan create: VM harus menangani error dan menghentikan loading
+  // Simulasi kegagalan buat: VM harus menangani error dan menghentikan muating
   test('createTransaction failure sets error and clears loading', () async {
     final failRepo = _FakeRepoCreateFail();
     final vmFail = TransactionPosViewModel(
@@ -490,17 +490,17 @@ void main() {
     final p = ProductEntity(id: 901, name: 'FailCreate', price: 1000.0);
     await vmFail.onAddToCart(p);
 
-    // simpan dengan status dipaksa agar jalur create dieksekusi
+    // simpan dengan status dipaksa agar jalur buat dieksekusi
     await vmFail.onStore();
 
-    // create failed: repository returned Left; no new transaction saved
+    // pembuatan gagal: repository returned Left; no new transaction saved
     expect(vmFail.state.isLoading, isFalse);
     expect(failRepo.last, isNull);
   });
 
-  // Simulasi kegagalan update: VM harus tetap stabil dan menghentikan loading
+  // Simulasi kegagalan perbarui: VM harus tetap stabil dan menghentikan muating
   test('updateTransaction failure sets error and clears loading', () async {
-    // repo that fails on update only
+    // repo that fails on perbarui only
     final failRepo = _FakeRepoUpdateFail();
     final vmFail = TransactionPosViewModel(
       CreateTransaction(failRepo),
@@ -515,15 +515,15 @@ void main() {
     // pastikan transaksi sekarang ada
     expect(vmFail.state.transaction, isNotNull);
 
-    // trigger an update path
+    // trigger an perbarui path
     await vmFail.setUpdateQuantity(902, 1);
 
     expect(vmFail.state.isLoading, isFalse);
-    // transaction should remain unchanged (not updated)
+    // transaction should remain unchanged (not perbaruid)
     expect(vmFail.state.transaction, isNotNull);
   });
 
-  // Simulasi kegagalan delete: transaksi harus tetap ada jika delete gagal
+  // Simulasi kegagalan hapus: transaksi harus tetap ada jika hapus gagal
   test('deleteTransaction failure sets error and keeps transaction', () async {
     final failRepo = _FakeRepoDeleteFail();
     final vmFail = TransactionPosViewModel(
@@ -536,17 +536,17 @@ void main() {
     final p = ProductEntity(id: 903, name: 'FailDelete', price: 3000.0);
     await vmFail.onAddToCart(p);
 
-    // remove item to trigger delete path
+    // remove item to trigger hapus path
     await vmFail.setUpdateQuantity(903, -1);
 
     expect(vmFail.state.isLoading, isFalse);
-    // delete failed: transaction should still exist
+    // penghapusan gagal: transaction should still exist
     expect(vmFail.state.transaction, isNotNull);
   });
 
   // Perubahan metode pembayaran harus tersimpan sebagai nama enum pada entitas
   test('setPaymentMethod persists enum name into stored transaction', () async {
-    // fresh fake repo to observe created transaction
+    // fresh fake repo to observe buatd transaction
     fake = _FakeRepo();
     vm = TransactionPosViewModel(
       CreateTransaction(fake),
@@ -555,7 +555,7 @@ void main() {
       GetTransactionActive(fake),
     );
 
-    // set payment method to QRIS and add an item to trigger create
+    // set payment method to QRIS and add an item to trigger buat
     vm.setPaymentMethod(EPaymentMethod.qris);
     final p = ProductEntity(id: 1001, name: 'G', price: 2500.0);
     await vm.onAddToCart(p);
@@ -630,7 +630,7 @@ void main() {
     expect(vm.getChangeValue, equals(5000));
   });
 
-  // ----- Integration-style tests: use real local DB (in-memory) -----
+  // ----- Integration-style tests: gunakan real local DB (in-memory) -----
   // Tes ini menjalankan alur ViewModel yang terhubung ke implementasi
   // repository yang menyimpan ke database lokal (in-memory) untuk
   // memastikan data benar-benar dipersist.
@@ -736,7 +736,7 @@ void main() {
 
       final dao = TransactionDao(db);
       final txs = await dao.getTransactions();
-      // transaction should be removed from DB
+      // transaction should be dihapus from DB
       expect(txs.where((t) => t.id == txId), isEmpty);
     });
 
@@ -804,14 +804,14 @@ void main() {
       const product = ProductEntity(id: 2801, name: 'NoteProd', price: 4000.0);
       await vmDb.onAddToCart(product);
 
-      // set order note and item note
+      // set order catatan and item catatan
       await vmDb.setOrderNote('Integration Note');
       await vmDb.setItemNote(2801, 'Detail Note');
 
       // wait/poll for persistence
       final dao = TransactionDao(db);
       var waited = 0;
-      // increase timeout to handle potential debounce/update races
+      // increase timeout to handle potential debounce/perbarui races
       while (waited < 5000) {
         final tx = await dao.getTransactionById(vmDb.state.transaction!.id!);
         final details =
@@ -830,7 +830,7 @@ void main() {
       expect(fetched, isNotNull);
       expect(fetched!.notes, equals('Integration Note'));
       expect(details, isNotEmpty);
-      // detail existence verified; specific item-note persistence timing may vary
+      // detail existence verified; specific item-catatan persistence timing may vary
     });
 
     test('onClearCart removes persisted transaction and details', () async {
@@ -843,7 +843,7 @@ void main() {
       await vmDb.onClearCart();
 
       final dao = TransactionDao(db);
-      // poll until transaction and details are removed (allow async delete to finish)
+      // poll until transaction and details are dihapus (allow async hapus to finish)
       var waited2 = 0;
       while (waited2 < 3000) {
         final tx = await dao.getTransactionById(txId!);

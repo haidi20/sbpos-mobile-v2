@@ -34,7 +34,7 @@ class _FakeRepo implements TransactionRepository {
     return Right(true);
   }
 
-  // Unused methods required by interface – return sensible defaults
+  // Ungunakand methods required by interface – return sensible defaults
   @override
   Future<Either<Failure, List<TransactionEntity>>> getDataTransactions(
           {bool? isOffline}) async =>
@@ -94,7 +94,7 @@ void main() {
     });
 
     test('updates existing transaction when details not empty', () async {
-      // prepare existing transaction in state
+      // prepare sudah ada transaction in state
       state = state.copyWith(
           transaction: TransactionEntity(
         id: 2,

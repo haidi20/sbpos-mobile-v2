@@ -143,7 +143,7 @@ class TransactionDao {
   }
 
   /// Mengambil transaksi Pending terbaru (status = 'Pending') berdasarkan
-  /// `created_at` menurun (limit 1), termasuk detailnya.
+  /// `buatd_at` menurun (limit 1), termasuk detailnya.
   Future<TransactionModel?> getPendingTransaction() async {
     try {
       // Hanya mempertimbangkan transaksi dengan status = 'Pending' saat
@@ -321,13 +321,13 @@ class TransactionDao {
   }
 
   /// Memperbarui satu transaksi berdasarkan `id` di dalam map.
-  /// `id` akan dihapus dari payload update (hanya untuk klausa WHERE).
+  /// `id` akan dihapus dari paymuat perbarui (hanya untuk klausa WHERE).
   Future<int> updateTransaction(Map<String, dynamic> tx) async {
     try {
       final id = tx['id'];
       final cleaned = Map<String, dynamic>.from(tx)
         ..removeWhere((k, v) => v == null);
-      // hapus `id` dari map update jika ada
+      // hapus `id` dari map perbarui jika ada
       cleaned.remove('id');
       final res = await _ensureDb().update(
         TransactionTable.tableName,
@@ -405,7 +405,7 @@ class TransactionDao {
           whereArgs: [txId],
         );
 
-        // Bangun map lookup untuk mendeteksi baris existing via packet_id atau product_id
+        // Bangun map lookup untuk mendeteksi baris sudah ada via packet_id atau product_id
         final Map<int, Map<String, Object?>> byPacket = {};
         final Map<int, Map<String, Object?>> byProduct = {};
         for (var r in existingRows) {
@@ -418,7 +418,7 @@ class TransactionDao {
 
         final batch = txn.batch();
 
-        // Siapkan operasi batch (update atau insert)
+        // Siapkan operasi batch (perbarui atau insert)
         for (var d in details) {
           final prodId = d[TransactionDetailTable.colProductId];
           final packetId = d[TransactionDetailTable.colPacketId];
@@ -431,7 +431,7 @@ class TransactionDao {
           }
 
           if (existing != null) {
-            // update existing: jumlahkan qty dan hitung ulang subtotal
+            // perbarui sudah ada: jumlahkan qty dan hitung ulang subtotal
             final existingModel = TransactionDetailModel.fromDbLocal(existing);
             final existingQty = existingModel.qty ?? 0;
             final incomingQty = (d[TransactionDetailTable.colQty] as int?) ?? 0;
@@ -501,7 +501,7 @@ class TransactionDao {
       int txId, List<Map<String, dynamic>> details) async {
     try {
       final result = await _ensureDb().transaction((txn) async {
-        // Hapus baris existing untuk transaction_id ini
+        // Hapus baris sudah ada untuk transaction_id ini
         await txn.delete(
           TransactionDetailTable.tableName,
           where: '${TransactionDetailTable.colTransactionId} = ?',
@@ -538,7 +538,7 @@ class TransactionDao {
     }
   }
 
-  /// Sanitasi map untuk operasi insert/update DB (catatan internal).
+  /// Sanitasi map untuk operasi insert/perbarui DB (catatan internal).
   /// Mencerminkan logika di `TransactionLocalDataSource._sanitizeForDb` agar konsisten.
 
   /// Menghapus semua detail berdasarkan `transaction_id`.

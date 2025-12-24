@@ -23,12 +23,12 @@ void main() {
 
     setUp(() async {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
-      // create tables
+      // buat tables
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
 
       local = TransactionLocalDataSource(testDb: db);
-      // lightweight fake usecase that reads from local datasource directly
+      // lightweight fake gunakancase that reads from local datasource directly
       usecase = _FakeGetTransactions(local);
       vm = _TestTransactionHistoryViewModel(usecase);
     });
@@ -74,7 +74,7 @@ void main() {
       final direct = await local.getTransactions();
       expect(direct.length, greaterThanOrEqualTo(2));
 
-      // refresh VM and verify it loaded both
+      // refresh VM and verify it muated both
       await vm.refresh();
       final list = vm.getTransactionsOffline;
       expect(list.length, equals(2));
@@ -144,7 +144,7 @@ void main() {
       await local.insertSyncTransaction(txA);
       await local.insertSyncTransaction(txB);
 
-      // search by notes (case-insensitive)
+      // search by catatans (case-insensitive)
       vm.setSearchQuery('special');
       await vm.refresh();
       final res1 = vm.getTransactionsOffline

@@ -108,7 +108,7 @@ void main() {
         totalQty: 2,
       );
 
-      // Removed unused fakes since OrderCard no longer needs them
+      // Removed ungunakand fakes since OrderCard no longer needs them
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
@@ -162,7 +162,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(TransactionHistoryScreen), findsOneWidget);
 
-      // POS screen reuse same ProviderScope; just rebuild the widget tree
+      // POS screen regunakan same ProviderScope; just rebuild the widget tree
       await tester.pumpWidget(ProviderScope(overrides: [
         transactionHistoryViewModelProvider.overrideWith((ref) =>
             TransactionHistoryViewModel(GetTransactionsUsecase(fakeRepo))),

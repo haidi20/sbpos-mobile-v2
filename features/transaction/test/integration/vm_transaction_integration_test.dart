@@ -48,7 +48,7 @@ void main() {
 
     test('onAddToCart + onStoreLocal persists to local DB', () async {
       const product = ProductEntity(id: 21, name: 'VMProd', price: 12000.0);
-      // add to cart (await because onAddToCart persists to DB first)
+      // add to cart (await becagunakan onAddToCart persists to DB first)
       await vm.onAddToCart(product);
 
       // verify VM state

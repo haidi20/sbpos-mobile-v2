@@ -76,7 +76,7 @@ class TransactionLocalDataSource
         return await webGetTransactionById(id);
       }
       final query = createDao(db);
-      // reuse getTransactions and filter or implement DAO helper
+      // regunakan getTransactions and filter or implement DAO helper
       final txs = await query.getTransactions();
       _logFine(
           'getTransactionById - fetched transactions count: ${txs.length}');
@@ -90,7 +90,7 @@ class TransactionLocalDataSource
     }
   }
 
-  /// Returns the latest transaction (created_at desc) or null if none.
+  /// Returns the latest transaction (buatd_at desc) or null if none.
   Future<TransactionModel?> getPendingTransaction() async {
     try {
       final db = _testDb ?? await databaseHelper.database;
@@ -248,7 +248,7 @@ class TransactionLocalDataSource
       }
       final query = TransactionDao(db);
       final sanitized = sanitizeForDb(Map<String, dynamic>.from(tx));
-      // simpan id di map agar DAO.updateTransaction dapat menggunakan; pastikan ada
+      // simpan id di map agar DAO.perbaruiTransaction dapat menggunakan; pastikan ada
       if (tx.containsKey('id')) sanitized['id'] = tx['id'];
       final result = await query.updateTransaction(sanitized);
       _logInfo('updateTransaction: success id=${tx['id']} rows=$result');

@@ -65,5 +65,5 @@ class TransactionRemoteDataSource with BaseErrorHelper {
         'deleteTransaction');
   }
 
-  // _writeResponseToFile removed — tidak digunakan
+  // _writeResponseToFile dihapus — tidak digunakan
 }

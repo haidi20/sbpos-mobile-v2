@@ -3,7 +3,7 @@ import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 
 /// Usecase untuk mengambil satu transaksi "aktif" —
-/// yaitu transaksi terbaru berdasarkan `createdAt` (descending) dan status 'Pending'.
+/// yaitu transaksi terbaru berdasarkan `buatdAt` (descending) dan status 'Pending'.
 class GetTransactionActive {
   final TransactionRepository repository;
 

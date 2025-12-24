@@ -48,7 +48,7 @@ class CartPaymentController {
 
   /// Toggle flag isPaid dengan perilaku khusus saat mode edit.
   ///
-  /// - Mode create: hanya set isPaid seperti biasa.
+  /// - Mode buat: hanya set isPaid seperti biasa.
   /// - Mode edit:
   ///   * Saat uncheck: simpan nominal lama ke cache, kosongkan cashReceived
   ///     dan field input (cashController).

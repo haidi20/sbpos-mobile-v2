@@ -93,7 +93,7 @@ class TransactionHistoryHeader extends StatelessWidget {
                 Icons.search,
                 color: Colors.grey.shade400,
               ),
-              // suffix removed: dedicated selector no longer needed
+              // suffix dihapus: dedicated selector no longer needed
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -143,11 +143,11 @@ class TransactionHistoryList extends StatefulWidget {
 }
 
 class _TransactionHistoryListState extends State<TransactionHistoryList> {
-  // Shadow state removed per request.
+  // Shadow state dihapus per request.
 
   @override
   Widget build(BuildContext context) {
-    // build the actual list content (loading / empty / items)
+    // build the actual list content (muating / empty / items)
     final Widget listContent;
     if (widget.isLoading) {
       listContent = ListView(

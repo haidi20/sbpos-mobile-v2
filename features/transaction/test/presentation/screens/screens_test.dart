@@ -132,7 +132,7 @@ void main() {
 
   testWidgets('CartMethodPaymentScreen builds and shows widgets',
       (tester) async {
-    // Skipping full layout assertions because this screen requires
+    // Skipping full layout assertions becagunakan this screen requires
     // integration-like constraints and platform material surfaces.
     // Keep the smoke test but avoid strict layout verification.
     await tester.pumpWidget(ProviderScope(

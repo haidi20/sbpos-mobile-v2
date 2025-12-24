@@ -16,7 +16,7 @@ class TransactionDetailSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      // backgroundColor:
+      // latar belakangColor:
       //     Colors.transparent, // Transparan agar rounded corner terlihat
       builder: (context) {
         return Container(

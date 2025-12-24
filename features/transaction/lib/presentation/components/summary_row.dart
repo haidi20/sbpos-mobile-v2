@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 
-// SummaryRow accepts a dynamic transaction payload (entity or model)
+// SummaryRow accepts a dynamic transaction paymuat (entity or model)
 class SummaryRow extends StatelessWidget {
   final dynamic tx;
 

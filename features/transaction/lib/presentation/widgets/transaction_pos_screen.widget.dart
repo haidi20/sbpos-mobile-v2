@@ -274,7 +274,7 @@ class ContentArea extends ConsumerWidget {
     final combined = viewModel.combinedContent;
 
     // Pastikan ContentArea selalu mengembalikan widget yang dapat discroll sehingga RefreshIndicator
-    // dapat bekerja dengan andal. Gunakan ListView sebagai fallback untuk state loading/empty.
+    // dapat bekerja dengan andal. Gunakan ListView sebagai cadangan untuk state muating/empty.
     if (combined.isLoadingCombined) {
       return _ContentLoading(productGridController: productGridController);
     }

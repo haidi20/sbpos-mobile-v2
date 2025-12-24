@@ -143,7 +143,7 @@ class _OrderInfo extends StatelessWidget {
             //   padding: EdgeInsets.symmetric(horizontal: 6),
             //   child: CircleAvatar(
             //     radius: 2,
-            //     backgroundColor: AppColors.gray300,
+            //     latar belakangColor: AppColors.gray300,
             //   ),
             // ),
             // Text(
@@ -196,7 +196,7 @@ class _StatusRow extends StatelessWidget {
 
     return Row(
       children: [
-        // Left side: status badge and optional LUNAS badge
+        // Left side: status badge and opsional LUNAS badge
         Expanded(
           child: Row(
             children: [

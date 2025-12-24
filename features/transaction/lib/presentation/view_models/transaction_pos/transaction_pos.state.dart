@@ -134,7 +134,7 @@ class TransactionPosState {
     );
   }
 
-  // Clear Semua state back to initial defaults
+  // Bersihkan semua state kembali ke nilai awal (default)
   factory TransactionPosState.cleared() {
     return TransactionPosState(
       error: null,
@@ -149,7 +149,7 @@ class TransactionPosState {
       activeCategory: "Semua",
       details: const [],
       packets: const [],
-      // reset UI state to defaults
+      // mengatur kembali state UI ke nilai default
       orderType: EOrderType.dineIn,
       ojolProvider: '',
       ojolProviders: ojolProviderList,

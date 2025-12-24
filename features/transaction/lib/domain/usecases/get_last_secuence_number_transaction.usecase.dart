@@ -1,7 +1,7 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 
-/// Usecase to obtain the highest `sequenceNumber` among existing
+/// Usecase to obtain the highest `sequenceNumber` among sudah ada
 /// transactions. Returns 0 when none found.
 class GetLastSequenceNumberTransaction {
   final TransactionRepository repository;

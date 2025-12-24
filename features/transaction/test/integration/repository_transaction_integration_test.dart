@@ -77,7 +77,7 @@ void main() {
       final created =
           createRes.getOrElse(() => throw Exception('create failed'));
 
-      // modify notes and update
+      // modify catatans and perbarui
       final updatedEntity = created.copyWith(notes: 'updated-test');
       final updRes =
           await repo.updateTransaction(updatedEntity, isOffline: true);

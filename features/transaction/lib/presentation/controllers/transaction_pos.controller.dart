@@ -22,7 +22,7 @@ class TransactionPosController {
   final ValueNotifier<bool> isSearching = ValueNotifier<bool>(false);
   // Konstruktor controller: menyimpan referensi `ref` (Provider) dan
   // `context` (untuk memicu UI seperti dialog/sheet).
-  // Gunakan timestamp untuk mencegah reload segera saat modal sheet
+  // Gunakan timestamp untuk mencegah remuat segera saat modal sheet
   // menutup dan membuka kembali. Jika terakhir refresh kurang dari
   // 2 detik lalu, abaikan refresh.
   DateTime? _lastRefreshAt;
@@ -46,7 +46,7 @@ class TransactionPosController {
     } catch (_) {}
   }
 
-  /// Exit search mode: clear input, reset notifier and notify ViewModel.
+  /// Exit search mode: bersihkan input, reset notifier and notify ViewModel.
   void exitSearch() {
     isSearching.value = false;
     try {
@@ -57,15 +57,15 @@ class TransactionPosController {
   }
 
   // Initialize viewmodel and initial state. Caller should call
-  // `attachListeners()` after widget build to start listening updates.
+  // `attachListeners()` after widget build to start listening perbaruis.
   void init() {
     _vm = ref.read(transactionPosViewModelProvider.notifier);
     _state = ref.read(transactionPosViewModelProvider);
-    // initialize appbar focus node used by screens
+    // initialize appbar focus node gunakand by screens
     appBarSearchFocus = FocusNode();
     // Install product-after-CRUD hook at runtime (deferred) so we don't
     // modify providers during the widget build/init lifecycle. Use a
-    // post-frame callback to perform the update after the first frame.
+    // post-frame callback to perform the perbarui after the first frame.
     try {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {

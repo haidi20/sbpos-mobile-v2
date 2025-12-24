@@ -74,7 +74,7 @@ class _FakeRepo implements TransactionRepository {
       Right(true);
 }
 
-// Harness widget to expose controller instance created with real WidgetRef
+// Harness widget to expose controller instance buatd with real WidgetRef
 class _ControllerHarness extends ConsumerStatefulWidget {
   const _ControllerHarness({Key? key}) : super(key: key);
 
@@ -273,11 +273,11 @@ void main() {
     await tester.tap(find.text('push'));
     await tester.pumpAndSettle();
 
-    // call update to remove the only item
+    // call perbarui to remove the only item
     controller.onUpdateQuantity(7, -1);
     await tester.pumpAndSettle();
 
-    // setelah update, details pada vm.state harus kosong
+    // setelah perbarui, details pada vm.state harus kosong
     final vm = state.ref.read(transactionPosViewModelProvider.notifier);
     expect(vm.state.details.length, 0);
   });

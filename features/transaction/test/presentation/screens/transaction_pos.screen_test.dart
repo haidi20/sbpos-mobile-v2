@@ -21,7 +21,7 @@ import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/domain/entities/category.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 
-// Minimal fake ViewModel implementing the interface used by the UI
+// Minimal fake ViewModel implementing the interface gunakand by the UI
 class _FakeTxnRepo implements TransactionRepository {
   @override
   Future<Either<Failure, List<TransactionEntity>>> getDataTransactions(

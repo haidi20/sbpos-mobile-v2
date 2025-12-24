@@ -21,7 +21,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
     super.initState();
     _controller = TransactionPosController(ref, context);
     _controller.init();
-    // Trigger initial load of products/packets when screen is first shown.
+    // Trigger initial muat of products/packets when screen is first shown.
     // Gunakan post-frame callback untuk memastikan konteks siap.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_controller.maybeRefreshOnVisible(true));
@@ -124,7 +124,7 @@ class _TransactionPosScreenState extends ConsumerState<TransactionPosScreen> {
                   child: RefreshIndicator(
                     onRefresh: () async {
                       // Pastikan transaksi pending telah dimuat dan refresh produk/paket
-                      // await viewModel.ensureLocalPendingTransactionLoaded();
+                      // await viewModel.ensureLocalPendingTransactionMuated();
                       await viewModel.refreshProductsAndPackets();
                     },
                     child: ContentArea(

@@ -35,7 +35,7 @@ class TransactionPersistence {
     TransactionStatus? forceStatus,
   }) async {
     final currentState = getState();
-    // mark persistent loading for long-running persistence
+    // tandai persistent muating for long-running persistence
     _logger.fine('persistAndUpdateState: setting isLoadingPersistent=true');
     setState(currentState.copyWith(isLoadingPersistent: true));
 
@@ -46,14 +46,14 @@ class TransactionPersistence {
       final totalQty =
           updatedDetails.fold<int>(0, (sum, d) => sum + (d.qty ?? 0));
 
-      // Create new transaction when none exists
+      // Buat transaksi baru ketika belum ada
       if (currentState.transaction == null) {
         if (updatedDetails.isEmpty) {
           setState(currentState.copyWith(isLoadingPersistent: false));
           return;
         }
 
-        // determine next sequence number (try usecase first, fallback to 1)
+        // determine next sequence number (try gunakancase first, cadangan to 1)
         int nextSequence = 1;
         try {
           final usecase = _getLastSequenceUsecase;
@@ -64,7 +64,7 @@ class TransactionPersistence {
             }
           }
         } catch (_) {
-          // ignore and fallback to default
+          // abaikan error dan kembali ke nilai default
         }
 
         final txEntity = TransactionEntity(
@@ -185,7 +185,7 @@ class TransactionPersistence {
                 : currentState.transaction!.status),
       );
 
-      // ketika update data
+      // saat memperbarui data
       _logger.info("transaction to update: $txEntity");
 
       final res = await _updateTransaction.call(txEntity, isOffline: true);
@@ -199,7 +199,7 @@ class TransactionPersistence {
             (updated.details != null && (updated.details?.isNotEmpty ?? false))
                 ? updated.details!
                 : updatedDetails;
-        // If caller intended the transaction to be paid, enforce in-memory status
+        // Jika pemanggil bermaksud transaksi sudah dibayar, tegakkan status di memori
         final enforcedUpdated = updated.copyWith(
           status:
               currentState.isPaid ? TransactionStatus.lunas : updated.status,
@@ -243,7 +243,7 @@ class TransactionPersistence {
       final totalQty =
           updatedDetails.fold<int>(0, (sum, d) => sum + (d.qty ?? 0));
 
-      // Create new transaction when none exists
+      // Buat transaksi baru ketika belum ada
       if (currentState.transaction == null) {
         if (updatedDetails.isEmpty) return;
 
@@ -286,7 +286,7 @@ class TransactionPersistence {
         return;
       }
 
-      // Existing transaction handling
+      // Penanganan transaksi yang sudah ada
       if (updatedDetails.isEmpty) {
         final txId = currentState.transaction?.id;
         if (txId != null) {
@@ -351,7 +351,7 @@ class TransactionPersistence {
     _loadLocalCompleter = Completer<void>();
     _logger.info('loadLocalTransaction: starting load from local DB...');
     try {
-      // indicate persistent loading while fetching from DB
+      // tandai pemuatan persistent while fetching from DB
       setState(getState().copyWith(isLoadingPersistent: true));
 
       final res = await getTransactionActive.call(isOffline: true);
@@ -360,7 +360,7 @@ class TransactionPersistence {
             .info('loadLocalTransaction: no existing local transaction found');
       }, (tx) {
         // _logger.info(
-        //     'Loaded local transaction, details length: ${tx.details?.length ?? 0}');
+        //     'Muated local transaction, details length: ${tx.details?.length ?? 0}');
         _logger.info('status tx lokal: ${tx.statusValue}');
         setState(
             getState().copyWith(transaction: tx, details: tx.details ?? []));
@@ -368,7 +368,7 @@ class TransactionPersistence {
     } catch (e, st) {
       _logger.warning('loadLocalTransaction failed', e, st);
     } finally {
-      // clear persistent loading flag
+      // bersihkan persistent muating flag
       setState(getState().copyWith(isLoadingPersistent: false));
       _didLoadLocal = true;
       _isLoadingLocal = false;

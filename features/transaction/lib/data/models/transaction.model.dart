@@ -235,7 +235,7 @@ class TransactionModel {
         // pastikan DB default non-null
         'change_money': changeMoney ?? 0,
         'is_paid': (isPaid == true) ? 1 : 0,
-        // store enum as string (use enum value)
+        // store enum as string (gunakan enum value)
         'status': _statusToString(status) ?? TransactionStatus.pending.value,
         'cancelation_otp': cancelationOtp,
         'cancelation_reason': cancelationReason,

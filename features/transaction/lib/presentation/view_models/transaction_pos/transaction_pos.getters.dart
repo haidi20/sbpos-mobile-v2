@@ -1,7 +1,7 @@
 part of 'transaction_pos.vm.dart';
 
 /// Build combined content list (packets + products).
-/// Applies optional search and category filters.
+/// Applies opsional search and category filters.
 List<ContentItemEntity> buildCombinedContent({
   required List<PacketEntity> packets,
   required List<ProductEntity> products,
@@ -215,7 +215,7 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
     }
   }
 
-  /// Ambil daftar paket (offline) dan update state.
+  /// Ambil daftar paket (offline) dan perbarui state.
   Future<void> getPacketsList({String? query}) async {
     try {
       if (_vm._getPacketsUsecase == null) {

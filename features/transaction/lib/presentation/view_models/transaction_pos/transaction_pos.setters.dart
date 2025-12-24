@@ -2,7 +2,7 @@ part of 'transaction_pos.vm.dart';
 
 mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   TransactionPosViewModel get _vm => this as TransactionPosViewModel;
-  // ------------------ Setters / Mutators ------------------
+  // ------------------ Setter / Mutator ------------------
   /// Perbarui kuantitas item dan persist perubahan.
   Future<void> setUpdateQuantity(int productId, int valueAddQty) async {
     final updated =
@@ -120,7 +120,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     _vm._rebuildCombinedCache();
   }
 
-  /// Set active note id dan persist perubahan (opsional background).
+  /// Set active catatan id dan persist perubahan (opsional latar belakang).
   Future<void> setActiveNoteId(int? id,
       {bool persist = true, bool background = false}) async {
     if (id == null) {
@@ -133,6 +133,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
             List<TransactionDetailEntity>.from(state.details),
           ),
         );
+
         return;
       }
 
@@ -140,6 +141,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
         state,
         List<TransactionDetailEntity>.from(state.details),
       );
+
       return;
     }
 
@@ -199,7 +201,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
       setOrderType(EOrderType.online);
       return;
     }
-    // Fallback: try matching by enum name
+    // Cadangan: try matching by enum name
     for (final e in EOrderType.values) {
       if (e.name.toLowerCase() == id) {
         setOrderType(e);
@@ -227,8 +229,8 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     );
   }
 
-  /// Select order type by id string (helper used by controllers)
-  // `selectOrderTypeById` removed — use `setOrderType(EOrderType)` directly.
+  /// Pilih tipe order berdasarkan id string (digunakan oleh controller)
+  // `selectOrderTypeById` dihapus — gunakan `setOrderType(EOrderType)` langsung.
 
   /// Tandai transaksi telah dibayar dan persist.
   void setIsPaid(bool v) {
@@ -241,7 +243,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     );
   }
 
-  /// Update jumlah cash yang diterima dan persist.
+  /// Perbarui jumlah cash yang diterima dan persist.
   void setCashReceived(int amount) {
     state = state.copyWith(cashReceived: amount);
     unawaited((this as TransactionPosViewModel)
@@ -252,7 +254,7 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   /// Siapkan VM untuk mengubah transaksi yang sudah ada.
   /// Memasukkan `transaction` dan `details` ke state dan menandai mode sebagai `edit`.
   Future<void> setTransactionForEdit(TransactionEntity txn) async {
-    // Map TransactionEntity fields into POS state so form inputs show values
+    // Pemetaan field TransactionEntity ke state POS agar input form menampilkan nilai
     EOrderType mapOrderType(int? id) {
       if (id == 2) return EOrderType.takeAway;
       if (id == 3) return EOrderType.online;

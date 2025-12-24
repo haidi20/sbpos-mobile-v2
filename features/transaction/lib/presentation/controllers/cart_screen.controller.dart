@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: gunakan_build_context_synchronously
 
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -22,7 +22,7 @@ class CartScreenController {
     _orderNoteController =
         TextEditingController(text: _stateProductPos.orderNote);
 
-    // Listener saat user mengetik di Order Note
+    // Listener saat gunakanr mengetik di Order Note
     _orderNoteController.addListener(() {
       if (_orderNoteController.text != _stateProductPos.orderNote) {
         _viewModel.setOrderNote(_orderNoteController.text);
@@ -94,7 +94,7 @@ class CartScreenController {
     }
 
     _logger.info('Set activeNoteId -> $id, focus that item');
-    // Update provider first so dependent widgets see the new active id
+    // Perbarui provider first so dependent widgets see the new active id
     unawaited(_viewModel.setActiveNoteId(id, background: true));
     // Unfocus others then focus target node
     _unfocusAll();
@@ -104,7 +104,7 @@ class CartScreenController {
 
   /// Periksa apakah ketukan berada di dalam input yang sedang fokus
   bool isTapInsideAnyFocused(Offset globalPosition) {
-    // Cek order note yang sedang fokus
+    // Cek order catatan yang sedang fokus
     if (_orderFocusNode.hasFocus) {
       final ctx = _orderFocusNode.context;
       final render = ctx?.findRenderObject();
@@ -114,7 +114,7 @@ class CartScreenController {
         if (rect.contains(local)) return true;
       }
     }
-    // Cek note item yang sedang fokus
+    // Cek catatan item yang sedang fokus
     for (final entry in _itemFocusNodes.entries) {
       final node = entry.value;
       if (!node.hasFocus) continue;
@@ -201,7 +201,7 @@ class CartScreenController {
         }
       }
     } else {
-      // Jika panjang sama, cek apakah teks note berubah dari luar
+      // Jika panjang sama, cek apakah teks catatan berubah dari luar
       for (final item in next.details) {
         final id = (item as dynamic).productId ?? 0;
         final controller = _itemNoteControllers[id];
@@ -234,7 +234,7 @@ class CartScreenController {
     }
   }
 
-  /// Show item note editor as a bottom-up sheet for the given `id`.
+  /// Show item catatan editor as a bottom-up sheet for the given `id`.
   /// Guards against opening multiple sheets for the same item.
   Future<void> showItemNoteEditor(int id) {
     if (_openNoteEditorIds.contains(id)) return Future.value();

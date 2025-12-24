@@ -2,7 +2,7 @@ import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
 
 // File ini berisi fungsi-fungsi kalkulasi murni (pure) yang dipisahkan
-// dari ViewModel agar mudah dibaca, diuji, dan direuse oleh bagian lain.
+// dari ViewModel agar mudah dibaca, diuji, dan diregunakan oleh bagian lain.
 
 // Mengembalikan indeks produk pertama yang cocok dengan kategori `name`
 // pada daftar produk yang sudah difilter. `products` diasumsikan sudah

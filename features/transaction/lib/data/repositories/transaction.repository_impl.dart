@@ -93,7 +93,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   /// Pastikan DB lokal memiliki beberapa transaksi contoh jika kosong.
-  /// Berguna untuk skenario fallback/offline agar UI tetap menampilkan data.
+  /// Berguna untuk skenario cadangan/offline agar UI tetap menampilkan data.
   Future<void> _ensureSeededLocal() async {
     _logger.info('Memeriksa/menyisipkan seed transaksi lokal...');
     try {
@@ -105,7 +105,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
           } catch (e, st) {
             _logger.warning(
                 'Failed seeding transaction local (DAO path): $e', e, st);
-            // fallback for web: write directly to LocalDatabase (sembast)
+            // cadangan for web: write directly to LocalDatabase (sembast)
             try {
               final db = LocalDatabase.instance;
               // masukkan transaksi dan gunakan kunci yang dikembalikan sebagai id lokal untuk detail
@@ -211,14 +211,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
         )));
       }
 
-      // 2) Jika online, kirim ke remote setelah insert lokal; jika sukses, update lokal dengan id_server + synced_at
+      // 2) Jika online, kirim ke remote setelah insert lokal; jika sukses, perbarui lokal dengan id_server + synced_at
       try {
-        // pastikan payload berisi details incl. transaction local id not required by API
+        // pastikan paymuat berisi details incl. transaction local id not required by API
         final TransactionResponse resp =
             await remote.postTransaction(txModel.toJson());
 
         if (resp.success != true || resp.data == null || resp.data!.isEmpty) {
-          // fallback: simpan lokal
+          // cadangan: simpan lokal
           final inserted = await local.insertSyncTransaction(txModel);
           if (inserted == null) {
             return const Left(ServerFailure());
@@ -228,7 +228,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
         final TransactionModel created = resp.data!.first;
 
-        // jika berhasil create di server, update record lokal dengan id_server dan synced_at
+        // jika berhasil buat di server, perbarui record lokal dengan id_server dan synced_at
         final syncAt = DateTime.now();
         final idServer = created.idServer ?? created.id;
         await local.updateTransaction({
@@ -267,14 +267,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<Either<Failure, TransactionEntity>> createTransaction(
       TransactionEntity transaction,
       {bool? isOffline}) async {
-    // reuse existing setTransaction behavior for create
+    // regunakan sudah ada setTransaction behavior for buat
     return await setTransaction(transaction, isOffline: isOffline);
   }
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions(
       {bool? isOffline, QueryGetTransactions? query}) async {
-    // reuse getDataTransactions
+    // regunakan getDataTransactions
     return await getDataTransactions(isOffline: isOffline, query: query);
   }
 
@@ -303,7 +303,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         return await _localOrFailureById(id, const ServerFailure());
       }
       final model = resp.data!.first;
-      // save to local (replace existing)
+      // save to local (replace sudah ada)
       await local.insertSyncTransaction(model);
       return Right(TransactionEntity.fromModel(model));
     } on ServerException {
@@ -352,17 +352,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       final txModel = transaction.toModel();
 
-      // Jika transaksi tidak memiliki id lokal, perlakukan ini sebagai create untuk
-      // memastikan baris lokal ada sebelum mencoba update.
-      // a local row exists before attempting an update. This prevents
-      // returning UnknownFailure when callers try to update an unsaved tx.
+      // Jika transaksi tidak memiliki id lokal, perlakukan ini sebagai buat untuk
+      // memastikan baris lokal ada sebelum mencoba perbarui.
+      // a local row exists before attempting an perbarui. This prevents
+      // returning UnknownFailure when callers try to perbarui an unsaved tx.
       if (txModel.id == null) {
         _logger.info(
             'updateTransaction: no local id found, delegating to setTransaction');
         return await setTransaction(transaction, isOffline: isOffline);
       }
 
-      // update lokal terlebih dahulu - pastikan 'id' ada di map untuk proses update
+      // perbarui lokal terlebih dahulu - pastikan 'id' ada di map untuk proses perbarui
       final txMapForUpdate =
           Map<String, dynamic>.from(txModel.toInsertDbLocal())
             ..['id'] = txModel.id;
@@ -370,19 +370,19 @@ class TransactionRepositoryImpl implements TransactionRepository {
       try {
         final updateCount = await local.updateTransaction(txMapForUpdate);
         if (updateCount == 0) {
-          // nothing was updated locally (maybe row missing) -> fallback to create
+          // nothing was perbaruid locally (maybe row missing) -> cadangan to buat
           _logger.warning(
               'updateTransaction: local update affected 0 rows, falling back to setTransaction');
           return await setTransaction(transaction, isOffline: isOffline);
         }
       } catch (e, st) {
-        // unexpected local DB error -> log and fallback to create
+        // unexpected local DB error -> log and cadangan to buat
         _logger.warning(
             'updateTransaction: local update threw, fallback to set', e, st);
         return await setTransaction(transaction, isOffline: isOffline);
       }
 
-      // If details are provided, replace existing details in local DB so
+      // If details are provided, replace sudah ada details in local DB so
       // quantities and subtotals are persisted.
       if (txModel.details != null && txModel.details!.isNotEmpty) {
         try {
@@ -392,11 +392,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
         } catch (e, st) {
           _logger.warning(
               'updateTransaction: replacing details failed, continuing', e, st);
-          // don't fail the whole update for detail errors; attempt to continue
+          // don't fail the whole perbarui for detail errors; attempt to continue
         }
       }
 
-      // if offline requested, return local and mark as unsynced
+      // if offline requested, return local and tandai as unsynced
       if (isOffline == true) {
         if (txModel.id != null) {
           await local.clearSyncedAt(txModel.id!);
@@ -420,7 +420,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       // determine server id
       final idServer = txModel.idServer;
       if (idServer == null) {
-        // no server id, treat as create
+        // no server id, treat as buat
         return await createTransaction(transaction, isOffline: false);
       }
 
@@ -461,7 +461,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<Either<Failure, bool>> deleteTransaction(int id,
       {bool? isOffline}) async {
     try {
-      // delete local first
+      // hapus local first
       await local.deleteTransaction(id);
 
       if (isOffline == true) {

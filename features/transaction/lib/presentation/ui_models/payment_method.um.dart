@@ -14,7 +14,7 @@ class PaymentMethodUiModel {
   });
 }
 
-// Dummy list of payment methods used by the UI
+// Dummy list of payment methods gunakand by the UI
 final List<PaymentMethodUiModel> paymentMethodList = [
   const PaymentMethodUiModel(
     id: 'cash',

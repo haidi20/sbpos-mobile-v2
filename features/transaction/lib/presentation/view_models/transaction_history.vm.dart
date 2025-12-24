@@ -9,7 +9,7 @@ class TransactionHistoryViewModel
   TransactionHistoryViewModel(
     this._getTransactions,
   ) : super(TransactionHistoryState()) {
-    // load offline data on init
+    // muat offline data on init
     Future.microtask(() => onRefresh());
   }
 
@@ -39,7 +39,7 @@ class TransactionHistoryViewModel
     String q, {
     Duration debounce = const Duration(milliseconds: 500),
   }) {
-    // update query immediately for UI reflect
+    // perbarui query immediately for UI reflect
     state = state.copyWith(searchQuery: q);
     // debounce refresh to avoid excessive DB calls
     _searchDebounce?.cancel();
@@ -62,7 +62,7 @@ class TransactionHistoryViewModel
       state = state.copyWith(selectedDate: sel);
     }
 
-    // reload data using GetTransactionsUsecase with date filter
+    // remuat data using GetTransactionsUsecase with date filter
     try {
       await onRefresh();
     } catch (e, st) {

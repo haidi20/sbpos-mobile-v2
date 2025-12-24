@@ -58,7 +58,7 @@ class OrderTypeModel {
       return null;
     }
 
-    // parseString removed (unused) to satisfy analyzer
+    // parseString dihapus (ungunakand) to satisfy analyzer
 
     return OrderTypeModel(
       id: parseInt(json['id']),

@@ -14,7 +14,7 @@ import 'package:transaction/presentation/view_models/transaction_history.vm.dart
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 import 'package:transaction/presentation/providers/transaction_repository.provider.dart';
 
-// Usecase providers (dipindahkan dari transaction_usecase_providers.dart)
+// Usecase providers (dipindahkan dari transaction_gunakancase_providers.dart)
 final createTransaction = Provider((ref) {
   final repo = ref.watch(transactionRepositoryProvider);
   return CreateTransaction(repo!);
@@ -91,4 +91,4 @@ final transactionHistoryViewModelProvider =
   return TransactionHistoryViewModel(getTxn);
 });
 
-// No local fallback repository here; the app should provide `productRepositoryProvider`.
+// No local cadangan repository here; the app should provide `productRepositoryProvider`.
