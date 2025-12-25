@@ -20,6 +20,7 @@ import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/presentation/screens/product_management.screen.dart';
 import 'package:product/presentation/screens/packet_management.screen.dart';
 import 'package:product/presentation/screens/packet_management_form.screen.dart';
+import 'package:product/domain/entities/packet.entity.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 
@@ -34,7 +35,8 @@ class AppRouter {
       initialLocation: '/',
       redirect: (context, state) {
         if (state.matchedLocation == '/') {
-          return AppRoutes.login;
+          // return AppRoutes.login;
+          return AppRoutes.productManagement;
         }
         return null;
       },
@@ -110,9 +112,9 @@ class AppRouter {
           name: AppRoutes.packetForm,
           pageBuilder: (context, state) {
             final extra = state.extra;
-            final packetId = extra is int ? extra : null;
+            final packetEntity = extra is PacketEntity ? extra : null;
             return MaterialPage(
-                child: PacketManagementFormScreen(packetId: packetId));
+                child: PacketManagementFormScreen(packetEntity: packetEntity));
           },
         ),
         // Rute Pengaturan Utama (SettingScreen)

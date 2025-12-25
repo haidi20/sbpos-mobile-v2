@@ -1,5 +1,6 @@
 import 'packet.table.dart';
 import 'packet_item.table.dart';
+import 'product.table.dart';
 import 'package:core/core.dart';
 import 'package:core/data/datasources/local_database_sembast.dart'
     as sembast_db;
@@ -99,9 +100,35 @@ class PacketDao {
   }
 
   Future<List<PacketItemModel>> _getItemsForPacket(int packetId) async {
-    final rows = await database!.query(PacketItemTable.tableName,
-        where: '${PacketItemTable.colPacketId} = ?', whereArgs: [packetId]);
-    return rows.map((r) => PacketItemModel.fromDbLocal(r)).toList();
+    if (database != null) {
+      final rows = await database!.rawQuery('''
+        SELECT pi.*, p.${ProductTable.colName} AS product_name
+        FROM ${PacketItemTable.tableName} pi
+        LEFT JOIN ${ProductTable.tableName} p
+          ON p.${ProductTable.colId} = pi.${PacketItemTable.colProductId}
+        WHERE pi.${PacketItemTable.colPacketId} = ?
+      ''', [packetId]);
+      return rows.map((r) => PacketItemModel.fromDbLocal(r)).toList();
+    }
+
+    // Sembast / web branch: enrich items with product name via lookups
+    final rows = await sembast_db.LocalDatabase.instance.getWhereEquals(
+        PacketItemTable.tableName, PacketItemTable.colPacketId, packetId);
+    final List<PacketItemModel> result = [];
+    for (final r in rows) {
+      final map = Map<String, dynamic>.from(r);
+      final pid = map[PacketItemTable.colProductId] as int? ??
+          map['product_id'] as int?;
+      if (pid != null) {
+        final p = await sembast_db.LocalDatabase.instance
+            .getByKey(ProductTable.tableName, pid);
+        if (p != null) {
+          map['product_name'] = p[ProductTable.colName] ?? p['name'];
+        }
+      }
+      result.add(PacketItemModel.fromDbLocal(map));
+    }
+    return result;
   }
 
   Future<PacketModel> insertPacket(Map<String, dynamic> packet,

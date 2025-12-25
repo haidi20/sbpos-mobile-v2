@@ -117,18 +117,6 @@ class InventoryScreen extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                     color: Colors.black87),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.history, size: 20, color: Colors.grey),
-                  onPressed: () {},
-                  tooltip: 'Riwayat Stok',
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 16),

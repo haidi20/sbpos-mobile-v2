@@ -1,54 +1,50 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
-import 'package:flutter/material.dart';
-import 'package:core/utils/theme.dart';
-import '../controllers/packet_item_management_form.controller.dart';
 import 'package:intl/intl.dart';
-import '../widgets/floating_input.widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/utils/theme.dart';
 import 'package:product/domain/entities/packet_item.entity.dart';
-import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/presentation/widgets/floating_input.widget.dart';
+import 'package:product/presentation/controllers/packet_item_management_form.controller.dart';
+// product provider moved into product.sheet; not needed here
+import 'package:product/presentation/providers/packet.provider.dart';
+import 'package:product/presentation/sheets/product.sheet.dart';
 
-typedef OnSaveItem = void Function(ProductItem item);
-typedef OnRemoveItem = void Function(String id);
+// Sheet now interacts directly with PacketManagementViewModel for draft
+// add/update/remove. No external callbacks required.
 
-class PacketItemManagementFormSheet extends StatefulWidget {
-  const PacketItemManagementFormSheet(
-      {super.key,
-      required this.controller,
-      required this.onSave,
-      required this.onClose,
-      this.onRemove});
+class PacketItemManagementFormSheet extends ConsumerStatefulWidget {
+  const PacketItemManagementFormSheet({
+    super.key,
+    required this.onClose,
+    required this.controller,
+    this.index,
+  });
 
-  final PacketItemManagementFormController controller;
-  final OnSaveItem onSave;
   final VoidCallback onClose;
-  final OnRemoveItem? onRemove;
+  final PacketItemManagementFormController controller;
+  final int? index; // index in draft items, null = new item
 
   @override
-  State<PacketItemManagementFormSheet> createState() =>
+  ConsumerState<PacketItemManagementFormSheet> createState() =>
       _PacketItemManagementFormSheetState();
 }
 
 /// Show the packet item management sheet and return an updated
 /// [PacketItemEntity] or `null` if cancelled.
-Future<PacketItemEntity?> showPacketItemManagementSheet(BuildContext context,
-    PacketItemEntity item, List<ProductEntity> products) async {
-  final controller = PacketItemManagementFormController(
-    initial: ProductItem(
-      id: item.id?.toString() ??
-          DateTime.now().millisecondsSinceEpoch.toString(),
-      name: products
-              .firstWhere((p) => p.id == item.productId,
-                  orElse: () => const ProductEntity())
-              .name ??
-          '',
-      qty: item.qty ?? 1,
-      price: item.subtotal ?? 0,
-      discount: item.discount ?? 0,
-    ),
-  );
+Future<void> showPacketItemManagementSheet(
+  BuildContext context,
+  PacketItemEntity item, {
+  int? index,
+}) async {
+  final controller = PacketItemManagementFormController(initial: item);
+  controller.nameController.text = item.productName?.toString() ?? '';
+  controller.qtyController.text = (item.qty ?? 1).toString();
+  controller.priceController.text = (item.subtotal ?? 0).toString();
+  controller.discountController.text = (item.discount ?? 0).toString();
 
-  final res = await showModalBottomSheet<ProductItem?>(
+  await showModalBottomSheet<PacketItemEntity?>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -62,29 +58,17 @@ Future<PacketItemEntity?> showPacketItemManagementSheet(BuildContext context,
         child: PacketItemManagementFormSheet(
           controller: controller,
           onClose: () => Navigator.of(ctx).pop(),
-          onSave: (it) => Navigator.of(ctx).pop(it),
-          onRemove: (id) => Navigator.of(ctx).pop(),
+          index: index,
         ),
       ),
     ),
   );
-
-  if (res == null) return null;
-
-  // convert ProductItem back to PacketItemEntity
-  final pickedProduct = products.firstWhere((p) => p.name == res.name,
-      orElse: () => const ProductEntity());
-  return PacketItemEntity(
-    id: int.tryParse(res.id),
-    productId: pickedProduct.id,
-    qty: res.qty,
-    subtotal: (res.qty * res.price) - res.discount,
-    discount: res.discount,
-  );
+  // sheet performs VM updates internally; no value returned.
+  return;
 }
 
 class _PacketItemManagementFormSheetState
-    extends State<PacketItemManagementFormSheet> {
+    extends ConsumerState<PacketItemManagementFormSheet> {
   late final NumberFormat _currency;
 
   @override
@@ -96,6 +80,7 @@ class _PacketItemManagementFormSheetState
   }
 
   void _onNameChange() => setState(() {});
+
   @override
   void dispose() {
     widget.controller.nameController.removeListener(_onNameChange);
@@ -105,7 +90,8 @@ class _PacketItemManagementFormSheetState
 
   @override
   Widget build(BuildContext context) {
-    final item = widget.controller.value;
+    final controller = widget.controller;
+    final item = controller.value;
 
     return SafeArea(
       child: Column(
@@ -123,7 +109,7 @@ class _PacketItemManagementFormSheetState
                 ),
                 Expanded(
                   child: Text(
-                    item.id.isNotEmpty ? 'Edit Item' : 'Tambah Item',
+                    (item.id != null) ? 'Edit Item' : 'Tambah Item',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
@@ -149,7 +135,7 @@ class _PacketItemManagementFormSheetState
                       Text('IDR', style: Theme.of(context).textTheme.bodyLarge),
                       const SizedBox(height: 6),
                       Text(
-                        _currency.format(item.subtotal),
+                        _currency.format(item.subtotal ?? 0),
                         style: TextStyle(
                             fontSize: 28,
                             color: AppColors.sbOrange,
@@ -192,7 +178,18 @@ class _PacketItemManagementFormSheetState
                           const SizedBox(height: 8),
                           GestureDetector(
                             onTap: () async {
-                              // delegate product picking to caller by closing sheet with no-op or via other UI
+                              // show product picker (fetching handled inside the sheet)
+                              final selected =
+                                  await showProductSelectionSheet(context);
+                              if (selected == null) return;
+                              if (!mounted) return;
+                              widget.controller.nameController.text =
+                                  selected.name ?? '';
+                              widget.controller.priceController.text =
+                                  (selected.price?.toInt() ?? 0).toString();
+                              widget.controller.updateFromControllers(
+                                  productId: selected.id);
+                              setState(() {});
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -206,12 +203,13 @@ class _PacketItemManagementFormSheetState
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                      item.name.isEmpty
+                                      controller.nameController.text.isEmpty
                                           ? 'Pilih Produk...'
-                                          : item.name,
+                                          : controller.nameController.text,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: item.name.isEmpty
+                                          color: controller
+                                                  .nameController.text.isEmpty
                                               ? Colors.black26
                                               : Colors.black87)),
                                   Icon(Icons.chevron_right,
@@ -282,10 +280,16 @@ class _PacketItemManagementFormSheetState
 
                 const SizedBox(height: 18),
 
-                if (item.id.isNotEmpty)
+                if (item.id != null)
                   TextButton.icon(
                     onPressed: () {
-                      widget.onRemove?.call(item.id);
+                      // remove via VM when editing existing draft item
+                      final vm =
+                          ref.read(packetManagementViewModelProvider.notifier);
+                      if (widget.index != null) {
+                        vm.removeDraftItemAt(widget.index!);
+                      }
+                      Navigator.of(context).maybePop();
                     },
                     icon: const Icon(Icons.delete, color: Colors.red),
                     label: const Text('HAPUS ITEM',
@@ -297,13 +301,22 @@ class _PacketItemManagementFormSheetState
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.sbBlue),
-                  onPressed:
-                      widget.controller.nameController.text.trim().isEmpty
-                          ? null
-                          : () {
-                              widget.controller.updateFromControllers();
-                              widget.onSave(widget.controller.value);
-                            },
+                  onPressed: widget.controller.nameController.text
+                          .trim()
+                          .isEmpty
+                      ? null
+                      : () {
+                          final vm = ref
+                              .read(packetManagementViewModelProvider.notifier);
+                          widget.controller.updateFromControllers();
+                          final value = widget.controller.value;
+                          if (widget.index != null) {
+                            vm.updateDraftItemAt(widget.index!, value);
+                          } else {
+                            vm.addDraftItem(value);
+                          }
+                          Navigator.of(context).maybePop();
+                        },
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 14),

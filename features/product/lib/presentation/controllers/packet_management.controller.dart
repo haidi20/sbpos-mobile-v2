@@ -78,9 +78,9 @@ class PacketManagementController {
       if (seen.add(pid)) list.add(p);
     }
 
-    final selected = await showProductSelectionSheet(context, list);
+    final selected = await showProductSelectionSheet(context);
     if (selected != null) {
-      await selectProductForDraftItem(context, index, selected);
+      await selectProductForDraftItem(context, index, selected.id);
     }
   }
 
@@ -127,22 +127,8 @@ class PacketManagementController {
     if (index < 0 || index >= items.length) return;
     final item = items[index];
 
-    // gunakan sheet yang lebih mirip UX React untuk edit item
-    final updated = await showPacketItemManagementSheet(
-      context,
-      item,
-      products.value,
-    );
-
-    if (updated == null) return;
-
-    // jika qty = 0 dalam hasil, anggap sebagai perintah hapus
-    if (updated.qty != null && updated.qty == 0) {
-      vm.removeDraftItemAt(index);
-      return;
-    }
-
-    vm.updateDraftItemAt(index, updated);
+    // gunakan sheet yang meng-handle VM secara langsung
+    await showPacketItemManagementSheet(context, item, index: index);
   }
 
   int computeItemSubtotal(

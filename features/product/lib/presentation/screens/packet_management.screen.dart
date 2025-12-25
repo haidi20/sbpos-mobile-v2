@@ -111,8 +111,8 @@ class _PacketManagementDataList extends StatelessWidget {
         return PacketListItem(
           packet: p,
           onEdit: () async {
-            // pass only packet id to form; form/controller will load full data via VM/usecase
-            await context.push(AppRoutes.packetForm, extra: p.id);
+            // pass full packet entity to form (form now accepts packetEntity)
+            await context.push(AppRoutes.packetForm, extra: p);
             if (!Navigator.of(context).mounted) return;
             notifier.getPackets();
           },

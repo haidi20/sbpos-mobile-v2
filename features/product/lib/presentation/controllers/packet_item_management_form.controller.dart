@@ -1,62 +1,36 @@
 import 'package:flutter/widgets.dart';
+import 'package:product/domain/entities/packet_item.entity.dart';
 
-/// Lightweight model used by the presentation layer for packet items.
-class ProductItem {
-  ProductItem({
-    required this.id,
-    this.name = '',
-    this.qty = 1,
-    this.price = 0,
-    this.discount = 0,
-  });
-
-  final String id;
-  String name;
-  int qty;
-  int price;
-  int discount;
-
-  int get subtotal => (qty * price) - discount;
-
-  ProductItem copyWith({
-    String? id,
-    String? name,
-    int? qty,
-    int? price,
-    int? discount,
-  }) {
-    return ProductItem(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      qty: qty ?? this.qty,
-      price: price ?? this.price,
-      discount: discount ?? this.discount,
-    );
-  }
-}
-
-/// Controller that owns transient editing controllers for the item form.
+/// Controller that owns transient editing controllers for the packet item form.
 class PacketItemManagementFormController {
-  PacketItemManagementFormController({ProductItem? initial}) {
-    value = initial ??
-        ProductItem(id: DateTime.now().millisecondsSinceEpoch.toString());
-    nameController = TextEditingController(text: value.name);
-    qtyController = TextEditingController(text: value.qty.toString());
-    priceController = TextEditingController(text: value.price.toString());
-    discountController = TextEditingController(text: value.discount.toString());
+  PacketItemManagementFormController({PacketItemEntity? initial}) {
+    value = initial ?? PacketItemEntity();
+    nameController = TextEditingController();
+    qtyController = TextEditingController(text: (value.qty ?? 1).toString());
+    priceController =
+        TextEditingController(text: (value.subtotal ?? 0).toString());
+    discountController =
+        TextEditingController(text: (value.discount ?? 0).toString());
   }
 
-  late ProductItem value;
+  late PacketItemEntity value;
   late TextEditingController nameController;
   late TextEditingController qtyController;
   late TextEditingController priceController;
   late TextEditingController discountController;
 
-  void updateFromControllers() {
-    value.name = nameController.text;
-    value.qty = int.tryParse(qtyController.text) ?? 1;
-    value.price = int.tryParse(priceController.text) ?? 0;
-    value.discount = int.tryParse(discountController.text) ?? 0;
+  /// Update internal `value` from text controllers. Caller should resolve
+  /// `productId` based on `nameController.text` if needed.
+  void updateFromControllers({int? productId}) {
+    final qty = int.tryParse(qtyController.text) ?? 1;
+    final price = int.tryParse(priceController.text) ?? 0;
+    final discount = int.tryParse(discountController.text) ?? 0;
+    final subtotal = (qty * price) - discount;
+    value = value.copyWith(
+        productId: productId ?? value.productId,
+        qty: qty,
+        subtotal: subtotal,
+        discount: discount);
   }
 
   void dispose() {

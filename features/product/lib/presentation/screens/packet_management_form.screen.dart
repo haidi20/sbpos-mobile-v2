@@ -1,109 +1,51 @@
-// ignore_for_file: prefer_const_constructors, unused_element
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_element, unused_import, unnecessary_import, depend_on_referenced_packages, use_build_context_synchronously, public_member_api_docs
 
-import 'package:flutter/material.dart';
-import 'package:core/utils/theme.dart';
-import '../controllers/packet_item_management_form.controller.dart';
-import '../sheets/packet_item_management_form.sheet.dart';
-import '../sheets/product.sheet.dart';
-import '../widgets/product_list.widget.dart';
+import 'package:core/core.dart';
+import 'package:product/domain/entities/packet.entity.dart';
+import 'package:product/domain/entities/packet_item.entity.dart';
+import 'package:product/presentation/providers/packet.provider.dart';
+import 'package:product/presentation/components/packet_item.card.dart';
+import 'package:product/presentation/controllers/packet_management_form.controller.dart';
 
-class PacketManagementFormScreen extends StatefulWidget {
-  final int? packetId;
-  const PacketManagementFormScreen({super.key, this.packetId});
+class PacketManagementFormScreen extends ConsumerStatefulWidget {
+  final PacketEntity? packetEntity;
+  const PacketManagementFormScreen({
+    super.key,
+    this.packetEntity,
+  });
 
   @override
-  State<PacketManagementFormScreen> createState() =>
+  ConsumerState<PacketManagementFormScreen> createState() =>
       _PacketManagementFormScreenState();
 }
 
 class _PacketManagementFormScreenState
-    extends State<PacketManagementFormScreen> {
-  String name = 'Paket Sarapan';
-  List<ProductItem> items = [
-    ProductItem(id: '1', name: 'Kopi Susu', qty: 1, price: 10000),
-    ProductItem(id: '2', name: 'Nasi Kuning', qty: 1, price: 15000),
-  ];
+    extends ConsumerState<PacketManagementFormScreen> {
+  // data comes from `widget.packetEntity`
 
-  int basePrice = 25000;
-  bool isActive = true;
-  bool applyPacketDiscount = false;
-  int packetDiscount = 0;
+  late final PacketManagementFormController _controller;
 
-  PacketItemManagementFormController? _editingController;
-
-  int calculateTotal() {
-    var itemsTotal = items.fold<int>(
-        0, (acc, it) => acc + (it.qty * it.price) - it.discount);
-    var finalTotal =
-        applyPacketDiscount ? itemsTotal - packetDiscount : itemsTotal;
-    finalTotal += basePrice;
-    return finalTotal.clamp(0, 1 << 31);
+  @override
+  void initState() {
+    super.initState();
+    _controller = PacketManagementFormController(ref);
   }
 
-  void _openEditSheet({ProductItem? item}) {
-    _editingController = PacketItemManagementFormController(initial: item);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        expand: false,
-        builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
-          child: PacketItemManagementFormSheet(
-            controller: _editingController!,
-            onClose: () {
-              Navigator.of(ctx).pop();
-            },
-            onSave: (it) {
-              setState(() {
-                final exists = items.indexWhere((e) => e.id == it.id);
-                if (exists >= 0) {
-                  items[exists] = it;
-                } else {
-                  items.add(it);
-                }
-              });
-              Navigator.of(ctx).pop();
-            },
-            onRemove: (id) {
-              setState(() => items.removeWhere((e) => e.id == id));
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ),
-      ),
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // initialize VM draft from provided packetEntity when screen is shown
+    final vm = ref.read(packetManagementViewModelProvider.notifier);
+    vm.setDraft(widget.packetEntity ?? PacketEntity());
+    vm.setIsForm(true);
+    vm.ensureProductsLoaded();
   }
 
-  void _openProductPicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        expand: false,
-        builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
-          child: ProductPickerSheet(
-              initialSelected: _editingController?.nameController.text,
-              onPick: (namePicked) {
-                // assign into editing controller if present
-                if (_editingController != null) {
-                  _editingController!.nameController.text = namePicked;
-                }
-                Navigator.of(ctx).pop();
-              }),
-        ),
-      ),
-    );
+  Future<void> _openEditSheet({PacketItemEntity? item, int? index}) async {
+    await _controller.openEditSheet(context: context, item: item, index: index);
   }
+
+  // product picker handled inside item sheet flow via product list passed in
 
   @override
   Widget build(BuildContext context) {
@@ -120,22 +62,31 @@ class _PacketManagementFormScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _InfoSection(
-                      name: name,
-                      isActive: isActive,
-                      onNameChanged: (v) => setState(() => name = v),
-                      onToggleActive: () =>
-                          setState(() => isActive = !isActive),
-                    ),
+                    // Info comes from VM draft so mutations go through VM
+                    Builder(builder: (context) {
+                      final notifier =
+                          ref.read(packetManagementViewModelProvider.notifier);
+                      final draft = notifier.draft;
+                      return _InfoSection(
+                        name: draft.name ?? 'Paket',
+                        isActive: draft.isActive ?? true,
+                        onNameChanged: (v) =>
+                            notifier.setDraft(draft.copyWith(name: v)),
+                        onToggleActive: () => notifier.setDraft(draft.copyWith(
+                            isActive: !(draft.isActive ?? true))),
+                      );
+                    }),
                     const SizedBox(height: 18),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Item Produk',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Item Produk',
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
                         TextButton.icon(
                           onPressed: () => _openEditSheet(),
                           icon: const Icon(Icons.add, color: AppColors.sbBlue),
@@ -147,8 +98,20 @@ class _PacketManagementFormScreenState
                       ],
                     ),
                     const SizedBox(height: 8),
-                    ProductListWidget(
-                        items: items, onEdit: (it) => _openEditSheet(item: it)),
+                    // Packet items provided by VM draft
+                    Builder(builder: (context) {
+                      final notifier =
+                          ref.read(packetManagementViewModelProvider.notifier);
+                      final draft = notifier.draft;
+                      final items = draft.items ?? <PacketItemEntity>[];
+                      return _PacketItemList(
+                          items: items,
+                          onEdit: (it) {
+                            final idx = items.indexWhere((i) => i.id == it.id);
+                            _openEditSheet(
+                                item: it, index: idx == -1 ? null : idx);
+                          });
+                    }),
                     const SizedBox(height: 22),
                     Text('Konfigurasi Harga',
                         style: Theme.of(context)
@@ -168,9 +131,9 @@ class _PacketManagementFormScreenState
                               decoration: const InputDecoration(
                                   labelText: 'Harga Dasar Paket'),
                               controller: TextEditingController(
-                                  text: basePrice.toString()),
-                              onChanged: (v) => setState(
-                                  () => basePrice = int.tryParse(v) ?? 0),
+                                  text: (widget.packetEntity?.price ?? 0)
+                                      .toString()),
+                              onChanged: (v) {},
                             ),
                           ),
                           const Divider(height: 1),
@@ -178,11 +141,10 @@ class _PacketManagementFormScreenState
                             title: const Text('Gunakan Diskon Paket',
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                             trailing: Switch(
-                                value: applyPacketDiscount,
-                                onChanged: (v) =>
-                                    setState(() => applyPacketDiscount = v)),
+                                value: (widget.packetEntity?.discount ?? 0) > 0,
+                                onChanged: (_) {}),
                           ),
-                          if (applyPacketDiscount)
+                          if ((widget.packetEntity?.discount ?? 0) > 0)
                             Padding(
                               padding: const EdgeInsets.all(12.0),
                               child: TextField(
@@ -190,35 +152,62 @@ class _PacketManagementFormScreenState
                                 decoration: const InputDecoration(
                                     labelText: 'Nominal Diskon'),
                                 controller: TextEditingController(
-                                    text: packetDiscount.toString()),
-                                onChanged: (v) => setState(() =>
-                                    packetDiscount = int.tryParse(v) ?? 0),
+                                    text: (widget.packetEntity?.discount ?? 0)
+                                        .toString()),
+                                onChanged: (v) {},
                               ),
                             ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _SummaryCard(total: calculateTotal()),
+                    _SummaryCard(
+                        total: ref
+                            .read(packetManagementViewModelProvider.notifier)
+                            .computeTotal(
+                                basePrice: ref
+                                        .read(packetManagementViewModelProvider
+                                            .notifier)
+                                        .draft
+                                        .price ??
+                                    0,
+                                applyPacketDiscount: (ref
+                                            .read(
+                                                packetManagementViewModelProvider
+                                                    .notifier)
+                                            .draft
+                                            .discount ??
+                                        0) >
+                                    0,
+                                packetDiscount: ref
+                                        .read(packetManagementViewModelProvider
+                                            .notifier)
+                                        .draft
+                                        .discount ??
+                                    0)),
                     const SizedBox(height: 60),
                   ],
                 ),
               ),
             ),
-            _BottomBar(onSave: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Disimpan ke Livin Dashboard')));
+            _BottomBar(onSave: () async {
+              final notifier =
+                  ref.read(packetManagementViewModelProvider.notifier);
+              final draft = notifier.draft;
+              if (draft.id == null) {
+                await notifier.onCreatePacket();
+              } else {
+                await notifier.onUpdatePacket();
+              }
+              if (!mounted) return;
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(content: Text('Disimpan')));
+              Navigator.of(context).maybePop();
             }),
           ],
         ),
       ),
-      floatingActionButton: _editingController == null
-          ? null
-          : FloatingActionButton(
-              onPressed: _openProductPicker,
-              backgroundColor: AppColors.sbBlue,
-              child: const Icon(Icons.search),
-            ),
+      floatingActionButton: null,
     );
   }
 }
@@ -366,6 +355,45 @@ class _BottomBar extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
         ),
       ),
+    );
+  }
+}
+
+class _PacketItemList extends StatelessWidget {
+  const _PacketItemList({
+    super.key,
+    required this.items,
+    required this.onEdit,
+  });
+
+  final List<PacketItemEntity> items;
+  final void Function(PacketItemEntity item) onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.gray200),
+        ),
+        child: Center(
+          child: const Text('Keranjang masih kosong',
+              style: TextStyle(
+                  color: AppColors.gray400, fontWeight: FontWeight.w600)),
+        ),
+      );
+    }
+
+    return Column(
+      children: items.map(
+        (packetItem) {
+          return PacketItemCard(packetItem: packetItem, onEdit: onEdit);
+        },
+      ).toList(),
     );
   }
 }

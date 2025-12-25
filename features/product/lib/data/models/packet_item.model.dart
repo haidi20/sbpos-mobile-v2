@@ -4,6 +4,7 @@ class PacketItemModel {
   final int? id;
   final int? packetId;
   final int? productId;
+  final String? productName;
   final int? qty;
   final int? subtotal;
   final int? discount;
@@ -14,6 +15,7 @@ class PacketItemModel {
     this.id,
     this.packetId,
     this.productId,
+    this.productName,
     this.qty,
     this.subtotal,
     this.discount,
@@ -25,6 +27,7 @@ class PacketItemModel {
     int? id,
     int? packetId,
     int? productId,
+    String? productName,
     int? qty,
     int? subtotal,
     int? discount,
@@ -35,6 +38,7 @@ class PacketItemModel {
       id: id ?? this.id,
       packetId: packetId ?? this.packetId,
       productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
       qty: qty ?? this.qty,
       subtotal: subtotal ?? this.subtotal,
       discount: discount ?? this.discount,
@@ -62,6 +66,7 @@ class PacketItemModel {
       id: _toInt(map['id']),
       packetId: _toInt(map['packet_id']),
       productId: _toInt(map['product_id']),
+      productName: map['product_name'] as String?,
       qty: _toInt(map['qty']),
       subtotal: _toInt(map['subtotal']),
       discount: _toInt(map['discount']),
@@ -87,6 +92,7 @@ class PacketItemModel {
         'id': null,
         'packet_id': packetId,
         'product_id': productId,
+        'product_name': productName,
         'qty': qty,
         'subtotal': subtotal,
         'discount': discount,
@@ -96,6 +102,7 @@ class PacketItemModel {
         id: id,
         packetId: packetId,
         productId: productId,
+        productName: productName,
         qty: qty,
         subtotal: subtotal,
         discount: discount,
@@ -114,6 +121,7 @@ class PacketItemModel {
         'id': id,
         'packet_id': packetId,
         'product_id': productId,
+        'product_name': productName,
         'qty': qty,
         'subtotal': subtotal,
         'discount': discount,

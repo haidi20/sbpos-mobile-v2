@@ -1,7 +1,10 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:core/utils/theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:product/presentation/providers/product.provider.dart';
+import 'package:product/domain/entities/product.entity.dart';
 
 typedef OnProductPicked = void Function(String name);
 
@@ -117,12 +120,16 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
   }
 }
 
-/// Helper to show a product selection sheet from a list of product entities.
-/// Returns the selected product id or `null` if cancelled.
-Future<int?> showProductSelectionSheet(
-    BuildContext context, List<dynamic> products) async {
-  // `products` is expected to be a list of objects with `id` and `name`.
-  final result = await showModalBottomSheet<int>(
+/// Show a product selection sheet. This function fetches products via the
+/// `ProductManagementViewModel` and returns the selected `ProductEntity` or
+/// `null` if cancelled.
+Future<ProductEntity?> showProductSelectionSheet(BuildContext context) async {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final prodVm = container.read(productManagementViewModelProvider.notifier);
+  await prodVm.getProducts();
+  final products = container.read(productManagementViewModelProvider).products;
+
+  final resultId = await showModalBottomSheet<int>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -159,8 +166,8 @@ Future<int?> showProductSelectionSheet(
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, idx) {
                     final p = products[idx];
-                    final name = (p?.name ?? p?.toString() ?? '') as String;
-                    final id = (p?.id ?? p) as int?;
+                    final name = p.name ?? '';
+                    final id = p.id;
                     return Material(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -197,5 +204,11 @@ Future<int?> showProductSelectionSheet(
       ),
     ),
   );
-  return result;
+
+  if (resultId == null) return null;
+  try {
+    return products.firstWhere((p) => p.id == resultId);
+  } catch (_) {
+    return null;
+  }
 }
