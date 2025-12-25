@@ -1,5 +1,6 @@
 // main.dart
 import 'package:core/core.dart';
+// Provide simple local repository overrides on web so demo screens show data
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

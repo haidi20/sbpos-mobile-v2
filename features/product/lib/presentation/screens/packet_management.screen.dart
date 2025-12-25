@@ -2,7 +2,6 @@
 
 import 'package:core/core.dart';
 import 'package:product/presentation/providers/packet.provider.dart';
-import 'package:product/presentation/screens/packet_management_form.screen.dart';
 
 class PacketManagementScreen extends ConsumerStatefulWidget {
   const PacketManagementScreen({super.key});
@@ -112,11 +111,8 @@ class _PacketManagementDataList extends StatelessWidget {
         return PacketListItem(
           packet: p,
           onEdit: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => PacketManagementFormScreen(packet: p)),
-            );
+            // pass only packet id to form; form/controller will load full data via VM/usecase
+            await context.push(AppRoutes.packetForm, extra: p.id);
             if (!Navigator.of(context).mounted) return;
             notifier.getPackets();
           },

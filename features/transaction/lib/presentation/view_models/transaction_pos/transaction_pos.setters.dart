@@ -18,9 +18,17 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
 
   /// Tambahkan atau perbarui produk ke dalam detail keranjang dan persist.
   Future<void> addProductToCart(ProductEntity product) async {
+    // Resolve product data from cache when available (web/list views may
+    // supply only minimal product objects). Use cached product fields to
+    // ensure detail records contain name/price.
+    final resolved = _vm._cachedProducts.firstWhere(
+      (p) => p.id == product.id,
+      orElse: () => product,
+    );
+
     final updated = addOrUpdateProductInDetails(
       state.details,
-      product,
+      resolved,
       transactionId: state.transaction?.id ?? 0,
     );
     await _vm._persistence.persistAndUpdateState(
@@ -47,7 +55,21 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
   /// Tambahkan beberapa item paket ke detail keranjang dan persist.
   Future<void> addPacketItems(
       List<TransactionDetailEntity> detailsToAdd) async {
-    final updated = addPacketItemsToDetails(state.details, detailsToAdd);
+    // Ensure incoming details have product name/price where possible by
+    // looking up cached products and filling missing fields.
+    final normalized = detailsToAdd.map((d) {
+      if (d.productId == null) return d;
+      final prod = _vm._cachedProducts.firstWhere(
+        (p) => p.id == d.productId,
+        orElse: () => ProductEntity(id: d.productId),
+      );
+      return d.copyWith(
+        productName: d.productName ?? prod.name,
+        productPrice: d.productPrice ?? (prod.price?.toInt()),
+      );
+    }).toList();
+
+    final updated = addPacketItemsToDetails(state.details, normalized);
     await _vm._persistence.persistAndUpdateState(
       () => state,
       (s) => state = s,

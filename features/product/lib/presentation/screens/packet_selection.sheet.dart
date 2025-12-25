@@ -5,6 +5,7 @@ import 'package:product/presentation/providers/packet.provider.dart';
 import 'package:product/domain/entities/packet_selected_item.entity.dart';
 import 'package:product/presentation/view_models/packet_management.vm.dart';
 import 'package:product/presentation/view_models/packet_management.state.dart';
+// product provider not needed here; product resolution moved to VM
 
 class PacketSelectionSheet extends ConsumerStatefulWidget {
   final PacketEntity packet;
@@ -113,11 +114,14 @@ class _PacketHeader extends StatelessWidget {
 
 class _PacketItemRow extends StatelessWidget {
   final dynamic item;
-  final ProductEntity product;
   final dynamic viewModel;
+  final ProductEntity product;
 
-  const _PacketItemRow(
-      {required this.item, required this.product, required this.viewModel});
+  const _PacketItemRow({
+    required this.item,
+    required this.product,
+    required this.viewModel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -226,10 +230,39 @@ class _PacketContent extends StatelessWidget {
     if (viewModelState.loading) {
       return const _PacketLoadingView();
     }
-
     final items = packet.items ?? [];
     if (items.isEmpty) {
       return _PacketEmptyView(onClose: () => Navigator.of(context).maybePop());
+    }
+
+    // If caller provided products list is empty, delegate resolution to the
+    // VM so the UI remains thin. The VM will return a list (possibly empty)
+    // which we then render.
+    if (products.isEmpty) {
+      return FutureBuilder<List<ProductEntity>>(
+        future: viewModelNotifier.resolveProducts(products),
+        builder: (ctx, snap) {
+          final resolved = snap.data ?? <ProductEntity>[];
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final it = items[index];
+              final prod = resolved.firstWhere(
+                (p) => p.id == it.productId,
+                orElse: () => ProductEntity(id: it.productId ?? 0),
+              );
+              return _PacketItemRow(
+                item: it,
+                product: prod,
+                viewModel: viewModelNotifier,
+              );
+            },
+          );
+        },
+      );
     }
 
     return ListView.separated(

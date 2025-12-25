@@ -110,10 +110,15 @@ class ProductManagementCard extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    // Actions
+                    // Actions + sync status
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        SyncStatus(
+                          idServer: product.idServer,
+                          syncedAt: product.syncedAt,
+                        ),
+                        const SizedBox(height: 8),
                         _actionButton(
                           icon: Icons.edit_outlined,
                           color: sbBlue,

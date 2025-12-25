@@ -101,7 +101,7 @@ mixin TransactionPosViewModelActions on StateNotifier<TransactionPosState> {
   TransactionPosViewModel get _vm => this as TransactionPosViewModel;
   // ------------------ Actions (on*) ------------------
   /// Action: tambahkan produk ke keranjang.
-  Future<void> onAddToCart(ProductEntity product) async {
+  Future<void> onAddToCart({required ProductEntity product}) async {
     _vm._logger.fine('onAddToCart: delegating to setter addProductToCart');
     await _vm.addProductToCart(product);
   }

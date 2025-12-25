@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors, curly_braces_in_flow_control_structures
-
 import 'package:core/core.dart';
 import 'package:product/domain/entities/product.entity.dart';
 
@@ -67,8 +65,11 @@ class ProductCard extends StatelessWidget {
                                     return Container(
                                       color: Colors.grey.shade100,
                                       child: const Center(
-                                        child: Icon(Icons.broken_image,
-                                            size: 32, color: Colors.grey),
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: 32,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     );
                                   },
@@ -76,8 +77,11 @@ class ProductCard extends StatelessWidget {
                               : Container(
                                   color: Colors.grey.shade100,
                                   child: const Center(
-                                    child: Icon(Icons.image,
-                                        size: 32, color: Colors.grey),
+                                    child: Icon(
+                                      Icons.image,
+                                      size: 32,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ),
                     ),
@@ -85,21 +89,30 @@ class ProductCard extends StatelessWidget {
                   Positioned(
                     bottom: 6,
                     right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(
-                          8,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SyncStatus(
+                          idServer: product.idServer,
+                          syncedAt: product.syncedAt,
+                          size: 14,
                         ),
-                      ),
-                      child: const Icon(
-                        size: 16,
-                        Icons.add,
-                        color: AppColors.sbBlue,
-                      ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            size: 16,
+                            color: AppColors.sbBlue,
+                          ),
+                        ),
+                      ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -127,17 +140,20 @@ class ProductCard extends StatelessWidget {
                     color: AppColors.sbOrange,
                   ),
                 ),
-                // Stock indicator
                 if (product.qty != null)
                   Builder(builder: (context) {
                     final stock = (product.qty ?? 0).toInt();
                     Color clr = Colors.green;
-                    if (stock <= 5)
+                    if (stock <= 5) {
                       clr = Colors.redAccent;
-                    else if (stock <= 10) clr = Colors.orange;
+                    } else if (stock <= 10) {
+                      clr = Colors.orange;
+                    }
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: clr.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(8),

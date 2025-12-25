@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 
@@ -30,13 +31,30 @@ class TransactionHistoryActionController {
       Navigator.of(context).pop();
     } catch (_) {}
 
-    final details = txn.details ?? [];
+    List<TransactionDetailEntity> details = txn.details ?? [];
+    TransactionEntity txToShow = txn;
+
+    // If details are missing (common when listing transactions from a
+    // lightweight API), try to fetch the full transaction by id.
+    if ((details.isEmpty) && (txn.id != null)) {
+      try {
+        final getTxn = ref.read(getTransaction);
+        final res = await getTxn.call(txn.id!);
+        res.fold((f) {
+          // ignore failure and fall back to showing whatever we have
+        }, (full) {
+          txToShow = full;
+          details = full.details ?? [];
+        });
+      } catch (_) {}
+    }
+
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => TransactionHistoryDetailScreen(
-        tx: txn,
+        tx: txToShow,
         details: details,
       ),
     );

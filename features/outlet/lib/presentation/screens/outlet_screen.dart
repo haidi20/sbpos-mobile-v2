@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/outlet.provider.dart';
-import '../widgets/outlet_card.dart';
+import '../widgets/outlet.card.dart';
 
 class OutletScreen extends ConsumerWidget {
   const OutletScreen({super.key});

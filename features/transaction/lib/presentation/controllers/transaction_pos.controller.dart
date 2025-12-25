@@ -179,7 +179,7 @@ class TransactionPosController {
 
   // Ketuk produk: delegasikan aksi ke ViewModel
   Future<void> onProductTap({required ProductEntity product}) async =>
-      await _vm.onAddToCart(product);
+      await _vm.onAddToCart(product: product);
 
   /// Ketuk produk dengan perilaku pintar: jika produk sudah ada di
   /// `transaction details`, buka Cart Bottom Sheet. Jika belum ada,

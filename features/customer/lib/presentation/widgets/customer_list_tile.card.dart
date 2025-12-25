@@ -48,7 +48,14 @@ class CustomerListTileCard extends StatelessWidget {
       subtitle: Text(customerData.phone ?? 'Nomor Tidak Ada'),
 
       // --- Trailing Widget ---
-      trailing: const Icon(Icons.chevron_right),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SyncStatus(idServer: customer.idServer, syncedAt: customer.syncedAt),
+          const SizedBox(width: 8),
+          const Icon(Icons.chevron_right),
+        ],
+      ),
 
       // --- Aksi OnTap ---
       onTap: onTapCallback == null

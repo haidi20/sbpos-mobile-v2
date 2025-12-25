@@ -1,4 +1,4 @@
-﻿import 'package:core/core.dart';
+import 'package:core/core.dart';
 import 'package:transaction/presentation/screens/cart.screen.dart';
 import 'package:transaction/presentation/screens/cart_payment.screen.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';

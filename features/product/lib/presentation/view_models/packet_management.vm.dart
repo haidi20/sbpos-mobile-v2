@@ -1,7 +1,9 @@
 import 'package:core/core.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/packet_item.entity.dart';
+import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/domain/usecases/get_packets.usecase.dart';
+import 'package:product/domain/usecases/get_products.usecase.dart';
 import 'package:product/domain/usecases/create_packet.usecase.dart';
 import 'package:product/domain/usecases/update_packet.usecase.dart';
 import 'package:product/domain/usecases/delete_packet.usecase.dart';
@@ -10,17 +12,20 @@ import 'package:product/presentation/view_models/packet_management.state.dart';
 class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
   PacketManagementViewModel({
     required GetPackets getPacketsUsecase,
+    required GetProducts getProductsUsecase,
     required CreatePacket createPacketUsecase,
     required UpdatePacket updatePacketUsecase,
     required DeletePacket deletePacketUsecase,
     this.onAfterCrud,
   })  : _getPacketsUsecase = getPacketsUsecase,
+        _getProductsUsecase = getProductsUsecase,
         _createPacketUsecase = createPacketUsecase,
         _updatePacketUsecase = updatePacketUsecase,
         _deletePacketUsecase = deletePacketUsecase,
         super(PacketManagementState());
 
   final GetPackets _getPacketsUsecase;
+  final GetProducts _getProductsUsecase;
   final CreatePacket _createPacketUsecase;
   final UpdatePacket _updatePacketUsecase;
   final DeletePacket _deletePacketUsecase;
@@ -170,6 +175,21 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
     }
   }
 
+  /// Resolve a list of products to be used for packet item rendering.
+  /// If `products` is not empty, it's returned as-is. Otherwise this method
+  /// attempts to fetch cached/offline products via `GetProducts` usecase and
+  /// returns the resulting list or an empty list on failure.
+  Future<List<ProductEntity>> resolveProducts(
+      List<ProductEntity> products) async {
+    if (products.isNotEmpty) return products;
+    try {
+      final res = await _getProductsUsecase(isOffline: true);
+      return res.fold((l) => <ProductEntity>[], (list) => list);
+    } catch (_) {
+      return <ProductEntity>[];
+    }
+  }
+
   // -------------------------
   // Draft item management (public)
   // -------------------------
@@ -203,4 +223,85 @@ class PacketManagementViewModel extends StateNotifier<PacketManagementState> {
   // Selection state for packet selection sheet
   Set<int> _selectedIds = {};
   Map<int, int> _qtys = {};
+
+  // Cached products for quick price lookup when computing totals.
+  List<ProductEntity> _cachedProducts = [];
+
+  // Cache for computed total to avoid repeated calculations when inputs unchanged.
+  int? _lastTotalCache;
+  int? _lastTotalKey;
+
+  /// Hitung total paket berdasarkan draft saat ini.
+  ///
+  /// Perhitungan mengikuti aturan:
+  /// 1. Untuk setiap item gunakan `item.subtotal` jika tersedia, atau hitung
+  ///    ulang dari `product.price * qty - discount`.
+  /// 2. Tambahkan `basePrice`.
+  /// 3. Jika `applyPacketDiscount` true, kurangi `packetDiscount`.
+  /// Semua nilai dipastikan tidak negatif.
+  int computeTotal(
+      {int basePrice = 0,
+      bool applyPacketDiscount = false,
+      int packetDiscount = 0}) {
+    final items = _draft.items ?? [];
+
+    // simple key based on items content and inputs
+    var key = basePrice ^ (applyPacketDiscount ? 0xFFFF : 0) ^ packetDiscount;
+    for (final it in items) {
+      key = key ^
+          (it.productId ?? 0) ^
+          (it.qty ?? 0) ^
+          (it.subtotal ?? 0) ^
+          (it.discount ?? 0);
+    }
+
+    if (_lastTotalKey != null &&
+        _lastTotalKey == key &&
+        _lastTotalCache != null) {
+      return _lastTotalCache!;
+    }
+
+    var total = 0;
+    for (final it in items) {
+      final subtotal = it.subtotal ??
+          ((it.qty ?? 0) * (findProductPrice(it.productId)) -
+              (it.discount ?? 0));
+      total += (subtotal < 0) ? 0 : subtotal;
+    }
+
+    total += basePrice;
+
+    if (applyPacketDiscount) {
+      total -= packetDiscount;
+      if (total < 0) total = 0;
+    }
+
+    _lastTotalKey = key;
+    _lastTotalCache = total;
+    return total;
+  }
+
+  /// Helper: cari harga produk dari cached products via usecase (offline) jika perlu.
+  /// Mengembalikan harga dalam integer (0 jika tidak ketemu).
+  int findProductPrice(int? productId) {
+    if (productId == null) return 0;
+    try {
+      final p = _cachedProducts.firstWhere((p) => p.id == productId,
+          orElse: () => const ProductEntity());
+      return p.price?.toInt() ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Muat produk dari usecase ke cache untuk lookup harga.
+  Future<void> ensureProductsLoaded() async {
+    if (_cachedProducts.isNotEmpty) return;
+    try {
+      final res = await _getProductsUsecase(isOffline: true);
+      res.fold((_) => _cachedProducts = [], (list) => _cachedProducts = list);
+    } catch (_) {
+      _cachedProducts = [];
+    }
+  }
 }

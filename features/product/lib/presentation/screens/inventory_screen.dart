@@ -1,8 +1,7 @@
 import 'package:core/core.dart';
 import 'package:product/presentation/view_models/inventory.state.dart';
-import 'package:product/presentation/screens/product_management.screen.dart';
-import 'package:product/presentation/screens/packet_management.screen.dart';
 import 'package:product/presentation/view_models/inventory.vm.dart';
+import 'package:product/presentation/screens/packet_management.screen.dart';
 import 'package:product/presentation/widgets/inventory_list.widget.dart';
 // Riverpod types are re-exported from core
 
@@ -46,13 +45,7 @@ class InventoryScreen extends ConsumerWidget {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ProductManagementScreen(),
-                                    ),
-                                  );
+                                  context.push(AppRoutes.productManagement);
                                 },
                                 icon: const Icon(Icons.add),
                                 label: const Text('Tambah Menu'),
@@ -76,13 +69,7 @@ class InventoryScreen extends ConsumerWidget {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const PacketManagementScreen(),
-                                    ),
-                                  );
+                                  context.push(AppRoutes.packetManagement);
                                 },
                                 icon: const Icon(Icons.add),
                                 label: const Text('Tambah Paket'),

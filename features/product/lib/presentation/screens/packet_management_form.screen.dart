@@ -1,346 +1,369 @@
 // ignore_for_file: prefer_const_constructors, unused_element
 
-import 'package:core/core.dart';
-import 'package:flutter/services.dart';
-import 'package:product/domain/entities/packet.entity.dart';
-import 'package:product/domain/entities/product.entity.dart';
-import 'package:product/domain/entities/packet_item.entity.dart';
-import 'package:product/presentation/providers/packet.provider.dart';
-import 'package:product/presentation/controllers/packet_management.controller.dart';
+import 'package:flutter/material.dart';
+import 'package:core/utils/theme.dart';
+import '../controllers/packet_item_management_form.controller.dart';
+import '../sheets/packet_item_management_form.sheet.dart';
+import '../sheets/product.sheet.dart';
+import '../widgets/product_list.widget.dart';
 
-class PacketManagementFormScreen extends ConsumerStatefulWidget {
-  final PacketEntity? packet;
-  const PacketManagementFormScreen({super.key, this.packet});
+class PacketManagementFormScreen extends StatefulWidget {
+  final int? packetId;
+  const PacketManagementFormScreen({super.key, this.packetId});
 
   @override
-  ConsumerState<PacketManagementFormScreen> createState() => _PacketFormState();
+  State<PacketManagementFormScreen> createState() =>
+      _PacketManagementFormScreenState();
 }
 
-class _PacketFormState extends ConsumerState<PacketManagementFormScreen> {
-  late final PacketManagementController _controller;
+class _PacketManagementFormScreenState
+    extends State<PacketManagementFormScreen> {
+  String name = 'Paket Sarapan';
+  List<ProductItem> items = [
+    ProductItem(id: '1', name: 'Kopi Susu', qty: 1, price: 10000),
+    ProductItem(id: '2', name: 'Nasi Kuning', qty: 1, price: 15000),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = PacketManagementController(ref);
-    _controller.init(widget.packet);
+  int basePrice = 25000;
+  bool isActive = true;
+  bool applyPacketDiscount = false;
+  int packetDiscount = 0;
+
+  PacketItemManagementFormController? _editingController;
+
+  int calculateTotal() {
+    var itemsTotal = items.fold<int>(
+        0, (acc, it) => acc + (it.qty * it.price) - it.discount);
+    var finalTotal =
+        applyPacketDiscount ? itemsTotal - packetDiscount : itemsTotal;
+    finalTotal += basePrice;
+    return finalTotal.clamp(0, 1 << 31);
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    await _controller.save();
-    if (!mounted) return;
-    Navigator.pop(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final vmNotifier = ref.read(packetManagementViewModelProvider.notifier);
-    final state = ref.watch(packetManagementViewModelProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.packet == null ? 'Tambah Paket' : 'Edit Paket'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _controller.formKey,
-          child: _PacketFormBody(
-            controller: _controller,
-            state: state,
-            notifier: vmNotifier,
-            onSave: _save,
+  void _openEditSheet({ProductItem? item}) {
+    _editingController = PacketItemManagementFormController(initial: item);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        expand: false,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+          child: PacketItemManagementFormSheet(
+            controller: _editingController!,
+            onClose: () {
+              Navigator.of(ctx).pop();
+            },
+            onSave: (it) {
+              setState(() {
+                final exists = items.indexWhere((e) => e.id == it.id);
+                if (exists >= 0) {
+                  items[exists] = it;
+                } else {
+                  items.add(it);
+                }
+              });
+              Navigator.of(ctx).pop();
+            },
+            onRemove: (id) {
+              setState(() => items.removeWhere((e) => e.id == id));
+              Navigator.of(ctx).pop();
+            },
           ),
         ),
       ),
     );
   }
-}
 
-class _PacketFormBody extends StatelessWidget {
-  final PacketManagementController controller;
-  final dynamic state;
-  final dynamic notifier;
-  final VoidCallback onSave;
-
-  const _PacketFormBody(
-      {super.key,
-      required this.controller,
-      required this.state,
-      required this.notifier,
-      required this.onSave});
+  void _openProductPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        expand: false,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+              color: Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+          child: ProductPickerSheet(
+              initialSelected: _editingController?.nameController.text,
+              onPick: (namePicked) {
+                // assign into editing controller if present
+                if (_editingController != null) {
+                  _editingController!.nameController.text = namePicked;
+                }
+                Navigator.of(ctx).pop();
+              }),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final itemCount = notifier.draft.items?.length ?? 0;
+    return Scaffold(
+      backgroundColor: AppColors.sbBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _Header(onBack: () => Navigator.of(context).maybePop()),
+            Expanded(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _InfoSection(
+                      name: name,
+                      isActive: isActive,
+                      onNameChanged: (v) => setState(() => name = v),
+                      onToggleActive: () =>
+                          setState(() => isActive = !isActive),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Item Produk',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        TextButton.icon(
+                          onPressed: () => _openEditSheet(),
+                          icon: const Icon(Icons.add, color: AppColors.sbBlue),
+                          label: const Text('TAMBAH ITEM',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.sbBlue)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ProductListWidget(
+                        items: items, onEdit: (it) => _openEditSheet(item: it)),
+                    const SizedBox(height: 22),
+                    Text('Konfigurasi Harga',
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: TextField(
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                  labelText: 'Harga Dasar Paket'),
+                              controller: TextEditingController(
+                                  text: basePrice.toString()),
+                              onChanged: (v) => setState(
+                                  () => basePrice = int.tryParse(v) ?? 0),
+                            ),
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            title: const Text('Gunakan Diskon Paket',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            trailing: Switch(
+                                value: applyPacketDiscount,
+                                onChanged: (v) =>
+                                    setState(() => applyPacketDiscount = v)),
+                          ),
+                          if (applyPacketDiscount)
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: TextField(
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                    labelText: 'Nominal Diskon'),
+                                controller: TextEditingController(
+                                    text: packetDiscount.toString()),
+                                onChanged: (v) => setState(() =>
+                                    packetDiscount = int.tryParse(v) ?? 0),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _SummaryCard(total: calculateTotal()),
+                    const SizedBox(height: 60),
+                  ],
+                ),
+              ),
+            ),
+            _BottomBar(onSave: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Disimpan ke Livin Dashboard')));
+            }),
+          ],
+        ),
+      ),
+      floatingActionButton: _editingController == null
+          ? null
+          : FloatingActionButton(
+              onPressed: _openProductPicker,
+              backgroundColor: AppColors.sbBlue,
+              child: const Icon(Icons.search),
+            ),
+    );
+  }
+}
 
+class _Header extends StatelessWidget {
+  const _Header({super.key, required this.onBack});
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(bottom: BorderSide(color: AppColors.gray200))),
+      child: Row(
+        children: [
+          IconButton(icon: const Icon(Icons.chevron_left), onPressed: onBack),
+          const Expanded(
+              child: Center(
+                  child: Text('Edit Paket',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)))),
+          const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoSection extends StatelessWidget {
+  const _InfoSection(
+      {super.key,
+      required this.name,
+      required this.isActive,
+      required this.onNameChanged,
+      required this.onToggleActive});
+  final String name;
+  final bool isActive;
+  final ValueChanged<String> onNameChanged;
+  final VoidCallback onToggleActive;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextFormField(
-          controller: controller.nameCtrl,
-          decoration: const InputDecoration(labelText: 'Nama Paket'),
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Nama wajib' : null,
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child:
-              Text('Isi Paket', style: Theme.of(context).textTheme.titleMedium),
-        ),
-        const SizedBox(height: 8),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 240),
-          child: SingleChildScrollView(
-            child: Column(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Info Utama',
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Row(
               children: [
-                for (var i = 0; i < itemCount; i++)
-                  _PacketItemRow(
-                    index: i,
-                    controller: controller,
-                    notifier: notifier,
-                  )
+                Text(isActive ? 'AKTIF' : 'NONAKTIF',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                Switch(value: isActive, onChanged: (_) => onToggleActive()),
               ],
             ),
-          ),
+          ],
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            ElevatedButton.icon(
-              onPressed: () {
-                final newItem = PacketItemEntity(
-                    productId: null, qty: 1, subtotal: 0, discount: 0);
-                notifier.addDraftItem(newItem);
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah Item'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: controller.priceCtrl,
-          decoration: const InputDecoration(labelText: 'Harga'),
-          keyboardType: TextInputType.number,
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Harga wajib' : null,
-        ),
-        const SizedBox(height: 12),
-        SwitchListTile(
-          value: controller.isActive,
-          onChanged: (v) => controller.isActive = v,
-          title: const Text('Aktif'),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Checkbox(
-              value: controller.applyPacketDiscount,
-              onChanged: (v) {
-                controller.applyPacketDiscount = v ?? false;
-              },
-            ),
-            const SizedBox(width: 8),
-            const Text('Apply packet discount'),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: controller.packetDiscountCtrl,
-                decoration: const InputDecoration(labelText: 'Packet Discount'),
-                keyboardType: TextInputType.number,
-                onChanged: (_) {},
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child:
-              Text('Total: ${controller.computeTotal(notifier.draft.items)}'),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: onSave,
-                child: const Text('Simpan'),
-              ),
-            ),
-          ],
+        TextField(
+          decoration: const InputDecoration(
+              labelText: 'Nama Paket',
+              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white),
+          controller: TextEditingController(text: name),
+          onChanged: onNameChanged,
         ),
       ],
     );
   }
 }
 
-class _PacketItemRow extends StatelessWidget {
-  final int index;
-  final PacketManagementController controller;
-  final dynamic notifier;
-
-  const _PacketItemRow(
-      {super.key,
-      required this.index,
-      required this.controller,
-      required this.notifier});
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({super.key, required this.total});
+  final int total;
 
   @override
   Widget build(BuildContext context) {
-    final vm = notifier;
-    final items = vm.draft.items ?? [];
-    final item = items[index];
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+          gradient: const LinearGradient(
+              colors: [AppColors.sbBlue, AppColors.sbBlue700]),
+          borderRadius: BorderRadius.circular(24)),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Container(
+              width: 48,
+              height: 6,
+              decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(6))),
+          const SizedBox(height: 12),
+          const Text('Total Harga Paket',
+              style: TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2)),
+          const SizedBox(height: 8),
+          Text('Rp $total',
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w900)),
+          const SizedBox(height: 6),
+          const Text('Sudah termasuk pajak & diskon',
+              style: TextStyle(
+                  color: Colors.white70, fontStyle: FontStyle.italic)),
+        ],
+      ),
+    );
+  }
+}
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: ValueListenableBuilder<List<ProductEntity>>(
-                valueListenable: controller.products,
-                builder: (context, list, _) {
-                  return DropdownButtonFormField<int?>(
-                    value: item.productId,
-                    items: [
-                      const DropdownMenuItem<int?>(
-                          value: null, child: Text('- Pilih produk -')),
-                      ...list.map((p) => DropdownMenuItem<int?>(
-                          value: p.id, child: Text(p.name ?? '-'))),
-                    ],
-                    onChanged: (val) async {
-                      // When a product is selected, prompt for qty then update draft
-                      final qtyCtrl = TextEditingController(
-                          text: (item.qty ?? 1).toString());
-                      final result = await showDialog<int>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Jumlah untuk produk'),
-                          content: TextField(
-                            controller: qtyCtrl,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            autofocus: true,
-                            decoration: const InputDecoration(hintText: 'Qty'),
-                          ),
-                          actions: [
-                            TextButton(
-                                onPressed: () => Navigator.of(ctx).pop(null),
-                                child: const Text('Batal')),
-                            ElevatedButton(
-                                onPressed: () {
-                                  var q = int.tryParse(qtyCtrl.text) ?? 1;
-                                  if (q < 1) q = 1;
-                                  Navigator.of(ctx).pop(q);
-                                },
-                                child: const Text('OK')),
-                          ],
-                        ),
-                      );
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({super.key, required this.onSave});
+  final VoidCallback onSave;
 
-                      if (result == null) return; // cancelled
-
-                      final subtotal = controller.computeItemSubtotal(
-                          productId: val,
-                          qty: result < 1 ? 1 : result,
-                          discount: item.discount ?? 0);
-                      vm.updateDraftItemAt(
-                        index,
-                        item.copyWith(
-                            productId: val,
-                            qty: result,
-                            subtotal: subtotal,
-                            discount: item.discount ?? 0),
-                      );
-                    },
-                    decoration: const InputDecoration(labelText: 'Produk'),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                initialValue: (item.qty ?? 0).toString(),
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Qty'),
-                onChanged: (v) {
-                  final q = int.tryParse(v) ?? 0;
-                  final subtotal = controller.computeItemSubtotal(
-                      productId: item.productId,
-                      qty: q,
-                      discount: item.discount ?? 0);
-                  vm.updateDraftItemAt(
-                      index, item.copyWith(qty: q, subtotal: subtotal));
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            // price display
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                initialValue: controller
-                        .findProductById(item.productId)
-                        ?.price
-                        ?.toStringAsFixed(0) ??
-                    '0',
-                readOnly: true,
-                decoration: const InputDecoration(labelText: 'Price'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // per-item discount
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                initialValue: (item.discount ?? 0).toString(),
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Discount'),
-                onChanged: (v) {
-                  final d = int.tryParse(v) ?? 0;
-                  final subtotal = controller.computeItemSubtotal(
-                      productId: item.productId,
-                      qty: item.qty ?? 0,
-                      discount: d);
-                  vm.updateDraftItemAt(
-                      index, item.copyWith(subtotal: subtotal, discount: d));
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                initialValue: (item.subtotal ?? 0).toString(),
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Subtotal'),
-                onChanged: (v) {
-                  final s = int.tryParse(v) ?? 0;
-                  vm.updateDraftItemAt(index, item.copyWith(subtotal: s));
-                },
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                vm.removeDraftItemAt(index);
-              },
-            ),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          border: Border(top: BorderSide(color: AppColors.gray200))),
+      child: SafeArea(
+        top: false,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.sbBlue,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16))),
+          onPressed: onSave,
+          child: const Text('Simpan Data',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
         ),
       ),
     );

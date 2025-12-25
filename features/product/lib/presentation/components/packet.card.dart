@@ -3,14 +3,14 @@
 import 'package:core/core.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 
-class PacketCard extends StatelessWidget {
+class PacketCard extends ConsumerWidget {
   final PacketEntity packet;
   final VoidCallback onTap;
 
   const PacketCard({super.key, required this.packet, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -66,6 +66,15 @@ class PacketCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: SyncStatus(
+                      idServer: packet.idServer,
+                      syncedAt: packet.syncedAt,
+                      size: 16,
                     ),
                   ),
                 ],

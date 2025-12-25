@@ -55,25 +55,12 @@ class CoreDatabase {
         }
       }
 
-      // Save index metadata to a dedicated store to help debugging / queries.
-      final indexMeta = {
-        'idx_tx_detail_unique_product': ['transaction_id', 'product_id'],
-        'idx_tx_detail_unique_packet': ['transaction_id', 'packet_id'],
-        'idx_tx_detail_product_id': ['product_id'],
-        'idx_tx_detail_product_name': ['product_name'],
-        'idx_tx_sequence': ['sequence_number'],
-        'idx_tx_number_table': ['number_table'],
-        'idx_tx_date': ['date'],
-        'idx_product_name': ['name'],
-        'idx_auth_username': ['username'],
-      };
-
       try {
         await local.deleteAll('__db_indexes');
-        for (final e in indexMeta.entries) {
-          await local
-              .insert('__db_indexes', {'name': e.key, 'fields': e.value});
-        }
+        // for (final e in indexMeta.entries) {
+        // await local
+        //     .insert('__db_indexes', {'name': e.key, 'fields': e.value});
+        // }
       } catch (e, st) {
         _logger.warning('Failed to write index metadata', e, st);
       }

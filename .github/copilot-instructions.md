@@ -1,78 +1,109 @@
-<!--
-Compact Copilot instructions for working on the `sbpos_mobile_v2` monorepo.
-Keep edits focused: update only discoverable, repo-specific guidance.
--->
+<!-- AI companion guide for working on the sbpos_mobile_v2 monorepo.
+Keep this file concise and focused on discoverable, repo-specific patterns. -->
 
-# AI Guidance for sbpos_mobile_v2
+# Quick AI Onboarding — sbpos_mobile_v2
 
-Purpose: rapidly onboard an AI agent by highlighting architecture, common workflows, and repo-specific conventions.
+Purpose: give an AI coding agent the minimum, high-value knowledge to be productive in this monorepo.
 
-## Big picture (what to know first)
+## Big picture
+- Monorepo layout: `core/` contains shared utilities and re-exports; `features/<name>/` are Flutter packages implementing domain slices.
+- Entrypoints: `lib/main.dart` (production-like run; loads `.env.local` then `.env`) and `lib/main_local.dart` (dev logging and provider overrides).
+- Routing: single router in `core/lib/utils/app_router.dart`; route strings live in `core/lib/utils/app_routes.dart`. Use `AppRouter.instance.router`.
+- State: Riverpod (hooks_riverpod + flutter_riverpod). App root is wrapped by `ProviderScope`.
+- Feature layout: each feature typically follows MVVM-like folders: `lib/domain`, `lib/data`, `lib/presentation` (providers/viewmodels live under `presentation`).
 
-- Monorepo layout: `core/` holds shared utilities and re-exports; `features/<name>/` are local Flutter modules.
-- Entrypoints: `lib/main.dart` (normal app; loads `.env.local` then `.env`) and `lib/main_local.dart` (initializes logging and overrides providers for local testing).
-- Routing: single GoRouter configured in `core/lib/utils/app_router.dart` using constants from `core/lib/utils/app_routes.dart`. Use `AppRouter.instance.router` as the router singleton.
-- State: Riverpod (hooks_riverpod + flutter_riverpod); app root is wrapped by `ProviderScope`.
-- Feature convention: MVVM-like layout under each feature: `lib/domain`, `lib/data`, `lib/presentation` (providers/viewmodels under `presentation/providers` or `presentation/viewmodels`).
+## Key files to inspect (start here)
+- Router: core/lib/utils/app_router.dart — register `GoRoute` entries and pages.
+- Route constants: core/lib/utils/app_routes.dart — canonical strings for navigation.
+- Shared exports: core/lib/core.dart — where common widgets/helpers are re-exported.
+- Entrypoints: lib/main.dart and lib/main_local.dart — environment loading and logging setup.
+- Feature scaffolding: create_feature.py — shows required package layout and sample exports.
+- Path deps manager: update_path_module.py — updates all feature `pubspec.yaml` path deps and `publish_to` settings.
 
-## Key files to reference (examples)
-
-- Router: [core/lib/utils/app_router.dart](core/lib/utils/app_router.dart#L1-L200) — register `GoRoute` entries here.
-- Route constants: [core/lib/utils/app_routes.dart](core/lib/utils/app_routes.dart#L1-L120) — add route strings here (example: `AppRoutes.transactionPos`).
-- Shared exports: [core/lib/core.dart](core/lib/core.dart#L1-L120) — add new shared helpers/widgets here so features import `package:core/core.dart`.
-- Entrypoints: [lib/main.dart](lib/main.dart#L1-L120) and [lib/main_local.dart](lib/main_local.dart#L1-L200).
-- Feature scaffolding: `create_feature.py` (root) — shows required file layout and a sample `lib/<feature>.dart` export.
-- Path deps script: `update_path_module.py` (root) — updates feature and core `pubspec.yaml` entries and sets `publish_to: none` for feature packages.
-
-## Developer workflows & commands (repo-specific)
-
+## Developer workflows & common commands
 - Install/update deps (root):
-  - `flutter pub get`
-- After adding/removing features: run
-  - `python update_path_module.py`
-  - then `flutter pub get`
-- Scaffold a feature (example):
-  - Edit `project_name` in `create_feature.py` then run `python create_feature.py`.
+  ```bash
+  flutter pub get
+  ```
+- After adding/removing features (mandatory):
+  ```bash
+  python update_path_module.py
+  flutter pub get
+  ```
+- Scaffold a feature: edit `project_name` inside `create_feature.py` then run:
+  ```bash
+  python create_feature.py
+  ```
 - Run app (Windows):
-  - `flutter run -d windows` (or `flutter run -d emulator-5554` for emulator)
-- Run local app with concrete provider overrides (useful for development):
-  - Run `lib/main_local.dart` target (this file wires local repos/providers for demo data).
-- Analyze / Tests:
-  - `flutter analyze` or `flutter analyze <package>`
-  - `flutter test` (root or per-package tests)
+  ```bash
+  flutter run -d windows
+  ```
+- Run dev-local with provider overrides: run `lib/main_local.dart` as the entrypoint (IDE run configuration or `flutter run -t lib/main_local.dart`).
+- Analyze / tests:
+  ```bash
+  <!-- Compact Copilot instructions for working on the `sbpos_mobile_v2` monorepo.
+  Keep edits focused: update only discoverable, repo-specific guidance. -->
 
-## Project-specific conventions (do not improvise)
+  # AI Guidance for sbpos_mobile_v2
 
-- Centralize shared logic and 3rd-party re-exports in `core/lib/core.dart`; avoid direct cross-feature imports that bypass `core`.
-- Use route constants from `AppRoutes` instead of hardcoded strings. Example navigation: `context.go(AppRoutes.transactionPos)`.
-- Feature pubspecs are managed by `update_path_module.py` — run it after structural changes to keep path deps consistent.
-- Feature modules should expose a `lib/<feature>.dart` that re-exports their public API so `core` and other features can depend on the feature package.
+  Purpose: give an AI agent the minimal, repo-specific knowledge to be productive quickly.
 
-## Integration points & notable dependencies
+  ## Big picture
+  - Monorepo: `core/` contains shared utilities and re-exports; `features/<name>/` are Dart/Flutter packages each with `lib/domain`, `lib/data`, `lib/presentation`.
+  - Entrypoints: [lib/main.dart](lib/main.dart#L1-L120) (loads `.env.local` then `.env`) and [lib/main_local.dart](lib/main_local.dart#L1-L200) (dev overrides, logging).
+  - Routing: single router in [core/lib/utils/app_router.dart](core/lib/utils/app_router.dart#L1-L200) using constants in [core/lib/utils/app_routes.dart](core/lib/utils/app_routes.dart#L1-L120). Use `AppRouter.instance.router`.
+  - State: Riverpod (`hooks_riverpod` + `flutter_riverpod`). App root uses `ProviderScope`.
 
-- Navigation: `go_router` (registered in `core`).
-- State: `hooks_riverpod` + `flutter_riverpod`.
-- Local DB: `sqflite` (DAOs under each feature `data` folder).
-- Env: `flutter_dotenv` loaded in `lib/main.dart` (prefers `.env.local`).
-- Logging: configured in `lib/main_local.dart` via `package:logging` for dev-local runs.
+  ## Key patterns & where to change things
+  - Add a route: add constant to [core/lib/utils/app_routes.dart](core/lib/utils/app_routes.dart#L1-L120) then register a `GoRoute` in [core/lib/utils/app_router.dart](core/lib/utils/app_router.dart#L1-L200) with a `pageBuilder` returning the screen widget.
+  - Shared exports: add utilities/widgets to [core/lib/core.dart](core/lib/core.dart#L1-L120) so features import `package:core/core.dart` instead of reaching across feature boundaries.
+  - Feature API: each feature should expose a `lib/<feature>.dart` that re-exports its public API for path-based package deps.
+  - Data layer: DAOs and local DB code live under each feature's `lib/data` and use `sqflite` for persistence.
 
-## Quick code patterns & examples
+  ## Scripts & developer workflows (Windows notes)
+  - Install/update deps (root):
+    ```bash
+    flutter pub get
+    ```
+  - After adding/removing features or changing path deps:
+    ```bash
+    python update_path_module.py
+    flutter pub get
+    ```
+  - Scaffold a feature: edit `project_name` in `create_feature.py` and run:
+    ```bash
+    python create_feature.py
+    ```
+  - Run app (Windows):
+    ```bash
+    flutter run -d windows
+    ```
+  - Run dev-local target (provider overrides, demo data): run the `main_local.dart` target in your IDE or via `flutter run -t lib/main_local.dart`.
+  - Analyze and test:
+    ```bash
+    flutter analyze
+    flutter test
+    ```
 
-- Router singleton: `final router = AppRouter.instance.router;`
-- Add a route:
-  1. Add constant to [core/lib/utils/app_routes.dart](core/lib/utils/app_routes.dart#L1-L120).
-  2. Register `GoRoute` in [core/lib/utils/app_router.dart](core/lib/utils/app_router.dart#L1-L200) using `pageBuilder` that returns the screen widget.
-- Add shared export:
-  1. Create helper under `core/lib/utils`.
-  2. Export it from [core/lib/core.dart](core/lib/core.dart#L1-L120) so features can `import 'package:core/core.dart'`.
+  ## Conventions to follow (do not improvise)
+  - Centralize 3rd-party and shared exports in `core/lib/core.dart`; do not import between features directly.
+  - Use route constants from `AppRoutes` for navigation (example: `context.go(AppRoutes.transactionPos)`).
+  - Keep presentation/viewmodel/provider code under `presentation/providers` or `presentation/viewmodels` inside a feature.
+  - Feature pubspecs and `publish_to` are managed by `update_path_module.py` — always run it after structural changes.
 
-## When to run scripts
+  ## Integration points & notable deps
+  - Navigation: `go_router` configured in `core`.
+  - State: `hooks_riverpod` + `flutter_riverpod`.
+  - Local DB: `sqflite`; DAOs live under features' `lib/data`.
+  - Env: `flutter_dotenv` (loaded in `lib/main.dart`, `.env.local` preferred).
+  - Logging: `lib/main_local.dart` configures `package:logging` for local runs.
 
-- Run `update_path_module.py` after adding/removing features or changing path deps.
-- Run `create_feature.py` only when scaffolding new modules.
+  ## Quick examples
+  - Router singleton: `final router = AppRouter.instance.router;`
+  - Add shared util: create under `core/lib/utils/` and export from [core/lib/core.dart](core/lib/core.dart#L1-L120).
 
----
-If you'd like, I can (pick one):
-1) run `python update_path_module.py` and `flutter pub get`,
-2) add an example route and screen registration in `core/lib/utils/app_router.dart`, or
-3) expand testing and CI notes. Which should I do next?
+  ---
+  If you'd like, I can:
+  1) run `python update_path_module.py` and `flutter pub get`,
+  2) add an example route and screen in [core/lib/utils/app_router.dart](core/lib/utils/app_router.dart#L1-L200), or
+  3) expand CI/testing steps. Which should I do next?

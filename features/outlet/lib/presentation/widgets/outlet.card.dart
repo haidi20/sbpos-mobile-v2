@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:core/core.dart';
 import '../../domain/entities/outlet.entity.dart';
 
 class OutletCard extends StatelessWidget {
@@ -12,7 +12,14 @@ class OutletCard extends StatelessWidget {
     return ListTile(
       title: Text(outlet.name ?? '-'),
       subtitle: Text(outlet.address ?? '-'),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SyncStatus(idServer: outlet.idServer, syncedAt: outlet.syncedAt),
+          const SizedBox(width: 8),
+          const Icon(Icons.chevron_right),
+        ],
+      ),
       onTap: onTap,
     );
   }

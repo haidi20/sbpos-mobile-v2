@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 
 class TransactionCard extends StatelessWidget {
@@ -17,7 +17,13 @@ class TransactionCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Order #${tx.sequenceNumber}'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Order #${tx.sequenceNumber}'),
+                  SyncStatus(idServer: tx.idServer, syncedAt: tx.syncedAt),
+                ],
+              ),
               const SizedBox(height: 4),
               Text('Rp ${tx.totalAmount}'),
             ],

@@ -18,6 +18,8 @@ import 'package:product/presentation/screens/inventory_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
 import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/presentation/screens/product_management.screen.dart';
+import 'package:product/presentation/screens/packet_management.screen.dart';
+import 'package:product/presentation/screens/packet_management_form.screen.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 
@@ -94,6 +96,23 @@ class AppRouter {
           name: AppRoutes.productManagement,
           pageBuilder: (context, state) {
             return const MaterialPage(child: ProductManagementScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.packetManagement,
+          name: AppRoutes.packetManagement,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: PacketManagementScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.packetForm,
+          name: AppRoutes.packetForm,
+          pageBuilder: (context, state) {
+            final extra = state.extra;
+            final packetId = extra is int ? extra : null;
+            return MaterialPage(
+                child: PacketManagementFormScreen(packetId: packetId));
           },
         ),
         // Rute Pengaturan Utama (SettingScreen)

@@ -19,6 +19,7 @@ export 'utils/helpers/base_error_helper.dart';
 export 'presentation/widgets/message_snackbar.dart';
 export 'presentation/widgets/review_image_modal.dart';
 export 'presentation/widgets/full_screen_text.editor.dart';
+export 'presentation/widgets/sync_status.widget.dart';
 
 //depedences
 export 'package:logging/logging.dart';

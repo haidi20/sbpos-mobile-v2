@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import 'package:product/presentation/components/packet_card.dart';
-import 'package:product/presentation/components/product_card.dart';
+import 'package:product/presentation/components/packet.card.dart';
+import 'package:product/presentation/components/product.card.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/controllers/transaction_pos.controller.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';

@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:product/domain/usecases/get_packets.usecase.dart';
+import 'package:product/domain/usecases/get_packet.usecase.dart';
 import 'package:product/domain/usecases/create_packet.usecase.dart';
 import 'package:product/domain/usecases/update_packet.usecase.dart';
 import 'package:product/domain/usecases/delete_packet.usecase.dart';
@@ -7,6 +8,8 @@ import 'package:product/presentation/view_models/packet_management.vm.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:product/presentation/view_models/packet_management.state.dart';
 import 'package:product/presentation/providers/product_repository.provider.dart';
+import 'package:product/presentation/providers/product.provider.dart'
+    show productGetProductsProvider;
 
 final packetGetPacketsProvider = Provider<GetPackets>((ref) {
   final repo = ref.watch(packetRepositoryProvider);
@@ -16,6 +19,11 @@ final packetGetPacketsProvider = Provider<GetPackets>((ref) {
 final packetCreatePacketProvider = Provider<CreatePacket>((ref) {
   final repo = ref.watch(packetRepositoryProvider);
   return CreatePacket(repo);
+});
+
+final packetGetPacketProvider = Provider<GetPacket>((ref) {
+  final repo = ref.watch(packetRepositoryProvider);
+  return GetPacket(repo);
 });
 
 final packetUpdatePacketProvider = Provider<UpdatePacket>((ref) {
@@ -32,6 +40,7 @@ final packetManagementViewModelProvider =
     StateNotifierProvider<PacketManagementViewModel, PacketManagementState>(
         (ref) {
   final get = ref.watch(packetGetPacketsProvider);
+  final getProducts = ref.watch(productGetProductsProvider);
   final create = ref.watch(packetCreatePacketProvider);
   final update = ref.watch(packetUpdatePacketProvider);
   final delete = ref.watch(packetDeletePacketProvider);
@@ -50,6 +59,7 @@ final packetManagementViewModelProvider =
 
   return PacketManagementViewModel(
     getPacketsUsecase: get,
+    getProductsUsecase: getProducts,
     createPacketUsecase: create,
     updatePacketUsecase: update,
     deletePacketUsecase: delete,

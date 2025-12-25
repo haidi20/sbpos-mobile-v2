@@ -27,6 +27,12 @@ class CartHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  Navigator.of(context).maybePop();
+                },
+              ),
               Text(
                 'Pesanan (${viewModel.getCartCount} items)',
                 style: const TextStyle(

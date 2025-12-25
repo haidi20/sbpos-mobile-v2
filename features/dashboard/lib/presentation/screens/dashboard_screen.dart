@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:dashboard/presentation/widgets/quick_menu.dart';
-import 'package:dashboard/presentation/component/hero_card.dart';
+import 'package:dashboard/presentation/component/hero.card.dart';
 import 'package:dashboard/presentation/widgets/analytic_chart.dart';
 
 class DashboardScreen extends StatelessWidget {
