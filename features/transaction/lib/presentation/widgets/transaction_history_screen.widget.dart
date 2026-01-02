@@ -41,40 +41,6 @@ class TransactionHistoryHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // if (onDateSelected != null)
-              //   Container(
-              //     decoration: BoxDecoration(
-              //       color: Colors.white,
-              //       borderRadius: BorderRadius.circular(12),
-              //       border: Border.all(color: Colors.grey.shade200),
-              //     ),
-              //     child: IconButton(
-              //       icon: const Icon(
-              //         Icons.filter_list,
-              //         color: AppColors.sbBlue,
-              //       ),
-              //       onPressed: () async {
-              //         final now = DateTime.now();
-              //         final picked = await showDatePicker(
-              //           context: context,
-              //           initialDate: now,
-              //           firstDate: DateTime(2000),
-              //           lastDate: DateTime(now.year + 2),
-              //           builder: (ctx, child) => Theme(
-              //             data: Theme.of(ctx).copyWith(
-              //               colorScheme: const ColorScheme.light(
-              //                 primary: AppColors.sbBlue,
-              //                 onPrimary: Colors.white,
-              //                 onSurface: Colors.black87,
-              //               ),
-              //             ),
-              //             child: child!,
-              //           ),
-              //         );
-              //         onDateSelected?.call(picked);
-              //       },
-              //     ),
-              //   ),
             ],
           ),
           const SizedBox(height: 16),
@@ -119,11 +85,11 @@ class TransactionHistoryHeader extends StatelessWidget {
 }
 
 // Transaction list extracted for easier unit testing
-class TransactionHistoryList extends StatefulWidget {
+class TransactionHistoryList extends StatelessWidget {
+  final bool isLoading;
   final List<TransactionEntity> transactions;
   final Future<void> Function(TransactionEntity) onTap;
   final Future<void> Function(TransactionEntity)? onLongPress;
-  final bool isLoading;
 
   /// Callback dipanggil saat pengguna menggeser horizontal pada daftar.
   /// Mengirim jumlah hari untuk digeser: positif -> maju (hari berikutnya), negatif -> mundur (hari sebelumnya).
@@ -131,25 +97,18 @@ class TransactionHistoryList extends StatefulWidget {
 
   const TransactionHistoryList({
     super.key,
-    required this.onTap,
-    required this.transactions,
     this.onLongPress,
-    this.isLoading = false,
     this.onDateShift,
+    required this.onTap,
+    this.isLoading = false,
+    required this.transactions,
   });
-
-  @override
-  State<TransactionHistoryList> createState() => _TransactionHistoryListState();
-}
-
-class _TransactionHistoryListState extends State<TransactionHistoryList> {
-  // Shadow state dihapus per request.
 
   @override
   Widget build(BuildContext context) {
     // build the actual list content (muating / empty / items)
     final Widget listContent;
-    if (widget.isLoading) {
+    if (isLoading) {
       listContent = ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
@@ -163,7 +122,7 @@ class _TransactionHistoryListState extends State<TransactionHistoryList> {
           ),
         ],
       );
-    } else if (widget.transactions.isEmpty) {
+    } else if (transactions.isEmpty) {
       listContent = ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
@@ -175,16 +134,14 @@ class _TransactionHistoryListState extends State<TransactionHistoryList> {
       listContent = ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
-        itemCount: widget.transactions.length,
+        itemCount: transactions.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          final tx = widget.transactions[index];
+          final tx = transactions[index];
           return TransactionHistoryCard(
             transaction: tx,
-            onTap: () => widget.onTap(tx),
-            onLongPress: widget.onLongPress == null
-                ? null
-                : () => widget.onLongPress!(tx),
+            onTap: () => onTap(tx),
+            onLongPress: onLongPress == null ? null : () => onLongPress!(tx),
           );
         },
       );
@@ -203,10 +160,10 @@ class _TransactionHistoryListState extends State<TransactionHistoryList> {
             if (vx.abs() >= velocityThreshold) {
               if (vx > 0) {
                 // fling to right -> previous date
-                widget.onDateShift?.call(-1);
+                onDateShift?.call(-1);
               } else {
                 // fling to left -> next date
-                widget.onDateShift?.call(1);
+                onDateShift?.call(1);
               }
             }
           },
@@ -231,12 +188,16 @@ class _TransactionHistoryEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.receipt_long, size: 48, color: Colors.grey.shade400),
+            Icon(
+              Icons.receipt_long,
+              size: 48,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: TextStyle(color: Colors.grey.shade600),
               textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600),
             ),
           ],
         ),

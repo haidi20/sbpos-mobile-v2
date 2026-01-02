@@ -65,7 +65,11 @@ class _TransactionHistoryScreenState
                 daysToShow: 7,
                 selectedDate: state.selectedDate,
                 onDateSelected: (d) => _viewModel.setSelectedDate(d),
-                bodyBuilder: (ctx, ref, date) {
+                bodyBuilder: ({
+                  required WidgetRef ref,
+                  required DateTime date,
+                  required BuildContext context,
+                }) {
                   final st = ref.watch(transactionHistoryViewModelProvider);
                   return RefreshIndicator(
                     onRefresh: () => _viewModel.onRefresh(),

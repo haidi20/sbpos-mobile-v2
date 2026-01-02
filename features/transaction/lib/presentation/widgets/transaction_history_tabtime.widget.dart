@@ -1,18 +1,21 @@
 import 'package:core/core.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/controllers/transaction_history_tabtime.controller.dart';
-import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
 class TransactionHistoryTabtime extends ConsumerStatefulWidget {
   /// Jumlah tanggal berturut-turut yang ditampilkan (termasuk hari ini).
+  final double height;
   final int daysToShow;
-  final ValueChanged<DateTime>? onDateSelected;
+  final double itemWidth;
+  final DateTime? selectedDate;
   final ValueChanged<DateTime>? onSwipeLeft;
   final ValueChanged<DateTime>? onSwipeRight;
-  final DateTime? selectedDate;
-  final double itemWidth;
-  final double height;
-  final Widget Function(BuildContext, WidgetRef, DateTime) bodyBuilder;
+  final ValueChanged<DateTime>? onDateSelected;
+
+  final Widget Function({
+    required WidgetRef ref,
+    required DateTime date,
+    required BuildContext context,
+  }) bodyBuilder;
 
   const TransactionHistoryTabtime({
     super.key,
@@ -34,10 +37,9 @@ class TransactionHistoryTabtime extends ConsumerStatefulWidget {
 class _TransactionHistoryTabtimeState
     extends ConsumerState<TransactionHistoryTabtime>
     with TickerProviderStateMixin {
-  late final TabController _tabController;
   late List<DateTime> _dates;
+  late final TabController _tabController;
   late final TransactionHistoryTabtimeController _ctrl;
-  late int _lastIndex;
 
   @override
   void initState() {
@@ -45,45 +47,32 @@ class _TransactionHistoryTabtimeState
 
     _ctrl = TransactionHistoryTabtimeController();
 
-    // Generate date list via ViewModel so logic lives in VM.
-    _dates = ref
-        .read(transactionHistoryViewModelProvider.notifier)
-        .generateDateList(widget.daysToShow);
-    // determine initial selected date (VM has precedence; cadangan to widget.selectedDate)
-    final vmSel = ref.read(transactionHistoryViewModelProvider).selectedDate;
-    final initialSelected = vmSel ?? widget.selectedDate ?? _dates.last;
+    // Minta controller mempersiapkan daftar tanggal dan indeks awal
+    final datesInit = _ctrl.prepareDates(
+      ref,
+      widget.daysToShow,
+      providedSelected: widget.selectedDate,
+    );
 
-    final initIdx = _dates.indexWhere((d) =>
-        d.year == initialSelected.year &&
-        d.month == initialSelected.month &&
-        d.day == initialSelected.day);
+    _dates = datesInit.dates;
+    final initIdx = datesInit.initialIndex;
 
     _tabController = TabController(
-      length: _dates.length,
       vsync: this,
+      length: _dates.length,
       initialIndex: initIdx == -1 ? (_dates.length - 1) : initIdx,
     );
 
-    _lastIndex = _tabController.index;
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) return;
-      final idx = _tabController.index;
-      if (idx < 0 || idx >= _dates.length) return;
-      final d = _dates[idx];
-      // Push selected date into VM state via controller
-      _ctrl.selectDate(ref, d);
-      widget.onDateSelected?.call(d);
-
-      // detect swipe direction relative to lastIndex
-      if (idx != _lastIndex) {
-        if (idx > _lastIndex) {
-          widget.onSwipeLeft?.call(d);
-        } else {
-          widget.onSwipeRight?.call(d);
-        }
-        _lastIndex = idx;
-      }
-    });
+    // initial index tracked inside controller now
+    // Delegate tab controller wiring to controller
+    _ctrl.attachTabController(
+      _tabController,
+      ref,
+      _dates,
+      onDateSelected: (d) => widget.onDateSelected?.call(d),
+      onSwipeLeft: (d) => widget.onSwipeLeft?.call(d),
+      onSwipeRight: (d) => widget.onSwipeRight?.call(d),
+    );
   }
 
   @override
@@ -97,20 +86,7 @@ class _TransactionHistoryTabtimeState
 
   @override
   Widget build(BuildContext context) {
-    // Listen to VM selectedDate changes and animate TabController accordingly.
-    ref.listen<TransactionHistoryState>(transactionHistoryViewModelProvider,
-        (previous, next) {
-      final sel = next.selectedDate;
-      if (sel == null) return;
-      final idx = _dates.indexWhere((d) =>
-          d.year == sel.year && d.month == sel.month && d.day == sel.day);
-      if (idx != -1 && _tabController.index != idx) {
-        try {
-          _tabController.animateTo(idx,
-              duration: const Duration(milliseconds: 220));
-        } catch (_) {}
-      }
-    });
+    // ref.listen now handled by controller via attachTabController
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -133,29 +109,22 @@ class _TransactionHistoryTabtimeState
                   labelColor: AppColors.sbBlue,
                   unselectedLabelColor: AppColors.gray600,
                   onTap: (idx) {
-                    if (idx < 0 || idx >= _dates.length) return;
-                    final d = _dates[idx];
-                    widget.onDateSelected?.call(d);
-                    try {
-                      _tabController.animateTo(idx);
-                    } catch (_) {}
+                    _ctrl.handleTapIndex(
+                      ref,
+                      idx,
+                      onDateSelected: (d) => widget.onDateSelected?.call(d),
+                    );
                   },
                   tabs: List.generate(
                     _dates.length,
                     (idx) {
                       final d = _dates[idx];
 
-                      // label via controller (moved logic to controller)
+                      // label via controller
                       final label = _ctrl.labelForDate(d);
 
-                      final sel = ref
-                              .watch(transactionHistoryViewModelProvider)
-                              .selectedDate ??
-                          widget.selectedDate ??
-                          _dates.last;
-                      final isSelected = sel.year == d.year &&
-                          sel.month == d.month &&
-                          sel.day == d.day;
+                      final isSelected =
+                          _ctrl.isSelected(ref, widget.selectedDate, d);
 
                       return Tab(
                         child: SizedBox(
@@ -197,8 +166,14 @@ class _TransactionHistoryTabtimeState
               color: AppColors.sbBg,
               child: TabBarView(
                 controller: _tabController,
-                children: List.generate(_dates.length,
-                    (idx) => widget.bodyBuilder(context, ref, _dates[idx])),
+                children: List.generate(
+                  _dates.length,
+                  (idx) => widget.bodyBuilder(
+                    ref: ref,
+                    context: context,
+                    date: _dates[idx],
+                  ),
+                ),
               ),
             ),
           ),
