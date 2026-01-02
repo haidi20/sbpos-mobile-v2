@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:product/data/dummies/category.dummy.dart';
 import 'package:product/domain/entities/product.entity.dart';
-import 'package:product/presentation/components/product_management.card.dart';
 import 'package:product/presentation/providers/product.provider.dart';
+import 'package:product/presentation/components/product_management.card.dart';
 import 'package:product/presentation/controllers/product_management.controller.dart';
 
 // --- 4. MAIN SCREEN ---
@@ -57,7 +57,9 @@ class _ProductManagementScreenState
   }
 
   List<ProductEntity> get _filteredProducts {
-    final vm = ref.watch(productManagementViewModelProvider.notifier);
+    // Watch the VM state so this getter recomputes when products/search/category change
+    ref.watch(productManagementViewModelProvider);
+    final vm = ref.read(productManagementViewModelProvider.notifier);
     return vm.filteredProducts;
   }
 }
@@ -68,9 +70,9 @@ class _ProductManagementHeader extends StatelessWidget {
   final VoidCallback onAddPressed;
 
   const _ProductManagementHeader({
+    required this.onAddPressed,
     required this.activeCategory,
     required this.onCategoryChanged,
-    required this.onAddPressed,
   });
 
   @override

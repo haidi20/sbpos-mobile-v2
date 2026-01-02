@@ -1,27 +1,23 @@
-// router/app_router.dart
 import 'package:core/core.dart';
 import 'package:core/presentation/screens/coming_soon.dart';
 import 'package:core/presentation/screens/login_screen.dart';
-import 'package:setting/presentation/screens/setting_screen.dart';
-// Import Screens Pengaturan yang Baru
+import 'package:product/domain/entities/packet.entity.dart';
 import 'package:setting/presentation/screens/help_screen.dart';
 import 'package:setting/presentation/screens/store_screen.dart';
+import 'package:setting/presentation/screens/setting_screen.dart';
 import 'package:setting/presentation/screens/payment_screen.dart';
 import 'package:setting/presentation/screens/printer_screen.dart';
 import 'package:setting/presentation/screens/profile_screen.dart';
 import 'package:setting/presentation/screens/security_screen.dart';
-import 'package:setting/presentation/screens/notification_setting_screen.dart';
-// Akhir Import Screens Pengaturan
-
 import 'package:dashboard/presentation/screens/report_screen.dart';
 import 'package:product/presentation/screens/inventory_screen.dart';
 import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
+import 'package:product/presentation/screens/packet_management.screen.dart';
 import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/presentation/screens/product_management.screen.dart';
-import 'package:product/presentation/screens/packet_management.screen.dart';
-import 'package:product/presentation/screens/packet_management_form.screen.dart';
-import 'package:product/domain/entities/packet.entity.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
+import 'package:setting/presentation/screens/notification_setting_screen.dart';
+import 'package:product/presentation/screens/packet_management_form.screen.dart';
 import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 
 class AppRouter {
@@ -35,8 +31,8 @@ class AppRouter {
       initialLocation: '/',
       redirect: (context, state) {
         if (state.matchedLocation == '/') {
-          // return AppRoutes.login;
-          return AppRoutes.productManagement;
+          return AppRoutes.login;
+          // return AppRoutes.productManagement;
         }
         return null;
       },
@@ -108,13 +104,14 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: AppRoutes.packetForm,
-          name: AppRoutes.packetForm,
+          path: AppRoutes.packetManagementForm,
+          name: AppRoutes.packetManagementForm,
           pageBuilder: (context, state) {
             final extra = state.extra;
             final packetEntity = extra is PacketEntity ? extra : null;
             return MaterialPage(
-                child: PacketManagementFormScreen(packetEntity: packetEntity));
+              child: PacketManagementFormScreen(packetEntity: packetEntity),
+            );
           },
         ),
         // Rute Pengaturan Utama (SettingScreen)

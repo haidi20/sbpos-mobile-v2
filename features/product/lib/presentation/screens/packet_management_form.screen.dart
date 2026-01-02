@@ -24,6 +24,7 @@ class _PacketManagementFormScreenState
   // data comes from `widget.packetEntity`
 
   late final PacketManagementFormController _controller;
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -35,10 +36,16 @@ class _PacketManagementFormScreenState
   void didChangeDependencies() {
     super.didChangeDependencies();
     // initialize VM draft from provided packetEntity when screen is shown
-    final vm = ref.read(packetManagementViewModelProvider.notifier);
-    vm.setDraft(widget.packetEntity ?? PacketEntity());
-    vm.setIsForm(true);
-    vm.ensureProductsLoaded();
+    // Defer provider modifications to after build to avoid Riverpod errors
+    if (!_initialized) {
+      _initialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final vm = ref.read(packetManagementViewModelProvider.notifier);
+        vm.setDraft(widget.packetEntity ?? PacketEntity());
+        vm.setIsForm(true);
+        vm.ensureProductsLoaded();
+      });
+    }
   }
 
   Future<void> _openEditSheet({PacketItemEntity? item, int? index}) async {

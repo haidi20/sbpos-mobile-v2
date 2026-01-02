@@ -2,11 +2,11 @@ import 'package:core/core.dart';
 import 'package:product/presentation/view_models/inventory.state.dart';
 import 'package:product/presentation/view_models/inventory.vm.dart';
 
-class InventoryList extends StatelessWidget {
+class ProductScreen extends StatelessWidget {
   final InventoryState state;
   final InventoryViewModel vm;
   final Color sbBlue;
-  const InventoryList(
+  const ProductScreen(
       {super.key, required this.state, required this.vm, required this.sbBlue});
 
   @override

@@ -65,24 +65,27 @@ class _TransactionHistoryScreenState
                 daysToShow: 7,
                 selectedDate: state.selectedDate,
                 onDateSelected: (d) => _viewModel.setSelectedDate(d),
-                body: RefreshIndicator(
-                  onRefresh: () => _viewModel.onRefresh(),
-                  color: AppColors.sbBlue,
-                  displacement: 32,
-                  child: TransactionHistoryList(
-                    transactions: state.transactions,
-                    isLoading: state.isLoading,
-                    onTap: (tx) async {
-                      await _controller.showTransactionActions(
-                        context,
-                        ref,
-                        tx,
-                      );
-                    },
-                    onDateShift: (shiftDays) =>
-                        _viewModel.shiftSelectedDate(shiftDays),
-                  ),
-                ),
+                bodyBuilder: (ctx, ref, date) {
+                  final st = ref.watch(transactionHistoryViewModelProvider);
+                  return RefreshIndicator(
+                    onRefresh: () => _viewModel.onRefresh(),
+                    color: AppColors.sbBlue,
+                    displacement: 32,
+                    child: TransactionHistoryList(
+                      transactions: st.transactions,
+                      isLoading: st.isLoading,
+                      onTap: (tx) async {
+                        await _controller.showTransactionActions(
+                          context,
+                          ref,
+                          tx,
+                        );
+                      },
+                      onDateShift: (shiftDays) =>
+                          _viewModel.shiftSelectedDate(shiftDays),
+                    ),
+                  );
+                },
               ),
             ),
           ],

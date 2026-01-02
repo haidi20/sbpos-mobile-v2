@@ -12,7 +12,7 @@ class TransactionHistoryTabtime extends ConsumerStatefulWidget {
   final DateTime? selectedDate;
   final double itemWidth;
   final double height;
-  final Widget body;
+  final Widget Function(BuildContext, WidgetRef, DateTime) bodyBuilder;
 
   const TransactionHistoryTabtime({
     super.key,
@@ -23,7 +23,7 @@ class TransactionHistoryTabtime extends ConsumerStatefulWidget {
     this.selectedDate,
     this.itemWidth = 88,
     this.height = 72,
-    required this.body,
+    required this.bodyBuilder,
   }) : assert(daysToShow > 0);
 
   @override
@@ -37,6 +37,7 @@ class _TransactionHistoryTabtimeState
   late final TabController _tabController;
   late List<DateTime> _dates;
   late final TransactionHistoryTabtimeController _ctrl;
+  late int _lastIndex;
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class _TransactionHistoryTabtimeState
       initialIndex: initIdx == -1 ? (_dates.length - 1) : initIdx,
     );
 
+    _lastIndex = _tabController.index;
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
       final idx = _tabController.index;
@@ -71,6 +73,16 @@ class _TransactionHistoryTabtimeState
       // Push selected date into VM state via controller
       _ctrl.selectDate(ref, d);
       widget.onDateSelected?.call(d);
+
+      // detect swipe direction relative to lastIndex
+      if (idx != _lastIndex) {
+        if (idx > _lastIndex) {
+          widget.onSwipeLeft?.call(d);
+        } else {
+          widget.onSwipeRight?.call(d);
+        }
+        _lastIndex = idx;
+      }
     });
   }
 
@@ -176,46 +188,17 @@ class _TransactionHistoryTabtimeState
           ),
         ),
 
-        // Body yang diberikan pemanggil. Gunakan Flexible longgar sehingga widget ini dapat
-        // disematkan di parent yang bounded atau unbounded dengan aman. Terapkan container
-        // yang bisa membulatkan sudut tergantung kondisi bayangan kiri/kanan agar tampilan
-        // body konsisten dengan kondisi tepi.
+        // TabBarView: build a child per date using the provided bodyBuilder.
         Flexible(
           fit: FlexFit.loose,
-          child: GestureDetector(
-            onHorizontalDragEnd: (details) {
-              // swipe left -> next tab (negative velocity on x)
-              if (details.primaryVelocity == null) return;
-              final v = details.primaryVelocity!;
-              final idx = _tabController.index;
-              if (v < -200 && idx < _dates.length - 1) {
-                try {
-                  _tabController.animateTo(idx + 1,
-                      duration: const Duration(milliseconds: 220));
-                  // notify swipe-left (gunakanr swiped left to move to next)
-                  widget.onSwipeLeft?.call(_dates[idx + 1]);
-                } catch (_) {}
-              } else if (v > 200 && idx > 0) {
-                try {
-                  _tabController.animateTo(idx - 1,
-                      duration: const Duration(milliseconds: 220));
-                  // notify swipe-right (gunakanr swiped right to move to prev)
-                  widget.onSwipeRight?.call(_dates[idx - 1]);
-                } catch (_) {}
-              }
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.zero,
-              child: Stack(
-                children: [
-                  // main body content
-                  Container(
-                    color: AppColors.sbBg,
-                    child: widget.body,
-                  ),
-
-                  // shadows dihapus
-                ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.zero,
+            child: Container(
+              color: AppColors.sbBg,
+              child: TabBarView(
+                controller: _tabController,
+                children: List.generate(_dates.length,
+                    (idx) => widget.bodyBuilder(context, ref, _dates[idx])),
               ),
             ),
           ),

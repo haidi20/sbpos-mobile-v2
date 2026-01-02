@@ -108,11 +108,11 @@ class _PacketManagementDataList extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final p = packets[index];
-        return PacketListItem(
+        return _PacketManagementCard(
           packet: p,
           onEdit: () async {
             // pass full packet entity to form (form now accepts packetEntity)
-            await context.push(AppRoutes.packetForm, extra: p);
+            await context.push(AppRoutes.packetManagementForm, extra: p);
             if (!Navigator.of(context).mounted) return;
             notifier.getPackets();
           },
@@ -132,16 +132,16 @@ class _PacketManagementDataList extends StatelessWidget {
   }
 }
 
-class PacketListItem extends StatelessWidget {
+class _PacketManagementCard extends StatelessWidget {
   final dynamic packet;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const PacketListItem(
-      {super.key,
-      required this.packet,
-      required this.onEdit,
-      required this.onDelete});
+  const _PacketManagementCard({
+    required this.packet,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {

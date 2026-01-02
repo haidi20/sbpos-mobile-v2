@@ -54,8 +54,12 @@ class InventoryScreen extends ConsumerWidget {
                           ),
                         ),
                         Expanded(
-                            child: InventoryList(
-                                state: state, vm: vm, sbBlue: sbBlue)),
+                          child: ProductScreen(
+                            state: state,
+                            vm: vm,
+                            sbBlue: sbBlue,
+                          ),
+                        ),
                       ],
                     ),
 
@@ -69,7 +73,7 @@ class InventoryScreen extends ConsumerWidget {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  context.push(AppRoutes.packetManagement);
+                                  context.push(AppRoutes.packetManagementForm);
                                 },
                                 icon: const Icon(Icons.add),
                                 label: const Text('Tambah Paket'),
@@ -77,7 +81,9 @@ class InventoryScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        const Expanded(child: PacketManagementScreen()),
+                        const Expanded(
+                          child: PacketManagementScreen(),
+                        ),
                       ],
                     ),
                   ],

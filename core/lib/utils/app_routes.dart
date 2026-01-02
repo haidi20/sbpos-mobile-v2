@@ -10,10 +10,10 @@ class AppRoutes {
   static const String notification = '/notification';
   static const String comingSoonScreen = '/coming-soon';
   static const String transactionPos = '/transaction-pos';
-  static const String productManagement = '/product-management';
   static const String packetManagement = '/packet-management';
-  static const String packetForm = '/packet-form';
+  static const String productManagement = '/product-management';
   static const String transactionHistory = '/transaction_history';
+  static const String packetManagementForm = '/packet-management-form';
 
   // Tambahan route untuk screens di setting
   static const String help = '/settings/help';
