@@ -1,5 +1,7 @@
 import 'package:core/core.dart';
 import 'package:transaction/presentation/controllers/transaction_history_tabtime.controller.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
 class TransactionHistoryTabtime extends ConsumerStatefulWidget {
   /// Jumlah tanggal berturut-turut yang ditampilkan (termasuk hari ini).
@@ -45,7 +47,19 @@ class _TransactionHistoryTabtimeState
   void initState() {
     super.initState();
 
-    _ctrl = TransactionHistoryTabtimeController();
+    _ctrl = TransactionHistoryTabtimeController(
+      readState: (ref) => ref.read(transactionHistoryViewModelProvider),
+      setSelectedDate: (ref, date) => ref
+          .read(transactionHistoryViewModelProvider.notifier)
+          .setSelectedDate(date),
+      listenState: (ref, listener) {
+        final subscription = ref.listenManual<TransactionHistoryState>(
+          transactionHistoryViewModelProvider,
+          listener,
+        );
+        return subscription.close;
+      },
+    );
 
     // Minta controller mempersiapkan daftar tanggal dan indeks awal
     final datesInit = _ctrl.prepareDates(

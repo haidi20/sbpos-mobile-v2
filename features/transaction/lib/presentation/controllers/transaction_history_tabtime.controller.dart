@@ -1,24 +1,56 @@
-import 'package:core/core.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:transaction/presentation/controllers/transaction_history_tabtime.logic.dart';
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
 /// Hasil dari persiapan daftar tanggal: daftar tanggal dan indeks awal.
 class DatesInit {
-  final List<DateTime> dates;
   final int initialIndex;
+  final List<DateTime> dates;
 
-  DatesInit(this.dates, this.initialIndex);
+  DatesInit(
+    this.dates,
+    this.initialIndex,
+  );
 }
 
 /// Controller untuk TransactionHistoryTabtime.
 ///
 /// Mengelola logika UI yang membutuhkan `BuildContext` atau kontrol lokal
 /// seperti `TextEditingController` (mis. input pencarian, pemilih tanggal).
+typedef TransactionHistoryStateReader = TransactionHistoryState Function(
+  WidgetRef ref,
+);
+
+typedef TransactionHistoryDateSetter = Future<void> Function(
+  WidgetRef ref,
+  DateTime? date,
+);
+
+typedef TransactionHistoryStateListener = VoidCallback Function(
+  WidgetRef ref,
+  void Function(TransactionHistoryState? previous, TransactionHistoryState next)
+      listener,
+);
+
 class TransactionHistoryTabtimeController {
+  TransactionHistoryTabtimeController({
+    TransactionHistoryStateReader? readState,
+    TransactionHistoryDateSetter? setSelectedDate,
+    TransactionHistoryStateListener? listenState,
+  })  : _readState = readState ?? _defaultReadState,
+        _setSelectedDate = setSelectedDate ?? _defaultSetSelectedDate,
+        _listenState = listenState ?? _defaultListenState;
+
   final TextEditingController searchController = TextEditingController();
+  final TransactionHistoryStateReader _readState;
+  final TransactionHistoryDateSetter _setSelectedDate;
+  final TransactionHistoryStateListener _listenState;
+  VoidCallback? _cancelStateListener;
 
   /// Bersihkan resource internal controller.
   void dispose() {
+    detachTabController();
     searchController.dispose();
   }
 
@@ -37,9 +69,10 @@ class TransactionHistoryTabtimeController {
       lastDate: DateTime(now.year + 5),
     );
     if (picked != null) {
-      await ref
-          .read(transactionHistoryViewModelProvider.notifier)
-          .setSelectedDate(DateTime(picked.year, picked.month, picked.day));
+      await _setSelectedDate(
+        ref,
+        DateTime(picked.year, picked.month, picked.day),
+      );
     }
   }
 
@@ -47,21 +80,7 @@ class TransactionHistoryTabtimeController {
   ///
   /// Contoh output: "Hari ini", "Kemarin", atau format `dd/MM/yy`.
   String labelForDate(DateTime d) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    if (d.year == today.year && d.month == today.month && d.day == today.day) {
-      return 'Hari ini';
-    }
-    if (d.year == yesterday.year &&
-        d.month == yesterday.month &&
-        d.day == yesterday.day) {
-      return 'Kemarin';
-    }
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final yy = (d.year % 100).toString().padLeft(2, '0');
-    return '$dd/$mm/$yy';
+    return TransactionHistoryTabtimeLogic.labelForDate(d);
   }
 
   /// Pilih tanggal yang diberikan pada ViewModel.
@@ -69,9 +88,7 @@ class TransactionHistoryTabtimeController {
   /// Menormalkan waktu menjadi hanya komponen tanggal (year, month, day).
   Future<void> selectDate(WidgetRef ref, DateTime d) async {
     final sel = DateTime(d.year, d.month, d.day);
-    await ref
-        .read(transactionHistoryViewModelProvider.notifier)
-        .setSelectedDate(sel);
+    await _setSelectedDate(ref, sel);
   }
 
   TabController? _tabController;
@@ -99,6 +116,8 @@ class TransactionHistoryTabtimeController {
         // abaikan jika gagal melepas listener
       }
     }
+    _cancelStateListener?.call();
+    _cancelStateListener = null;
 
     _tabController = tabController;
     _attachedDates = dates;
@@ -109,29 +128,31 @@ class TransactionHistoryTabtimeController {
         return;
       }
       final idx = tabController.index;
-      if (idx < 0 || _attachedDates == null || idx >= _attachedDates!.length) {
+      final change = TransactionHistoryTabtimeLogic.selectionForIndex(
+        idx: idx,
+        lastIndex: _lastIndex,
+        dates: _attachedDates,
+      );
+      if (change == null) {
         return;
       }
-      final d = _attachedDates![idx];
+      final d = change.date;
       // perbarui ViewModel dengan tanggal yang dipilih
       selectDate(ref, d);
       onDateSelected?.call(d);
 
       // deteksi arah geser antar-tab dan panggil callback yang sesuai
-      if (idx != _lastIndex) {
-        if (idx > _lastIndex) {
-          onSwipeLeft?.call(d);
-        } else {
-          onSwipeRight?.call(d);
-        }
-        _lastIndex = idx;
+      if (change.direction == TabSwipeDirection.left) {
+        onSwipeLeft?.call(d);
+      } else {
+        onSwipeRight?.call(d);
       }
+      _lastIndex = idx;
     });
 
     // Dengarkan perubahan `selectedDate` di ViewModel dan animasikan TabController
     // agar posisi tab mengikuti tanggal yang diset dari luar.
-    ref.listen<TransactionHistoryState>(transactionHistoryViewModelProvider,
-        (previous, next) {
+    _cancelStateListener = _listenState(ref, (previous, next) {
       final sel = next.selectedDate;
       if (sel == null || _attachedDates == null || _tabController == null) {
         return;
@@ -153,6 +174,8 @@ class TransactionHistoryTabtimeController {
   /// Lepaskan [TabController] yang terpasang sebelumnya, jika ada.
   /// Members internal yang terkait akan direset.
   void detachTabController() {
+    _cancelStateListener?.call();
+    _cancelStateListener = null;
     if (_tabController != null) {
       try {
         _tabController!.removeListener(_tabListener);
@@ -168,14 +191,9 @@ class TransactionHistoryTabtimeController {
   /// Basis tanggal diambil dari ViewModel jika tersedia, jika tidak gunakan
   /// `DateTime.now()`.
   List<DateTime> generateDateList(WidgetRef ref, int daysToShow) {
-    final vmSel = ref.read(transactionHistoryViewModelProvider).selectedDate;
-    final base = vmSel ?? DateTime.now();
-    final end = DateTime(base.year, base.month, base.day);
-    return List.generate(
+    return TransactionHistoryTabtimeLogic.generateDateList(
       daysToShow,
-      (i) => end.subtract(
-        Duration(days: daysToShow - 1 - i),
-      ),
+      selectedDate: _readState(ref).selectedDate,
     );
   }
 
@@ -183,20 +201,18 @@ class TransactionHistoryTabtimeController {
   ///
   /// Mengembalikan `-1` apabila tidak ditemukan.
   int findIndexForDate(List<DateTime> dates, DateTime d) {
-    return dates.indexWhere(
-        (x) => x.year == d.year && x.month == d.month && x.day == d.day);
+    return TransactionHistoryTabtimeLogic.findIndexForDate(dates, d);
   }
 
   /// Tentukan tanggal awal yang dipilih dengan prioritas: ViewModel -> nilai
   /// `provided` -> elemen terakhir dari daftar.
   DateTime resolveInitialSelected(
       WidgetRef ref, DateTime? provided, List<DateTime> dates) {
-    final vmSel = ref.read(transactionHistoryViewModelProvider).selectedDate;
-    if (vmSel != null) return DateTime(vmSel.year, vmSel.month, vmSel.day);
-    if (provided != null) {
-      return DateTime(provided.year, provided.month, provided.day);
-    }
-    return dates.last;
+    return TransactionHistoryTabtimeLogic.resolveInitialSelected(
+      selectedDate: _readState(ref).selectedDate,
+      provided: provided,
+      dates: dates,
+    );
   }
 
   /// Siapkan daftar tanggal dan indeks awal untuk TabController.
@@ -206,12 +222,12 @@ class TransactionHistoryTabtimeController {
   /// `TabController`.
   DatesInit prepareDates(WidgetRef ref, int daysToShow,
       {DateTime? providedSelected}) {
-    final dates = generateDateList(ref, daysToShow);
-    final initialSelected =
-        resolveInitialSelected(ref, providedSelected, dates);
-    final initIdx = findIndexForDate(dates, initialSelected);
-    final initialIndex = initIdx == -1 ? (dates.length - 1) : initIdx;
-    return DatesInit(dates, initialIndex);
+    final prepared = TransactionHistoryTabtimeLogic.prepareDates(
+      daysToShow,
+      selectedDate: _readState(ref).selectedDate,
+      providedSelected: providedSelected,
+    );
+    return DatesInit(prepared.dates, prepared.initialIndex);
   }
 
   /// Tangani ketukan (tap) pada tab dengan indeks `idx`.
@@ -221,13 +237,13 @@ class TransactionHistoryTabtimeController {
   /// melakukan animasi ke tab tersebut.
   void handleTapIndex(WidgetRef ref, int idx,
       {ValueChanged<DateTime>? onDateSelected}) {
-    if (_attachedDates == null || _tabController == null) {
+    if (_tabController == null) {
       return;
     }
-    if (idx < 0 || idx >= _attachedDates!.length) {
+    final d = TransactionHistoryTabtimeLogic.dateAtIndex(_attachedDates, idx);
+    if (d == null) {
       return;
     }
-    final d = _attachedDates![idx];
     // perbarui ViewModel
     selectDate(ref, d);
     // panggil callback
@@ -246,9 +262,24 @@ class TransactionHistoryTabtimeController {
   /// Membandingkan tanggal berdasarkan year/month/day; menggunakan pilihan dari
   /// ViewModel, jika tidak tersedia gunakan `provided` sebagai fallback.
   bool isSelected(WidgetRef ref, DateTime? provided, DateTime d) {
-    final sel =
-        ref.read(transactionHistoryViewModelProvider).selectedDate ?? provided;
-    if (sel == null) return false;
-    return sel.year == d.year && sel.month == d.month && sel.day == d.day;
+    return TransactionHistoryTabtimeLogic.isSelected(
+      selectedDate: _readState(ref).selectedDate,
+      provided: provided,
+      date: d,
+    );
   }
+}
+
+TransactionHistoryState _defaultReadState(WidgetRef _) {
+  return TransactionHistoryState();
+}
+
+Future<void> _defaultSetSelectedDate(WidgetRef _, DateTime? __) async {}
+
+VoidCallback _defaultListenState(
+  WidgetRef _,
+  void Function(TransactionHistoryState? previous, TransactionHistoryState next)
+      __,
+) {
+  return () {};
 }
