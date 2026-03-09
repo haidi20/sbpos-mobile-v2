@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:core/core.dart';
 import 'package:transaction/presentation/controllers/transaction_history_tabtime.logic.dart';
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
