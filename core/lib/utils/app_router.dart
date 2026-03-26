@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
 import 'package:core/presentation/screens/coming_soon.dart';
 import 'package:core/presentation/screens/login_screen.dart';
+import 'package:core/presentation/screens/webhook_realtime_test_screen.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:setting/presentation/screens/help_screen.dart';
 import 'package:setting/presentation/screens/store_screen.dart';
@@ -183,6 +184,13 @@ class AppRouter {
           name: AppRoutes.comingSoonScreen,
           pageBuilder: (context, state) {
             return const MaterialPage(child: ComingSoonScreen());
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.webhookTest,
+          name: AppRoutes.webhookTest,
+          pageBuilder: (context, state) {
+            return const MaterialPage(child: WebhookRealtimeTestScreen());
           },
         ),
       ],

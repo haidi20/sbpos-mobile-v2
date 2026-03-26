@@ -23,4 +23,5 @@ class AppRoutes {
   static const String profile = '/settings/profile';
   static const String security = '/settings/security';
   static const String notificationSetting = '/settings/notification';
+  static const String webhookTest = '/webhook-test';
 }

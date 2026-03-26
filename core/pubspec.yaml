@@ -36,6 +36,8 @@ dependencies:
   lucide_icons: any
   # fl_chart: ^0.71.0
   fl_chart: 0.69.0
+  web_socket_channel: ^3.0.1
+  uuid: ^4.5.2
 
   # fitur (paket path lokal)
   dashboard:
@@ -60,6 +62,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  mocktail: ^1.0.4
   drift_dev: ^2.16.0
   build_runner: ^2.4.11
 flutter:

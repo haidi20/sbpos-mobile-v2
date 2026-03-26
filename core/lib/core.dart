@@ -43,3 +43,10 @@ export 'package:cached_network_image/cached_network_image.dart';
 export 'package:hooks_riverpod/hooks_riverpod.dart' hide AsyncError;
 export 'package:flutter_riverpod/flutter_riverpod.dart' hide AsyncError;
 export 'data/datasources/local_database.dart';
+
+// webhook
+export 'domain/entities/webhook_event.entity.dart';
+export 'domain/repositories/webhook_repository.dart';
+export 'data/repositories/fake_webhook_repository.dart';
+export 'presentation/view_models/webhook.vm.dart';
+export 'presentation/providers/webhook.provider.dart';
