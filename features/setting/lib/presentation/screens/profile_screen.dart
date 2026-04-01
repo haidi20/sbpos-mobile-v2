@@ -1,10 +1,43 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _employeeIdController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    final profileState = ref.read(settingProfileStateProvider);
+    _nameController = TextEditingController(text: profileState.name);
+    _employeeIdController =
+        TextEditingController(text: profileState.employeeId);
+    _emailController = TextEditingController(text: profileState.email);
+    _phoneController = TextEditingController(text: profileState.phone);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _employeeIdController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final viewModel = ref.read(settingViewModelProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -77,19 +110,47 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            _buildTextField('Nama Lengkap', 'Budi Santoso'),
-            _buildTextField('ID Karyawan', 'EMP-2023-001', enabled: false),
-            _buildTextField('Email', 'budi@sbpos.com',
-                keyboardType: TextInputType.emailAddress),
-            _buildTextField('No. Handphone', '0812-9999-8888',
-                keyboardType: TextInputType.phone),
+            _ProfileTextField(
+              label: 'Nama Lengkap',
+              controller: _nameController,
+              onChanged: viewModel.setProfileName,
+            ),
+            _ProfileTextField(
+              label: 'ID Karyawan',
+              controller: _employeeIdController,
+              enabled: false,
+            ),
+            _ProfileTextField(
+              label: 'Email',
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              onChanged: viewModel.setProfileEmail,
+            ),
+            _ProfileTextField(
+              label: 'No. Handphone',
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              onChanged: viewModel.setProfilePhone,
+            ),
 
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  //
+                key: const Key('profile-save-button'),
+                onPressed: () async {
+                  final ok = await viewModel.onSaveProfile();
+                  final latestProfile = ref.read(settingProfileStateProvider);
+
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  if (ok) {
+                    showSuccessSnackBar(context, latestProfile.successMessage);
+                  } else {
+                    showErrorSnackBar(context, latestProfile.errorMessage);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.sbBlue,
@@ -113,9 +174,25 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTextField(String label, String value,
-      {bool enabled = true, TextInputType? keyboardType}) {
+class _ProfileTextField extends StatelessWidget {
+  const _ProfileTextField({
+    required this.label,
+    required this.controller,
+    this.enabled = true,
+    this.keyboardType,
+    this.onChanged,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final bool enabled;
+  final TextInputType? keyboardType;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -131,17 +208,20 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           TextFormField(
-            initialValue: value,
+            controller: controller,
             enabled: enabled,
             keyboardType: keyboardType,
+            onChanged: onChanged,
             style: TextStyle(
-                color: enabled ? Colors.black87 : Colors.grey.shade500),
+              color: enabled ? Colors.black87 : Colors.grey.shade500,
+            ),
             decoration: InputDecoration(
               filled: true,
               fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(

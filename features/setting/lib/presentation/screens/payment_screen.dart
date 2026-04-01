@@ -1,23 +1,14 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
 
-class PaymentScreen extends StatefulWidget {
+class PaymentScreen extends ConsumerWidget {
   const PaymentScreen({super.key});
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final methods = ref.watch(settingPaymentStateProvider).methods;
+    final viewModel = ref.read(settingViewModelProvider.notifier);
 
-class _PaymentScreenState extends State<PaymentScreen> {
-  final List<Map<String, dynamic>> methods = [
-    {'id': 1, 'name': 'Tunai (Cash)', 'active': true},
-    {'id': 2, 'name': 'QRIS', 'active': true},
-    {'id': 3, 'name': 'Kartu Debit', 'active': true},
-    {'id': 4, 'name': 'Kartu Kredit', 'active': false},
-    {'id': 5, 'name': 'Transfer Bank', 'active': false},
-  ];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -49,13 +40,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final item = methods[index];
-          final bool active = item['active'];
+          final active = item.isActive;
 
           return InkWell(
+            key: Key('payment-method-${item.id}'),
             onTap: () {
-              setState(() {
-                methods[index]['active'] = !active;
-              });
+              viewModel.setPaymentMethodActive(item.id, !active);
             },
             borderRadius: BorderRadius.circular(12),
             child: AnimatedContainer(
@@ -87,7 +77,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        item['name'],
+                        item.name,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,

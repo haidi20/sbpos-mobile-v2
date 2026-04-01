@@ -1,19 +1,14 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
 
-class NotificationSettingScreen extends StatefulWidget {
+class NotificationSettingScreen extends ConsumerWidget {
   const NotificationSettingScreen({super.key});
 
   @override
-  State<NotificationSettingScreen> createState() => _NotificationSettingScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notificationState = ref.watch(settingNotificationStateProvider);
+    final viewModel = ref.read(settingViewModelProvider.notifier);
 
-class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
-  bool pushNotif = true;
-  bool sound = true;
-  bool stockAlert = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -54,30 +49,24 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
                   Icons.notifications,
                   Colors.blue,
                   'Push Notifikasi',
-                  pushNotif,
-                  (v) => setState(
-                    () => pushNotif = v,
-                  ),
+                  notificationState.pushNotification,
+                  viewModel.setPushNotification,
                 ),
                 const Divider(height: 1),
                 _buildTile(
                   Icons.volume_up,
                   Colors.orange,
                   'Suara Transaksi',
-                  sound,
-                  (v) => setState(
-                    () => sound = v,
-                  ),
+                  notificationState.transactionSound,
+                  viewModel.setTransactionSound,
                 ),
                 const Divider(height: 1),
                 _buildTile(
                   Icons.lock_clock,
                   Colors.red,
                   'Alert Stok Menipis',
-                  stockAlert,
-                  (v) => setState(
-                    () => stockAlert = v,
-                  ),
+                  notificationState.stockAlert,
+                  viewModel.setStockAlert,
                 ),
               ],
             ),
@@ -88,7 +77,7 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen> {
   }
 
   Widget _buildTile(IconData icon, Color color, String title, bool value,
-      Function(bool) onChanged) {
+      ValueChanged<bool> onChanged) {
     return SwitchListTile(
       value: value,
       onChanged: onChanged,

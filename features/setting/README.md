@@ -1,11 +1,22 @@
-# setting
+# Setting
 
-A new Flutter module project.
+Package `setting` berisi screen pengaturan yang dipakai aplikasi utama SB POS, seperti:
 
-## Getting Started
+- `SettingsScreen`
+- `StoreScreen`
+- `PrinterScreen`
+- `PaymentScreen`
+- `ProfileScreen`
+- `NotificationSettingScreen`
+- `SecurityScreen`
+- `HelpScreen`
 
-For help getting started with Flutter development, view the online
-[documentation](https://flutter.dev/).
+Status implementasi saat ini:
 
-For instructions integrating Flutter modules to your existing applications,
-see the [add-to-app documentation](https://flutter.dev/docs/development/add-to-app).
+- modul sudah terhubung ke route aplikasi utama,
+- mayoritas screen masih berupa presentational UI,
+- sebagian besar aksi belum terhubung ke backend, persistence lokal, atau integrasi hardware.
+
+Panduan implementasi detail tersedia di:
+
+- [`guides/setting_guide.md`](../../guides/setting_guide.md)

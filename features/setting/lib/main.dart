@@ -1,112 +1,248 @@
-import 'package:flutter/material.dart';
+import 'package:core/core.dart';
+import 'package:setting/data/datasources/db/setting_database_schema.dart';
+import 'package:setting/data/datasources/setting_remote.data_source.dart';
+import 'package:setting/data/models/setting_config.model.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
+import 'package:setting/presentation/screens/help_screen.dart';
+import 'package:setting/presentation/screens/notification_setting_screen.dart';
+import 'package:setting/presentation/screens/payment_screen.dart';
+import 'package:setting/presentation/screens/printer_screen.dart';
+import 'package:setting/presentation/screens/profile_screen.dart';
+import 'package:setting/presentation/screens/security_screen.dart';
+import 'package:setting/presentation/screens/setting_screen.dart';
+import 'package:setting/presentation/screens/store_screen.dart';
 
-void main() => runApp(const MyApp());
+final GoRouter _router = GoRouter(
+  initialLocation: AppRoutes.settings,
+  routes: [
+    GoRoute(
+      path: AppRoutes.settings,
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.store,
+      builder: (context, state) => const StoreScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.printer,
+      builder: (context, state) => const PrinterScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.payment,
+      builder: (context, state) => const PaymentScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.profile,
+      builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.notificationSetting,
+      builder: (context, state) => const NotificationSettingScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.security,
+      builder: (context, state) => const SecurityScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.help,
+      builder: (context, state) => const HelpScreen(),
+    ),
+  ],
+);
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or press Run > Flutter Hot Reload in a Flutter IDE). Notice that the
-        // counter didn't reset back to zero; the application is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+void main() {
+  configureSettingDatabaseSchema();
+  runApp(
+    ProviderScope(
+      overrides: [
+        settingRemoteDataSourceProvider.overrideWithValue(
+          _PreviewSettingRemoteDataSource(),
         ),
+        receiptPrinterServiceProvider.overrideWithValue(
+          _PreviewReceiptPrinterService(),
+        ),
+      ],
+      child: const SettingPreviewApp(),
+    ),
+  );
+}
+
+class SettingPreviewApp extends StatelessWidget {
+  const SettingPreviewApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: 'Setting Preview',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: AppSetting.primaryColor),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      routerConfig: _router,
     );
+  }
+}
+
+class _PreviewSettingRemoteDataSource implements SettingRemoteDataSource {
+  SettingConfigModel _config = SettingConfigModel.fromJson(const {
+    'store': {
+      'store_name': 'SB Coffee',
+      'branch': 'Jakarta Selatan',
+      'address': 'Jl. Sudirman No. 45, SCBD, Jakarta Selatan',
+      'phone': '0812-3456-7890',
+    },
+    'printer': {
+      'auto_print': true,
+      'print_logo': true,
+      'paper_width': '80mm',
+      'devices': [
+        {
+          'name': 'Epson TM-T82',
+          'subtitle': 'Terhubung',
+          'is_connected': true,
+        },
+      ],
+    },
+    'payment_methods': [
+      {'id': 1, 'name': 'Tunai (Cash)', 'is_active': true},
+      {'id': 2, 'name': 'QRIS', 'is_active': true},
+      {'id': 3, 'name': 'Kartu Debit', 'is_active': true},
+      {'id': 4, 'name': 'Kartu Kredit', 'is_active': false},
+      {'id': 5, 'name': 'Transfer Bank', 'is_active': false},
+    ],
+    'profile': {
+      'name': 'Budi Santoso',
+      'employee_id': 'EMP-2023-001',
+      'email': 'budi@sbpos.com',
+      'phone': '0812-9999-8888',
+    },
+    'notifications': {
+      'push_notification': true,
+      'transaction_sound': true,
+      'stock_alert': true,
+    },
+    'security': {
+      'old_pin': '',
+      'new_pin': '',
+      'confirm_pin': '',
+    },
+    'version_label': 'SBPOS App v2',
+  });
+
+  @override
+  Future<SettingConfigModel> getSettingConfig() async => _config;
+
+  @override
+  Future<NotificationPreferencesModel> updateNotificationPreferences(
+    NotificationPreferencesModel notificationPreferences,
+  ) async {
+    _config = SettingConfigModel(
+      store: _config.store,
+      printer: _config.printer,
+      paymentMethods: _config.paymentMethods,
+      profile: _config.profile,
+      notifications: notificationPreferences,
+      security: _config.security,
+      versionLabel: _config.versionLabel,
+    );
+    return notificationPreferences;
+  }
+
+  @override
+  Future<List<PaymentMethodModel>> updatePaymentMethods(
+    List<PaymentMethodModel> paymentMethods,
+  ) async {
+    _config = SettingConfigModel(
+      store: _config.store,
+      printer: _config.printer,
+      paymentMethods: paymentMethods,
+      profile: _config.profile,
+      notifications: _config.notifications,
+      security: _config.security,
+      versionLabel: _config.versionLabel,
+    );
+    return paymentMethods;
+  }
+
+  @override
+  Future<PrinterSettingsModel> updatePrinterSettings(
+    PrinterSettingsModel printerSettings,
+  ) async {
+    _config = SettingConfigModel(
+      store: _config.store,
+      printer: printerSettings,
+      paymentMethods: _config.paymentMethods,
+      profile: _config.profile,
+      notifications: _config.notifications,
+      security: _config.security,
+      versionLabel: _config.versionLabel,
+    );
+    return printerSettings;
+  }
+
+  @override
+  Future<ProfileSettingsModel> updateProfileSettings(
+    ProfileSettingsModel profileSettings,
+  ) async {
+    _config = SettingConfigModel(
+      store: _config.store,
+      printer: _config.printer,
+      paymentMethods: _config.paymentMethods,
+      profile: profileSettings,
+      notifications: _config.notifications,
+      security: _config.security,
+      versionLabel: _config.versionLabel,
+    );
+    return profileSettings;
+  }
+
+  @override
+  Future<bool> updateSecuritySettings(
+    SecuritySettingsModel securitySettings,
+  ) async {
+    return true;
+  }
+
+  @override
+  Future<StoreInfoModel> updateStoreInfo(StoreInfoModel storeInfo) async {
+    _config = SettingConfigModel(
+      store: storeInfo,
+      printer: _config.printer,
+      paymentMethods: _config.paymentMethods,
+      profile: _config.profile,
+      notifications: _config.notifications,
+      security: _config.security,
+      versionLabel: _config.versionLabel,
+    );
+    return storeInfo;
+  }
+}
+
+class _PreviewReceiptPrinterService implements ReceiptPrinterService {
+  ReceiptPrinterConfig? _config;
+
+  @override
+  Future<ReceiptPrintResult> printReceipt(ReceiptPrintJob job) async {
+    if (_config?.isConnected != true) {
+      return const ReceiptPrintResult.failure('Printer belum terhubung');
+    }
+
+    return const ReceiptPrintResult.success('Struk berhasil dicetak');
+  }
+
+  @override
+  Future<ReceiptPrintResult> printTestReceipt() async {
+    if (_config?.isConnected != true) {
+      return const ReceiptPrintResult.failure('Printer belum terhubung');
+    }
+
+    return const ReceiptPrintResult.success('Test print berhasil');
+  }
+
+  @override
+  Future<void> syncConfig(ReceiptPrinterConfig config) async {
+    _config = config;
   }
 }

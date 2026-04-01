@@ -23,13 +23,16 @@ void main() {
       await db.close();
     });
 
-    test('getSettingConfig mengembalikan initial config bila tabel kosong',
+    test('getSettingConfig men-seed config default ke db lokal bila tabel kosong',
         () async {
       final config = await local.getSettingConfig();
+      final rows = await db.query(SettingTable.tableName);
 
       expect(config.store.storeName, equals('SB Coffee'));
       expect(config.paymentMethods.length, equals(5));
       expect(config.security.oldPin, isEmpty);
+      expect(rows.length, equals(1));
+      expect(rows.first['store_name'], equals('SB Coffee'));
     });
 
     test('saveSettingConfig langsung tersimpan ke db lokal', () async {

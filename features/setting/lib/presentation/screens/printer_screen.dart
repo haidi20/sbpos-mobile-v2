@@ -1,18 +1,16 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
+import 'package:setting/presentation/view_models/setting.state.dart';
+import 'package:setting/presentation/view_models/setting.vm.dart';
 
-class PrinterScreen extends StatefulWidget {
+class PrinterScreen extends ConsumerWidget {
   const PrinterScreen({super.key});
 
   @override
-  State<PrinterScreen> createState() => _PrinterScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final printerState = ref.watch(settingPrinterStateProvider);
+    final viewModel = ref.read(settingViewModelProvider.notifier);
 
-class _PrinterScreenState extends State<PrinterScreen> {
-  bool autoPrint = true;
-  bool printLogo = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -29,35 +27,52 @@ class _PrinterScreenState extends State<PrinterScreen> {
         leading: context.canPop()
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  // Aksi: Pop halaman saat ini dari tumpukan
-                  context.pop();
-                },
+                onPressed: () => context.pop(),
               )
-            : null, // Jika tidak ada history, tombol leading tidak muncul
+            : null,
         shadowColor: Colors.grey.shade50,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Searching Animation Mock
             _buildSearch(),
             const SizedBox(height: 24),
-
-            // Connected Device
-            _buildDeviceList(),
+            _buildDeviceList(
+              context: context,
+              devices: printerState.devices,
+              onDisconnect: (deviceName) {
+                viewModel.setPrinterConnected(deviceName, false);
+                final latestState = ref.read(settingViewModelProvider).printer;
+                showWarningSnackBar(context, latestState.message);
+              },
+            ),
             const SizedBox(height: 24),
-
-            // Print Settings
-            _buildPrintSetting(),
-
+            _buildPrintSetting(
+              printerState: printerState,
+              viewModel: viewModel,
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () {},
+                key: const Key('printer-test-print-button'),
+                onPressed: () async {
+                  final ok = await viewModel.onTestPrint();
+                  final latestState = ref.read(settingPrinterStateProvider);
+
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  if (ok) {
+                    showSuccessSnackBar(context, latestState.message);
+                  } else {
+                    showErrorSnackBar(context, latestState.message);
+                  }
+                },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.sbBlue,
                   side: const BorderSide(color: AppColors.sbBlue),
@@ -97,7 +112,11 @@ class _PrinterScreenState extends State<PrinterScreen> {
     );
   }
 
-  Widget _buildSwitchTile(String title, bool value, Function(bool) onChanged) {
+  Widget _buildSwitchTile(
+    String title,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return SwitchListTile(
       value: value,
       onChanged: onChanged,
@@ -165,75 +184,101 @@ class _PrinterScreenState extends State<PrinterScreen> {
     );
   }
 
-  Widget _buildDeviceList() {
-    return Row(
+  Widget _buildDeviceList({
+    required BuildContext context,
+    required List<PrinterDeviceState> devices,
+    required ValueChanged<String> onDisconnect,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildSectionHeader('Perangkat Terhubung'),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.grey.shade200,
+        if (devices.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: const Text(
+              'Belum ada printer yang tersedia pada sesi ini',
+              style: TextStyle(fontSize: 14),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.print,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Epson TM-T82',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'Terhubung',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+        ...devices.map((device) {
+          final statusColor = device.isConnected ? Colors.green : Colors.grey;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.grey.shade200,
               ),
-              TextButton(
-                onPressed: () {
-                  //
-                },
-                style: TextButton.styleFrom(
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.print,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          device.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          device.subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                TextButton(
+                  onPressed: device.isConnected ? () => onDisconnect(device.name) : null,
+                  style: TextButton.styleFrom(
                     backgroundColor: Colors.red.shade50,
-                    foregroundColor: Colors.red),
-                child: const Text(
-                  'Putus',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    foregroundColor: Colors.red,
+                  ),
+                  child: Text(
+                    device.isConnected ? 'Putus' : 'Nonaktif',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildPrintSetting() {
-    return Row(
+  Widget _buildPrintSetting({
+    required PrinterSettingsState printerState,
+    required SettingViewModel viewModel,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildSectionHeader('Pengaturan Cetak'),
         Container(
@@ -246,18 +291,14 @@ class _PrinterScreenState extends State<PrinterScreen> {
             children: [
               _buildSwitchTile(
                 'Auto Print Struk',
-                autoPrint,
-                (v) => setState(
-                  () => autoPrint = v,
-                ),
+                printerState.autoPrint,
+                viewModel.setPrinterAutoPrint,
               ),
               const Divider(height: 1),
               _buildSwitchTile(
                 'Cetak Logo Toko',
-                printLogo,
-                (v) => setState(
-                  () => printLogo = v,
-                ),
+                printerState.printLogo,
+                viewModel.setPrinterPrintLogo,
               ),
               const Divider(height: 1),
               ListTile(
@@ -270,14 +311,23 @@ class _PrinterScreenState extends State<PrinterScreen> {
                 ),
                 trailing: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: '80mm',
+                    value: printerState.paperWidth,
                     items: ['58mm', '80mm']
-                        .map((e) => DropdownMenuItem(
-                            value: e,
-                            child:
-                                Text(e, style: const TextStyle(fontSize: 12))))
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        )
                         .toList(),
-                    onChanged: (v) {},
+                    onChanged: (value) {
+                      if (value != null) {
+                        viewModel.setPrinterPaperWidth(value);
+                      }
+                    },
                   ),
                 ),
               ),

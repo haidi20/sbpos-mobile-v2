@@ -2,6 +2,7 @@ import 'package:core/core.dart';
 import 'package:setting/data/datasources/setting_local.data_source.dart';
 import 'package:setting/data/datasources/setting_remote.data_source.dart';
 import 'package:setting/data/models/setting_config.model.dart';
+import 'package:setting/data/seeders/setting_local.seeder.dart';
 import 'package:setting/domain/entities/setting_config.entity.dart';
 
 StoreInfoEntity buildStoreInfoEntity() {
@@ -75,7 +76,11 @@ SettingConfigEntity buildSettingConfigEntity() {
     paymentMethods: buildPaymentMethodEntities(),
     profile: buildProfileSettingsEntity(),
     notifications: buildNotificationPreferencesEntity(),
-    security: const SecuritySettingsEntity.initial(),
+    security: const SecuritySettingsEntity(
+      oldPin: '',
+      newPin: '',
+      confirmPin: '',
+    ),
     versionLabel: 'SBPOS App v2.1.0',
   );
 }
@@ -242,7 +247,7 @@ class FakeSettingLocalDataSource extends SettingLocalDataSource {
   @override
   Future<int> clearSettings() async {
     clearCallCount += 1;
-    storedConfig = SettingConfigModel.initial();
+    storedConfig = const SettingLocalSeeder().buildInitialConfig();
     return 1;
   }
 }

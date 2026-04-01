@@ -1,11 +1,20 @@
 import 'package:core/core.dart';
 import 'package:setting/presentation/component/setting_item.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
+import 'package:setting/presentation/view_models/setting.state.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profileCard = ref.watch(settingProfileCardStateProvider);
+    final storeSummary = ref.watch(settingStoreSummaryProvider);
+    final printerSummary = ref.watch(settingPrinterSummaryProvider);
+    final paymentSummary = ref.watch(settingPaymentSummaryProvider);
+    final notificationSummary = ref.watch(settingNotificationSummaryProvider);
+    final versionLabel = ref.watch(settingVersionLabelProvider);
+
     return Scaffold(
       backgroundColor: AppColors.sbBg,
       body: SafeArea(
@@ -16,13 +25,16 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => context.pop(),
-                  ),
+                  if (context.canPop())
+                    IconButton(
+                      key: const Key('settings-back-button'),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => context.pop(),
+                    ),
                   const SizedBox(width: 8),
                   const Text(
                     'Pengaturan',
+                    key: Key('settings-title'),
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -32,31 +44,34 @@ class SettingsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               // --- Profile Card ---
-              _buildProfileCard(),
+              _buildProfileCard(profileCard),
               const SizedBox(height: 24),
               // --- Group: Toko & Perangkat ---
               _buildSectionHeader('Toko & Perangkat'),
               _buildGroupContainer([
                 SettingItem(
+                  key: const Key('settings-store-item'),
                   icon: Icons.store_outlined,
                   label: 'Informasi Toko',
-                  subLabel: 'SB Coffee - Samarinda Ulu',
+                  subLabel: storeSummary,
                   iconColor: AppColors.sbBlue,
                   onTap: () => context.push(AppRoutes.store),
                 ),
                 const Divider(height: 1),
                 SettingItem(
+                  key: const Key('settings-printer-item'),
                   icon: Icons.print_outlined,
                   label: 'Printer & Struk',
-                  subLabel: 'Epson TM-T82 (Connected)',
+                  subLabel: printerSummary,
                   iconColor: AppColors.sbOrange,
                   onTap: () => context.push(AppRoutes.printer),
                 ),
                 const Divider(height: 1),
                 SettingItem(
+                  key: const Key('settings-payment-item'),
                   icon: Icons.credit_card_outlined,
                   label: 'Metode Pembayaran',
-                  subLabel: 'QRIS, Tunai, Kartu Debit',
+                  subLabel: paymentSummary,
                   iconColor: Colors.purple,
                   onTap: () => context.push(AppRoutes.payment),
                 ),
@@ -66,19 +81,22 @@ class SettingsScreen extends ConsumerWidget {
               _buildSectionHeader('Akun & Keamanan'),
               _buildGroupContainer([
                 SettingItem(
+                  key: const Key('settings-profile-item'),
                   icon: Icons.person_outline,
                   label: 'Ubah Profil',
                   onTap: () => context.push(AppRoutes.profile),
                 ),
                 const Divider(height: 1),
                 SettingItem(
+                  key: const Key('settings-notification-item'),
                   icon: Icons.notifications_outlined,
                   label: 'Notifikasi',
-                  subLabel: 'Bunyi & Getar Aktif',
+                  subLabel: notificationSummary,
                   onTap: () => context.push(AppRoutes.notificationSetting),
                 ),
                 const Divider(height: 1),
                 SettingItem(
+                  key: const Key('settings-security-item'),
                   icon: Icons.lock_outline,
                   label: 'Ubah PIN / Password',
                   onTap: () => context.push(AppRoutes.security),
@@ -92,15 +110,15 @@ class SettingsScreen extends ConsumerWidget {
               _buildGroupContainer(
                 [
                   SettingItem(
+                    key: const Key('settings-help-item'),
                     icon: Icons.help_outline,
                     label: 'Bantuan Pengguna',
                     onTap: () => context.push(AppRoutes.help),
                   ),
                   const Divider(height: 1),
                   InkWell(
-                    onTap: () {
-                      // Logic Logout
-                    },
+                    key: const Key('settings-logout-item'),
+                    onTap: () => _showLogoutConfirmation(context),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
@@ -142,7 +160,7 @@ class SettingsScreen extends ConsumerWidget {
 
               const SizedBox(height: 32),
               Text(
-                'SBPOS App v2',
+                versionLabel,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
@@ -156,7 +174,33 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileCard() {
+  Future<void> _showLogoutConfirmation(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Keluar Aplikasi'),
+          content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Tidak'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Ya'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      context.go(AppRoutes.login);
+    }
+  }
+
+  Widget _buildProfileCard(SettingProfileCardState profileCard) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -176,10 +220,8 @@ class SettingsScreen extends ConsumerWidget {
                 color: Colors.white,
                 width: 2,
               ),
-              image: const DecorationImage(
-                image: NetworkImage(
-                  "https://picsum.photos/200/200?random=user",
-                ),
+              image: DecorationImage(
+                image: NetworkImage(profileCard.avatarUrl),
                 fit: BoxFit.cover,
               ),
             ),
@@ -189,12 +231,15 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Budi Santoso',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  profileCard.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
-                  'Kasir - Shift Pagi',
+                  profileCard.role,
                   style: TextStyle(
                     color: Colors.grey.shade500,
                     fontSize: 14,
@@ -210,7 +255,7 @@ class SettingsScreen extends ConsumerWidget {
                     border: Border.all(color: Colors.green.shade100),
                   ),
                   child: Text(
-                    'Online',
+                    profileCard.statusLabel,
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -230,6 +275,7 @@ class SettingsScreen extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 8, bottom: 8),
       child: Text(
         title.toUpperCase(),
+        key: Key('settings-section-$title'),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,

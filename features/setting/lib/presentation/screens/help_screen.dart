@@ -1,10 +1,14 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
 
-class HelpScreen extends StatelessWidget {
+class HelpScreen extends ConsumerWidget {
   const HelpScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final helpState = ref.watch(settingHelpStateProvider);
+    final viewModel = ref.read(settingViewModelProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -47,31 +51,37 @@ class HelpScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'Butuh Bantuan?',
-                    style: TextStyle(
+                  Text(
+                    helpState.title,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Tim support kami siap membantu 24/7',
-                    style: TextStyle(
+                  Text(
+                    helpState.subtitle,
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {},
+                    key: const Key('help-chat-button'),
+                    onPressed: () {
+                      showWarningSnackBar(
+                        context,
+                        'Chat support belum tersedia pada build ini',
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppColors.sbBlue,
                       shape: const StadiumBorder(),
                     ),
-                    child: const Text('Chat WhatsApp'),
+                    child: Text(helpState.buttonLabel),
                   ),
                 ],
               ),
@@ -97,39 +107,50 @@ class HelpScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
-                children: [
-                  _buildFaqItem('Cara menghubungkan printer?'),
-                  const Divider(height: 1),
-                  _buildFaqItem('Bagaimana cara refund transaksi?'),
-                  const Divider(height: 1),
-                  _buildFaqItem('Lupa PIN akses?'),
-                  const Divider(height: 1),
-                  _buildFaqItem('Cara export laporan ke Excel?'),
-                ],
+                children: helpState.faqs.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final faq = entry.value;
+
+                  return Column(
+                    children: [
+                      ExpansionTile(
+                        key: Key('help-faq-$index'),
+                        title: Text(
+                          faq.question,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        initiallyExpanded: faq.isExpanded,
+                        onExpansionChanged: (expanded) {
+                          viewModel.setFaqExpanded(index, expanded);
+                        },
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: Text(
+                              faq.answer,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (index != helpState.faqs.length - 1)
+                        const Divider(height: 1),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildFaqItem(String text) {
-    return ListTile(
-      title: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        size: 18,
-        color: Colors.grey,
-      ),
-      onTap: () {},
     );
   }
 }

@@ -1,13 +1,43 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
 
-class SecurityScreen extends StatelessWidget {
+class SecurityScreen extends ConsumerStatefulWidget {
   const SecurityScreen({super.key});
 
-  final String textWarning =
+  @override
+  ConsumerState<SecurityScreen> createState() => _SecurityScreenState();
+}
+
+class _SecurityScreenState extends ConsumerState<SecurityScreen> {
+  static const String _textWarning =
       'Untuk keamanan, ganti PIN atau Password Anda secara berkala. Jangan berikan kode akses kepada siapapun.';
+
+  late final TextEditingController _oldPinController;
+  late final TextEditingController _newPinController;
+  late final TextEditingController _confirmPinController;
+
+  @override
+  void initState() {
+    super.initState();
+    final securityState = ref.read(settingSecurityStateProvider);
+    _oldPinController = TextEditingController(text: securityState.oldPin);
+    _newPinController = TextEditingController(text: securityState.newPin);
+    _confirmPinController =
+        TextEditingController(text: securityState.confirmPin);
+  }
+
+  @override
+  void dispose() {
+    _oldPinController.dispose();
+    _newPinController.dispose();
+    _confirmPinController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = ref.read(settingViewModelProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -24,12 +54,9 @@ class SecurityScreen extends StatelessWidget {
         leading: context.canPop()
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  // Aksi: Pop halaman saat ini dari tumpukan
-                  context.pop();
-                },
+                onPressed: () => context.pop(),
               )
-            : null, // Jika tidak ada history, tombol leading tidak muncul
+            : null,
         shadowColor: Colors.grey.shade50,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
@@ -45,7 +72,7 @@ class SecurityScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                textWarning,
+                _textWarning,
                 style: TextStyle(
                   height: 1.5,
                   fontSize: 12,
@@ -54,14 +81,44 @@ class SecurityScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _buildPasswordField('PIN Lama'),
-            _buildPasswordField('PIN Baru'),
-            _buildPasswordField('Konfirmasi PIN Baru'),
+            _buildPasswordField(
+              'PIN Lama',
+              _oldPinController,
+              onChanged: viewModel.setSecurityOldPin,
+            ),
+            _buildPasswordField(
+              'PIN Baru',
+              _newPinController,
+              onChanged: viewModel.setSecurityNewPin,
+            ),
+            _buildPasswordField(
+              'Konfirmasi PIN Baru',
+              _confirmPinController,
+              onChanged: viewModel.setSecurityConfirmPin,
+            ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                key: const Key('security-save-button'),
+                onPressed: () async {
+                  final ok = await viewModel.onUpdateSecurity();
+                  final latestSecurity = ref.read(settingSecurityStateProvider);
+
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  if (ok) {
+                    _oldPinController.clear();
+                    _newPinController.clear();
+                    _confirmPinController.clear();
+                    showSuccessSnackBar(context, latestSecurity.successMessage);
+                    context.pop();
+                  } else {
+                    showErrorSnackBar(context, latestSecurity.errorMessage);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.sbBlue,
                   foregroundColor: Colors.white,
@@ -84,7 +141,11 @@ class SecurityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordField(String label) {
+  Widget _buildPasswordField(
+    String label,
+    TextEditingController controller, {
+    ValueChanged<String>? onChanged,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -100,14 +161,18 @@ class SecurityScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           TextFormField(
+            controller: controller,
             obscureText: true,
+            keyboardType: TextInputType.number,
+            onChanged: onChanged,
             decoration: InputDecoration(
               hintText: '******',
               filled: true,
               fillColor: Colors.grey.shade50,
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(

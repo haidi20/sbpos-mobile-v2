@@ -1,10 +1,42 @@
 import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
 
-class StoreScreen extends StatelessWidget {
+class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
   @override
+  ConsumerState<StoreScreen> createState() => _StoreScreenState();
+}
+
+class _StoreScreenState extends ConsumerState<StoreScreen> {
+  late final TextEditingController _storeNameController;
+  late final TextEditingController _branchController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    final storeState = ref.read(settingStoreStateProvider);
+    _storeNameController = TextEditingController(text: storeState.storeName);
+    _branchController = TextEditingController(text: storeState.branch);
+    _addressController = TextEditingController(text: storeState.address);
+    _phoneController = TextEditingController(text: storeState.phone);
+  }
+
+  @override
+  void dispose() {
+    _storeNameController.dispose();
+    _branchController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final viewModel = ref.read(settingViewModelProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -73,28 +105,47 @@ class StoreScreen extends StatelessWidget {
             // Forms
             _buildTextField(
               'Nama Toko',
-              'SB Coffee',
+              _storeNameController,
+              onChanged: viewModel.setStoreName,
             ),
             _buildTextField(
               'Cabang',
-              'Jakarta Selatan',
+              _branchController,
+              onChanged: viewModel.setStoreBranch,
             ),
             _buildTextField(
               'Alamat Lengkap',
-              'Jl. Sudirman No. 45, SCBD, Jakarta Selatan',
+              _addressController,
               maxLines: 3,
+              onChanged: viewModel.setStoreAddress,
             ),
             _buildTextField(
               'Nomor Telepon',
-              '0812-3456-7890',
+              _phoneController,
               keyboardType: TextInputType.phone,
+              onChanged: viewModel.setStorePhone,
             ),
 
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => Navigator.pop(context),
+                key: const Key('store-save-button'),
+                onPressed: () async {
+                  final ok = await viewModel.onSaveStoreInfo();
+                  final latestStore = ref.read(settingStoreStateProvider);
+
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  if (ok) {
+                    showSuccessSnackBar(context, latestStore.successMessage);
+                    context.pop();
+                  } else {
+                    showErrorSnackBar(context, latestStore.errorMessage);
+                  }
+                },
                 icon: const Icon(
                   size: 18,
                   Icons.save,
@@ -118,9 +169,10 @@ class StoreScreen extends StatelessWidget {
 
   Widget _buildTextField(
     String label,
-    String initialValue, {
+    TextEditingController controller, {
     int maxLines = 1,
     TextInputType? keyboardType,
+    ValueChanged<String>? onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -137,9 +189,10 @@ class StoreScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           TextFormField(
-            initialValue: initialValue,
+            controller: controller,
             maxLines: maxLines,
             keyboardType: keyboardType,
+            onChanged: onChanged,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.shade50,
