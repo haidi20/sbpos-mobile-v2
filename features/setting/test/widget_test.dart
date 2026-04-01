@@ -1,30 +1,64 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:core/core.dart';
+import 'package:setting/presentation/providers/setting.provider.dart';
+import 'package:setting/presentation/screens/payment_screen.dart';
 
-import 'package:setting/main.dart';
+import 'setting_test_fixtures.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('PaymentScreen menampilkan metode pembayaran dan toggle state',
+      (WidgetTester tester) async {
+    final router = GoRouter(
+      initialLocation: '/payment',
+      routes: [
+        GoRoute(
+          path: '/payment',
+          builder: (context, state) => const PaymentScreen(),
+        ),
+      ],
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          settingRemoteDataSourceProvider.overrideWithValue(
+            FakeSettingRemoteDataSource(),
+          ),
+          settingLocalDataSourceProvider.overrideWithValue(
+            FakeSettingLocalDataSource(),
+          ),
+          receiptPrinterServiceProvider.overrideWithValue(
+            FakeReceiptPrinterService(),
+          ),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+        ),
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    expect(find.text('Tunai (Cash)'), findsOneWidget);
+    expect(find.text('Transfer Bank'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final containerBefore = tester.widget<AnimatedContainer>(
+      find.ancestor(
+        of: find.text('Transfer Bank'),
+        matching: find.byType(AnimatedContainer),
+      ),
+    );
+    final boxBefore = containerBefore.decoration! as BoxDecoration;
+    expect(boxBefore.color, equals(Colors.white));
+
+    await tester.tap(find.byKey(const Key('payment-method-5')));
+    await tester.pumpAndSettle();
+
+    final containerAfter = tester.widget<AnimatedContainer>(
+      find.ancestor(
+        of: find.text('Transfer Bank'),
+        matching: find.byType(AnimatedContainer),
+      ),
+    );
+    final boxAfter = containerAfter.decoration! as BoxDecoration;
+    expect(boxAfter.color, equals(Colors.blue.shade50));
   });
 }
