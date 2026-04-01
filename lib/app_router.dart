@@ -1,25 +1,27 @@
-import 'package:core/core.dart';
 import 'package:core/presentation/screens/coming_soon.dart';
 import 'package:core/presentation/screens/login_screen.dart';
 import 'package:core/presentation/screens/webhook_realtime_test_screen.dart';
+import 'package:core/utils/app_routes.dart';
+import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
+import 'package:dashboard/presentation/screens/report_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:notification/presentation/screens/notification_screen.dart';
 import 'package:product/domain/entities/packet.entity.dart';
+import 'package:product/presentation/screens/inventory_screen.dart';
+import 'package:product/presentation/screens/packet_management.screen.dart';
+import 'package:product/presentation/screens/packet_management_form.screen.dart';
+import 'package:product/presentation/screens/product_management.screen.dart';
 import 'package:setting/presentation/screens/help_screen.dart';
-import 'package:setting/presentation/screens/store_screen.dart';
-import 'package:setting/presentation/screens/setting_screen.dart';
+import 'package:setting/presentation/screens/notification_setting_screen.dart';
 import 'package:setting/presentation/screens/payment_screen.dart';
 import 'package:setting/presentation/screens/printer_screen.dart';
 import 'package:setting/presentation/screens/profile_screen.dart';
 import 'package:setting/presentation/screens/security_screen.dart';
-import 'package:dashboard/presentation/screens/report_screen.dart';
-import 'package:product/presentation/screens/inventory_screen.dart';
-import 'package:dashboard/presentation/screens/main_dashboard_screen.dart';
-import 'package:product/presentation/screens/packet_management.screen.dart';
-import 'package:notification/presentation/screens/notification_screen.dart';
-import 'package:product/presentation/screens/product_management.screen.dart';
-import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
-import 'package:setting/presentation/screens/notification_setting_screen.dart';
-import 'package:product/presentation/screens/packet_management_form.screen.dart';
+import 'package:setting/presentation/screens/setting_screen.dart';
+import 'package:setting/presentation/screens/store_screen.dart';
 import 'package:transaction/presentation/screens/transaction_history.screen.dart';
+import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 
 class AppRouter {
   static final AppRouter _instance = AppRouter._();
@@ -33,7 +35,6 @@ class AppRouter {
       redirect: (context, state) {
         if (state.matchedLocation == '/') {
           return AppRoutes.login;
-          // return AppRoutes.productManagement;
         }
         return null;
       },
@@ -115,7 +116,6 @@ class AppRouter {
             );
           },
         ),
-        // Rute Pengaturan Utama (SettingScreen)
         GoRoute(
           path: AppRoutes.settings,
           name: AppRoutes.settings,
@@ -123,9 +123,6 @@ class AppRouter {
             return const MaterialPage(child: SettingsScreen());
           },
         ),
-
-        // --- Rute-rute Tambahan untuk Modul Setting ---
-
         GoRoute(
           path: AppRoutes.profile,
           name: AppRoutes.profile,
@@ -161,7 +158,6 @@ class AppRouter {
             return const MaterialPage(child: PrinterScreen());
           },
         ),
-        // Gunakan alias jika nama AppRoutes.notificationConflicting dengan yang sudah ada
         GoRoute(
           path: AppRoutes.notificationSetting,
           name: AppRoutes.notificationSetting,
@@ -176,9 +172,6 @@ class AppRouter {
             return const MaterialPage(child: HelpScreen());
           },
         ),
-
-        // --- Akhir Rute-rute Modul Setting ---
-
         GoRoute(
           path: AppRoutes.comingSoonScreen,
           name: AppRoutes.comingSoonScreen,

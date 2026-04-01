@@ -39,23 +39,6 @@ dependencies:
   web_socket_channel: ^3.0.1
   uuid: ^4.5.2
 
-  # fitur (paket path lokal)
-  dashboard:
-    path: ../features/dashboard
-  landing_page_menu:
-    path: ../features/landing_page_menu
-  outlet:
-    path: ../features/outlet
-  transaction:
-    path: ../features/transaction
-  product:
-    path: ../features/product
-  notification:
-    path: ../features/notification
-  setting:
-    path: ../features/setting
-  customer:
-    path: ../features/customer
   dotted_border: ^2.1.0
 
 dev_dependencies:

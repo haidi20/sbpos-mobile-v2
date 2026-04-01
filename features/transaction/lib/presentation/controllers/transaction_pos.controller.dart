@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
+import 'package:product/presentation/providers/packet.provider.dart';
 import 'package:product/presentation/providers/product.provider.dart';
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
@@ -71,6 +72,9 @@ class TransactionPosController {
         try {
           ref.read(productAfterCrudHookProvider.notifier).state = () {
             return _vm.refreshProducts();
+          };
+          ref.read(packetAfterCrudHookProvider.notifier).state = () {
+            return _vm.refreshPackets();
           };
         } catch (_) {}
       });

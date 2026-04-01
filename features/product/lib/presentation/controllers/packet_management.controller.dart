@@ -28,7 +28,6 @@ class PacketManagementController {
   /// Initialize controller. Prefer using [packetId] so VM/usecase loads the
   /// full packet entity. If [packet] is provided, it will be used directly.
   Future<void> init({PacketEntity? packet, int? packetId}) async {
-    _loadProducts();
     if (packet != null) {
       final p = packet;
       nameCtrl.text = p.name ?? '';
@@ -38,6 +37,8 @@ class PacketManagementController {
       ref.read(packetManagementViewModelProvider.notifier).setDraft(p);
       return;
     }
+
+    await _loadProducts();
 
     if (packetId != null) {
       // Load via usecase (offline) through provider

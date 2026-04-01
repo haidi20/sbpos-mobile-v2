@@ -4,6 +4,20 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 // ignore: constant_identifier_names
 const String API = "api";
 // ignore: non_constant_identifier_names
-final String HOST = dotenv.env['BASE_URL'] ?? "https://retribusi.utamaweb.com";
+String get HOST => _readEnvOrDefault(
+      key: 'BASE_URL',
+      fallback: 'https://retribusi.utamaweb.com',
+    );
 // ignore: constant_identifier_names
 const String CONNECT_STATUS = "connectStatus";
+
+String _readEnvOrDefault({
+  required String key,
+  required String fallback,
+}) {
+  try {
+    return dotenv.env[key] ?? fallback;
+  } catch (_) {
+    return fallback;
+  }
+}

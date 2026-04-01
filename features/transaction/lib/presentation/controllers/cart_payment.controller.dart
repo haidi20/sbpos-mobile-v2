@@ -100,6 +100,7 @@ class CartPaymentController {
     final historyNotifier =
         ref.read(transactionHistoryViewModelProvider.notifier);
     final dashboardNotifier = ref.read(dashboardViewModelProvider.notifier);
+    final router = GoRouter.of(context);
 
     // Tutup `CartBottomSheet` jika terbuka sebelum proses, supaya UI kembali ke layar utama.
     try {
@@ -119,7 +120,7 @@ class CartPaymentController {
     } catch (_) {}
 
     dashboardNotifier.onTabChange(AppTab.orders);
-    AppRouter.instance.router.go(AppRoutes.dashboard);
+    router.go(AppRoutes.dashboard);
   }
 
   /// Mulai mendengarkan perubahan state untuk menyinkronkan `cashController`.

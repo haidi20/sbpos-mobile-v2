@@ -3,7 +3,6 @@ export 'dart:convert';
 
 // utils
 export 'utils/theme.dart';
-export 'utils/app_router.dart';
 export 'utils/app_routes.dart';
 export 'utils/helpers/failure.dart';
 export 'utils/helpers/helpers.dart';

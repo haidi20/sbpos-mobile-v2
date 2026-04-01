@@ -5,7 +5,6 @@ import 'package:product/domain/usecases/create_packet.usecase.dart';
 import 'package:product/domain/usecases/update_packet.usecase.dart';
 import 'package:product/domain/usecases/delete_packet.usecase.dart';
 import 'package:product/presentation/view_models/packet_management.vm.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:product/presentation/view_models/packet_management.state.dart';
 import 'package:product/presentation/providers/product_repository.provider.dart';
 import 'package:product/presentation/providers/product.provider.dart'
@@ -49,9 +48,9 @@ final packetManagementViewModelProvider =
   Future<void> onAfterCrudWrapper() async {
     packetRefreshDebounce?.cancel();
     packetRefreshDebounce = Timer(const Duration(milliseconds: 300), () {
-      final f =
-          ref.read(transactionPosViewModelProvider.notifier).refreshPackets();
-      unawaited(f.catchError((e, st) =>
+      final hook = ref.read(packetAfterCrudHookProvider);
+      final f = hook?.call();
+      unawaited(f?.catchError((e, st) =>
           Logger('PacketProvider').warning('refreshPackets failed', e, st)));
     });
     return Future.value();
@@ -66,3 +65,7 @@ final packetManagementViewModelProvider =
     onAfterCrud: onAfterCrudWrapper,
   );
 });
+
+final packetAfterCrudHookProvider = StateProvider<Future<void> Function()?>(
+  (ref) => null,
+);

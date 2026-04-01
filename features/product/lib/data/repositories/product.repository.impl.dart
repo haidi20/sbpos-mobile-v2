@@ -15,10 +15,15 @@ import 'package:product/data/datasources/db/product.table.dart'
 class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDataSource local;
   final ProductRemoteDataSource remote;
+  final NetworkInfo networkInfo;
 
   static final Logger _logger = Logger('ProductRepositoryImpl');
 
-  ProductRepositoryImpl({required this.remote, required this.local});
+  ProductRepositoryImpl({
+    required this.remote,
+    required this.local,
+    required this.networkInfo,
+  });
 
   Future<List<ProductEntity>> _getLocalEntities() async {
     final localResp = await local.getProducts();
@@ -95,7 +100,6 @@ class ProductRepositoryImpl implements ProductRepository {
       return Right(localEntities);
     }
 
-    final networkInfo = NetworkInfoImpl(Connectivity());
     final bool isConnected = await networkInfo.isConnected;
     if (isConnected) {
       try {
@@ -157,7 +161,6 @@ class ProductRepositoryImpl implements ProductRepository {
       return const Left(UnknownFailure());
     }
 
-    final networkInfo = NetworkInfoImpl(Connectivity());
     final bool isConnected = await networkInfo.isConnected;
     if (!isConnected) {
       final localModel = await local.getProductById(id);
@@ -215,7 +218,6 @@ class ProductRepositoryImpl implements ProductRepository {
         return Right(ProductEntity.fromModel(localInserted));
       }
 
-      final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
       if (!isConnected) {
         final localId = localInserted.id;
@@ -297,7 +299,6 @@ class ProductRepositoryImpl implements ProductRepository {
         return Right(ProductEntity.fromModel(localProd));
       }
 
-      final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
       if (!isConnected) {
         if (model.id != null) {
@@ -360,7 +361,6 @@ class ProductRepositoryImpl implements ProductRepository {
         return const Right(true);
       }
 
-      final networkInfo = NetworkInfoImpl(Connectivity());
       final bool isConnected = await networkInfo.isConnected;
       if (!isConnected) {
         return const Right(true);

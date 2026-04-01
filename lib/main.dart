@@ -1,20 +1,28 @@
-// main.dart
 import 'package:core/core.dart';
-// Provide simple local repository overrides on web so demo screens show data
+import 'package:sbpos_v2/app_database_schema.dart';
+import 'package:sbpos_v2/app_repository_overrides.dart';
+import 'package:sbpos_v2/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Try to load local env first to avoid 404s in web dev; fallback to .env
   try {
     await dotenv.load(fileName: '.env.local');
   } catch (_) {
     try {
       await dotenv.load(fileName: '.env');
     } catch (_) {
-      // both env files missing — continue without dotenv
+      // Both env files are optional in local/test runs.
     }
   }
-  runApp(const ProviderScope(child: MyApp()));
+
+  configureAppDatabaseSchema();
+
+  runApp(
+    ProviderScope(
+      overrides: buildAppRepositoryOverrides(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +30,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Gunakan instance singleton dari AppRouter
     final router = AppRouter.instance.router;
 
     return MaterialApp.router(
@@ -51,9 +58,16 @@ class MyApp extends StatelessWidget {
                   ),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: maxWidth),
-                    child: Container(color: Colors.white, child: child),
+                    child: Container(
+                      color: Colors.white,
+                      child: child,
+                    ),
                   ),
-                  Expanded(child: Container(color: Colors.grey[200])),
+                  Expanded(
+                    child: Container(
+                      color: Colors.grey[200],
+                    ),
+                  ),
                 ],
               );
             }

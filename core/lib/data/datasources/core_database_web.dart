@@ -1,4 +1,5 @@
-import 'package:core/core.dart';
+import 'package:core/data/datasources/core_database_schema_registry.dart';
+import 'package:logging/logging.dart';
 import 'local_database_sembast.dart' as sembast_db;
 
 /// Web CoreDatabase helper: perform one-time schema initialization for web
@@ -25,16 +26,7 @@ class CoreDatabase {
 
       // Ensure stores exist by creating a temporary metadata record then
       // clearing it. This guarantees the store is present for later ops.
-      final stores = [
-        'auth_users',
-        'outlets',
-        'packets',
-        'products',
-        'packet_items',
-        'transactions',
-        'transaction_details',
-        'customers',
-      ];
+      final stores = CoreDatabaseSchemaRegistry.instance.storeNames;
 
       for (final s in stores) {
         try {
