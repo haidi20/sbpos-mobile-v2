@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/screens/notification_setting_screen.dart';
-import '../../test_helpers.dart';
+import 'package:setting/testing/test_helpers.dart';
 
 void main() {
   testWidgets('NotificationSettingScreen menampilkan judul', (tester) async {

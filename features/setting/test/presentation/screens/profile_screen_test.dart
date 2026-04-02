@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/screens/profile_screen.dart';
 
-import '../../test_helpers.dart';
+import 'package:setting/testing/test_helpers.dart';
 
 void main() {
   testWidgets('ProfileScreen menampilkan judul dan tombol simpan',

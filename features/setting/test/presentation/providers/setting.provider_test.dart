@@ -12,7 +12,7 @@ import 'package:setting/domain/usecases/update_store_info.usecase.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/view_models/setting.vm.dart';
 
-import '../../setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   group('Setting provider injection', () {
@@ -226,8 +226,7 @@ void main() {
               .overrideWithValue(FakeSettingRemoteDataSource()),
           settingLocalDataSourceProvider
               .overrideWithValue(FakeSettingLocalDataSource()),
-          receiptPrinterServiceProvider
-              .overrideWithValue(FakeReceiptPrinterService()),
+          printerFacadeProvider.overrideWithValue(FakePrinterFacade()),
         ],
       );
       addTearDown(container.dispose);
@@ -250,8 +249,7 @@ void main() {
               .overrideWithValue(FakeSettingRemoteDataSource()),
           settingLocalDataSourceProvider
               .overrideWithValue(FakeSettingLocalDataSource()),
-          receiptPrinterServiceProvider
-              .overrideWithValue(FakeReceiptPrinterService()),
+          printerFacadeProvider.overrideWithValue(FakePrinterFacade()),
         ],
       );
       addTearDown(container.dispose);
@@ -274,8 +272,7 @@ void main() {
               .overrideWithValue(FakeSettingRemoteDataSource()),
           settingLocalDataSourceProvider
               .overrideWithValue(FakeSettingLocalDataSource()),
-          receiptPrinterServiceProvider
-              .overrideWithValue(FakeReceiptPrinterService()),
+          printerFacadeProvider.overrideWithValue(FakePrinterFacade()),
         ],
       );
       addTearDown(container.dispose);
@@ -296,8 +293,7 @@ void main() {
               .overrideWithValue(FakeSettingRemoteDataSource()),
           settingLocalDataSourceProvider
               .overrideWithValue(FakeSettingLocalDataSource()),
-          receiptPrinterServiceProvider
-              .overrideWithValue(FakeReceiptPrinterService()),
+          printerFacadeProvider.overrideWithValue(FakePrinterFacade()),
         ],
       );
       addTearDown(container.dispose);
@@ -321,8 +317,7 @@ void main() {
               .overrideWithValue(FakeSettingRemoteDataSource()),
           settingLocalDataSourceProvider
               .overrideWithValue(FakeSettingLocalDataSource()),
-          receiptPrinterServiceProvider
-              .overrideWithValue(FakeReceiptPrinterService()),
+          printerFacadeProvider.overrideWithValue(FakePrinterFacade()),
         ],
       );
       addTearDown(container.dispose);

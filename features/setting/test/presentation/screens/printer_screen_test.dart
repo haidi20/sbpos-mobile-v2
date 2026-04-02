@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/screens/printer_screen.dart';
 
-import '../../test_helpers.dart';
+import 'package:setting/testing/test_helpers.dart';
 
 void main() {
   testWidgets('PrinterScreen menampilkan judul dan tombol test print',

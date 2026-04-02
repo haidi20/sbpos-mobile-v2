@@ -71,7 +71,7 @@ class _FakeRepo implements TransactionRepository {
       Right(transaction);
 }
 
-class _FakeReceiptPrinterService implements ReceiptPrinterService {
+class _FakePrinterFacade implements PrinterFacade {
   ReceiptPrintJob? lastJob;
   ReceiptPrintResult nextResult = const ReceiptPrintResult.success(
     'Struk berhasil dicetak',
@@ -94,11 +94,11 @@ class _FakeReceiptPrinterService implements ReceiptPrinterService {
 
 void main() {
   late TransactionPosViewModel viewModel;
-  late _FakeReceiptPrinterService printerService;
+late _FakePrinterFacade printerService;
 
   setUp(() {
     final repo = _FakeRepo();
-    printerService = _FakeReceiptPrinterService();
+    printerService = _FakePrinterFacade();
     viewModel = TransactionPosViewModel(
       CreateTransaction(repo),
       UpdateTransaction(repo),
@@ -146,7 +146,8 @@ void main() {
       ],
     );
 
-    final result = await viewModel.onPrintReceipt(transaction);
+    final job = viewModel.buildReceiptPrintJob(transaction);
+    final result = await viewModel.onPrintReceiptJob(job);
 
     expect(result.isSuccess, isTrue);
     expect(printerService.lastJob, isNotNull);
@@ -161,6 +162,28 @@ void main() {
       printerService.lastJob!.lines.any((line) => line.label == 'Total'),
       isTrue,
     );
+  });
+
+  test('buildReceiptPrintJob menghasilkan footer dan ringkasan pembayaran',
+      () {
+    final transaction = TransactionEntity(
+      id: 12,
+      outletId: 1,
+      sequenceNumber: 120,
+      orderTypeId: 1,
+      paymentMethod: 'qris',
+      totalAmount: 18000,
+      totalQty: 1,
+      paidAmount: 20000,
+      changeMoney: 2000,
+      date: DateTime(2026, 4, 1, 13, 0),
+    );
+
+    final job = viewModel.buildReceiptPrintJob(transaction);
+
+    expect(job.footer, equals('Terima kasih telah berbelanja'));
+    expect(job.lines.any((line) => line.label == 'Bayar'), isTrue);
+    expect(job.lines.any((line) => line.label == 'Kembalian'), isTrue);
   });
 
   test('onPrintReceipt meneruskan kegagalan service print', () async {

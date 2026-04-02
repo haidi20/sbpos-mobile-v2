@@ -1,10 +1,11 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:io';
 
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
-
-import 'setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 const String kSettingTestRootText = 'Root Screen';
 
@@ -18,12 +19,12 @@ Future<ProviderContainer> pumpSettingRoute(
 }) async {
   final remote = FakeSettingRemoteDataSource();
   final local = FakeSettingLocalDataSource();
-  final printerService = FakeReceiptPrinterService();
+  final printerService = FakePrinterFacade();
   final container = ProviderContainer(
     overrides: [
       settingRemoteDataSourceProvider.overrideWithValue(remote),
       settingLocalDataSourceProvider.overrideWithValue(local),
-      receiptPrinterServiceProvider.overrideWithValue(printerService),
+        printerFacadeProvider.overrideWithValue(printerService),
     ],
   );
   addTearDown(container.dispose);

@@ -2,7 +2,7 @@ import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/screens/store_screen.dart';
-import '../../test_helpers.dart';
+import 'package:setting/testing/test_helpers.dart';
 
 void main() {
   testWidgets('StoreScreen menampilkan judul dan tombol simpan', (tester) async {

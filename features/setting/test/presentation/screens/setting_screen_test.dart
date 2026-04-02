@@ -11,7 +11,7 @@ import 'package:setting/presentation/screens/profile_screen.dart';
 import 'package:setting/presentation/screens/security_screen.dart';
 import 'package:setting/presentation/screens/setting_screen.dart';
 import 'package:setting/presentation/screens/store_screen.dart';
-import '../../test_helpers.dart';
+import 'package:setting/testing/test_helpers.dart';
 
 void main() {
   testWidgets('SettingsScreen menampilkan judul dan versi aplikasi',

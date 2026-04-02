@@ -3,7 +3,7 @@ import 'package:setting/data/datasources/db/setting.table.dart';
 import 'package:setting/data/datasources/setting_local.data_source.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../../setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   sqfliteFfiInit();

@@ -3,7 +3,7 @@ import 'package:core/core.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/screens/payment_screen.dart';
 
-import 'setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   testWidgets('PaymentScreen menampilkan metode pembayaran dan toggle state',
@@ -27,9 +27,9 @@ void main() {
           settingLocalDataSourceProvider.overrideWithValue(
             FakeSettingLocalDataSource(),
           ),
-          receiptPrinterServiceProvider.overrideWithValue(
-            FakeReceiptPrinterService(),
-          ),
+        printerFacadeProvider.overrideWithValue(
+          FakePrinterFacade(),
+        ),
         ],
         child: MaterialApp.router(
           routerConfig: router,

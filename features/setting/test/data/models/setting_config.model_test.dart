@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/data/models/setting_config.model.dart';
 
-import '../../setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   group('Setting models', () {

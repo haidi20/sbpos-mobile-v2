@@ -252,7 +252,7 @@ class FakeSettingLocalDataSource extends SettingLocalDataSource {
   }
 }
 
-class FakeReceiptPrinterService implements ReceiptPrinterService {
+class FakePrinterFacade implements PrinterFacade {
   ReceiptPrinterConfig? lastConfig;
   ReceiptPrintJob? lastJob;
   ReceiptPrintResult testPrintResult = const ReceiptPrintResult.success(

@@ -2,7 +2,7 @@ import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setting/data/repositories/setting.repository.impl.dart';
 
-import '../../setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   late FakeSettingRemoteDataSource remote;

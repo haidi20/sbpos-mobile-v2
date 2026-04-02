@@ -9,18 +9,18 @@ import 'package:setting/domain/usecases/update_security_settings.usecase.dart';
 import 'package:setting/domain/usecases/update_store_info.usecase.dart';
 import 'package:setting/presentation/view_models/setting.vm.dart';
 
-import '../../setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   late FakeSettingRemoteDataSource remote;
   late FakeSettingLocalDataSource local;
-  late FakeReceiptPrinterService printerService;
+late FakePrinterFacade printerService;
   late SettingViewModel viewModel;
 
   setUp(() {
     remote = FakeSettingRemoteDataSource();
     local = FakeSettingLocalDataSource();
-    printerService = FakeReceiptPrinterService();
+    printerService = FakePrinterFacade();
     final repository = SettingRepositoryImpl(
       remote: remote,
       local: local,
@@ -33,7 +33,7 @@ void main() {
       updateProfileSettings: UpdateProfileSettings(repository),
       updateNotificationPreferences: UpdateNotificationPreferences(repository),
       updateSecuritySettings: UpdateSecuritySettings(repository),
-      receiptPrinterService: printerService,
+      printerFacade: printerService,
     );
   });
 

@@ -10,7 +10,7 @@ import 'package:setting/domain/usecases/update_profile_settings.usecase.dart';
 import 'package:setting/domain/usecases/update_security_settings.usecase.dart';
 import 'package:setting/domain/usecases/update_store_info.usecase.dart';
 
-import '../../setting_test_fixtures.dart';
+import 'package:setting/testing/setting_test_fixtures.dart';
 
 void main() {
   group('Setting usecases try/catch', () {
