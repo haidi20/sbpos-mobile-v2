@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transaction/presentation/screens/transaction_history.screen.dart';
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 import 'package:transaction/presentation/screens/cart.screen.dart';
-import 'package:transaction/presentation/screens/cart_method_payment.screen.dart';
+import 'package:transaction/presentation/screens/cart_payment.screen.dart';
 import 'package:transaction/presentation/screens/transaction_history_detail.screen.dart';
 
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -80,6 +80,23 @@ class _FakeRepo implements TransactionRepository {
   Future<Either<Failure, bool>> deleteTransaction(int id,
           {bool? isOffline}) async =>
       Right(true);
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      Right(_list.isNotEmpty
+          ? _list.first
+          : TransactionEntity(
+              outletId: 1,
+              sequenceNumber: 1,
+              orderTypeId: 1,
+              date: DateTime.now(),
+              totalAmount: 0,
+              totalQty: 0));
 }
 
 void main() {
@@ -112,7 +129,7 @@ void main() {
     ], child: const MaterialApp(home: TransactionPosScreen())));
 
     await tester.pumpAndSettle();
-    expect(find.text('POS Produk'), findsOneWidget);
+    expect(find.text('POS'), findsOneWidget);
   });
 
   testWidgets('CartScreen builds with provider override', (tester) async {
@@ -149,10 +166,10 @@ void main() {
                 body: SizedBox(
                     width: 800,
                     height: 1200,
-                    child: CartMethodPaymentScreen())))));
+                    child: CartPaymentScreen())))));
 
     await tester.pumpAndSettle();
-    expect(find.byType(CartMethodPaymentScreen), findsOneWidget);
+    expect(find.byType(CartPaymentScreen), findsOneWidget);
   }, skip: true);
 
   testWidgets('TransactionHistoryDetailScreen displays details',

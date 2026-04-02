@@ -29,6 +29,11 @@ class _FakeShiftRepository implements ShiftRepository {
   }
 
   @override
+  Future<Either<Failure, ShiftEntity?>> getLatestShift() async {
+    return const Right(null);
+  }
+
+  @override
   Future<Either<Failure, ShiftStatusEntity>> openCashier(
     int initialBalance,
   ) async {

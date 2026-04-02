@@ -15,8 +15,8 @@ import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart'
 
 import 'package:transaction/presentation/screens/transaction_pos.screen.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/domain/entities/category.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -65,6 +65,15 @@ class _FakeTxnRepo implements TransactionRepository {
   Future<Either<Failure, bool>> deleteTransaction(int id,
           {bool? isOffline}) async =>
       Left(const UnknownFailure());
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      Left(const UnknownFailure());
 }
 
 class FakeTransactionPosViewModel extends TransactionPosViewModel {
@@ -93,17 +102,17 @@ class FakeTransactionPosViewModel extends TransactionPosViewModel {
   void setActiveCategory(String c) => state = state.copyWith(activeCategory: c);
 
   @override
-  Future<void> getPacketsList() async {}
+  Future<void> getPacketsList({String? query}) async {}
 
   @override
   Future<void> addPacketSelection(
       {required packet, required selectedItems}) async {}
 
   @override
-  Future<void> onAddToCart(ProductEntity product) async {}
+  Future<void> onAddToCart({required ProductEntity product}) async {}
 
-  List<ProductEntity> getFilteredProducts(
-          {required List<ProductEntity> products}) =>
+  @override
+  List<ProductEntity> getFilteredProducts(List<ProductEntity> products) =>
       products;
 
   void setCached(List<ProductEntity> p) => _cached = p;
@@ -126,7 +135,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // search field present
+    // search field present after tap search action
+    await tester.tap(find.byIcon(Icons.search));
+    await tester.pumpAndSettle();
     expect(find.byType(TextField), findsOneWidget);
 
     // type into search and verify fakeVm captured it

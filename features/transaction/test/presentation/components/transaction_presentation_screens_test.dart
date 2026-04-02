@@ -7,7 +7,7 @@ import 'package:transaction/presentation/screens/transaction_history_detail.scre
 import 'package:transaction/presentation/sheets/transaction_detail.sheet.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
@@ -79,6 +79,15 @@ class FakeTransactionRepository implements TransactionRepository {
   Future<Either<Failure, bool>> deleteTransaction(int id,
           {bool? isOffline}) async =>
       const Right(true);
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      Left(UnknownFailure());
 }
 
 void main() {
@@ -108,7 +117,7 @@ void main() {
       ], child: const MaterialApp(home: TransactionPosScreen())));
 
       await tester.pumpAndSettle();
-      expect(find.text('POS Produk'), findsOneWidget);
+      expect(find.text('POS'), findsOneWidget);
     });
 
     testWidgets('CartBottomSheet builds with pos provider override',

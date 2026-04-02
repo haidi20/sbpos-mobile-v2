@@ -4,6 +4,7 @@ import 'package:transaction/domain/entitties/close_cashier_status.entity.dart';
 import 'package:transaction/domain/entitties/shift.entity.dart';
 import 'package:transaction/domain/entitties/shift_status.entity.dart';
 import 'package:transaction/domain/repositories/shift.repository.dart';
+import 'package:transaction/domain/usecases/get_latest_shift.usecase.dart';
 import 'package:transaction/domain/usecases/get_shift_status.usecase.dart';
 import 'package:transaction/domain/usecases/open_cashier.usecase.dart';
 import 'package:transaction/presentation/view_models/open_cashier.state.dart';
@@ -11,6 +12,7 @@ import 'package:transaction/presentation/view_models/open_cashier.vm.dart';
 
 class _FakeShiftRepository implements ShiftRepository {
   Future<Either<Failure, ShiftStatusEntity>> Function()? onGetShiftStatus;
+  Future<Either<Failure, ShiftEntity?>> Function()? onGetLatestShift;
   Future<Either<Failure, ShiftStatusEntity>> Function(int balance)?
       onOpenCashier;
   Future<Either<Failure, CloseCashierStatusEntity>> Function()?
@@ -27,6 +29,22 @@ class _FakeShiftRepository implements ShiftRepository {
           ShiftStatusEntity(
             isOpen: false,
             message: 'Shift belum dibuka',
+          ),
+        ),
+      );
+    }
+    return handler();
+  }
+
+  @override
+  Future<Either<Failure, ShiftEntity?>> getLatestShift() {
+    final handler = onGetLatestShift;
+    if (handler == null) {
+      return Future.value(
+        Right(
+          ShiftEntity(
+            openingBalance: 140000,
+            shiftNumber: 2,
           ),
         ),
       );
@@ -97,6 +115,7 @@ void main() {
     repository = _FakeShiftRepository();
     viewModel = OpenCashierViewModel(
       getShiftStatus: GetShiftStatus(repository),
+      getLatestShift: GetLatestShift(repository),
       openCashier: OpenCashier(repository),
     );
   });
@@ -136,6 +155,28 @@ void main() {
     expect(viewModel.state.balanceInput, equals('175000'));
     expect(viewModel.state.balanceValue, equals(175000));
     expect(viewModel.state.formattedBalance, equals('Rp 175.000'));
+  });
+
+  test('getShiftStatus memakai shift/latest saat status shift belum punya saldo',
+      () async {
+    repository.onGetShiftStatus = () async => const Right(
+          ShiftStatusEntity(
+            isOpen: false,
+            message: 'Shift belum dibuka',
+          ),
+        );
+    repository.onGetLatestShift = () async => Right(
+          ShiftEntity(
+            openingBalance: 210000,
+            shiftNumber: 4,
+          ),
+        );
+
+    await viewModel.getShiftStatus();
+
+    expect(viewModel.state.balanceInput, equals('210000'));
+    expect(viewModel.state.balanceValue, equals(210000));
+    expect(viewModel.state.formattedBalance, equals('Rp 210.000'));
   });
 
   test('getShiftStatus membuka akses saat server menyatakan shift sudah dibuka',

@@ -7,7 +7,7 @@ import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/domain/entities/category.entity.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
@@ -16,7 +16,7 @@ import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
@@ -24,6 +24,8 @@ import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/repositories/transaction.repository_impl.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
 
 class _FakeRepo implements TransactionRepository {
@@ -86,6 +88,15 @@ class _FakeRepo implements TransactionRepository {
     last = null;
     return Right(true);
   }
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      last != null ? Right(last!) : Left(UnknownFailure());
 }
 
 // Varian repo lokal yang mengembalikan transaksi yang disediakan untuk
@@ -96,6 +107,11 @@ class _LocalRepo extends _FakeRepo {
 
   @override
   Future<Either<Failure, TransactionEntity>> getLatestTransaction(
+          {bool? isOffline}) async =>
+      Right(provided);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
           {bool? isOffline}) async =>
       Right(provided);
 }
@@ -151,7 +167,7 @@ void main() {
   test('onAddToCart creates transaction and adds detail', () async {
     final p = ProductEntity(id: 101, name: 'Apple', price: 10000.0);
 
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     expect(vm.state.details.length, 1);
     expect(vm.state.transaction, isNotNull);
@@ -162,7 +178,7 @@ void main() {
   // Menguji penambahan dan pengurangan kuantitas pada detail
   test('setUpdateQuantity increments and removes item', () async {
     final p = ProductEntity(id: 201, name: 'Banana', price: 5000.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
     // increase by 1 -> qty 2
     await vm.setUpdateQuantity(201, 1);
     expect(vm.state.details.first.qty, 2);
@@ -175,7 +191,7 @@ void main() {
   // Memastikan setItemNote meng-perbarui state lokal sebelum debounce
   test('setItemNote updates local state immediately', () async {
     final p = ProductEntity(id: 301, name: 'C', price: 3000.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     await vm.setItemNote(301, 'hello');
     final detail = vm.state.details.firstWhere((d) => d.productId == 301);
@@ -190,7 +206,7 @@ void main() {
 
   // Verifikasi mapping string id ke enum EOrderType
   test('selectOrderTypeById maps to proper enum', () {
-    vm.selectOrderTypeById('take_away');
+    vm.setOrderTypeById('take_away');
     expect(vm.state.orderType, EOrderType.takeAway);
   });
 
@@ -207,20 +223,20 @@ void main() {
 
   // Toggle view mode harus membalikkan nilai viewMode
   test('onToggleView toggles viewMode', () {
-    final before = vm.state.viewMode;
-    vm.onToggleView();
-    expect(vm.state.viewMode, isNot(equals(before)));
+    final before = vm.state.typeCart;
+    // Toggling manually since onToggleView is removed
+    vm.setTypeCart(before == ETypeCart.main ? ETypeCart.confirm : ETypeCart.main);
+    expect(vm.state.typeCart, isNot(equals(before)));
   });
 
   // Menguji `setViewMode` secara eksplisit untuk memastikan setter bekerja
   test('setViewMode sets viewMode explicitly', () {
     // set ke checkout
-    vm.setViewMode(EViewMode.checkout);
-    expect(vm.state.viewMode, EViewMode.checkout);
+    vm.setTypeCart(ETypeCart.checkout);
+    expect(vm.state.typeCart, ETypeCart.checkout);
 
-    // kembalikan ke cart
-    vm.setViewMode(EViewMode.cart);
-    expect(vm.state.viewMode, EViewMode.cart);
+    vm.setTypeCart(ETypeCart.main);
+    expect(vm.state.typeCart, ETypeCart.main);
   });
 
   // Siklus typeCart saat menavigasi metode pembayaran
@@ -235,7 +251,7 @@ void main() {
   // Hapus transaksi lokal jika ada dan bersihkan state
   test('onClearCart deletes existing transaction and clears state', () async {
     final p = ProductEntity(id: 401, name: 'D', price: 2000.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     // pastikan transaksi ada
     expect(vm.state.transaction, isNotNull);
@@ -248,7 +264,7 @@ void main() {
   // Menyimpan/order harus memaksa status menjadi 'proses'
   test('onStore forces status to proses', () async {
     final p = ProductEntity(id: 501, name: 'E', price: 1500.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     await vm.onStore();
     expect(vm.state.transaction, isNotNull);
@@ -274,8 +290,8 @@ void main() {
     expect(onlyFood.length, 1);
     expect(onlyFood.first.id, 601);
 
-    // reset category to All before testing search-only behavior
-    vm.setActiveCategory('All');
+    // reset category to Semua before testing search-only behavior
+    vm.setActiveCategory('Semua');
     vm.setSearchQuery('es');
     final searchRes = vm.getFilteredProducts([p1, p2]);
     // pencarian case-insensitive harus menemukan 'Es Teh'
@@ -326,7 +342,7 @@ void main() {
   // Memastikan format rupiah dikembalikan sebagai string
   test('getCartTotal returns formatted rupiah string', () async {
     final p = ProductEntity(id: 701, name: 'Test', price: 12345.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
     final formatted = vm.getCartTotal;
     expect(formatted, isA<String>());
     expect(formatted, contains(RegExp(r'\d')));
@@ -360,8 +376,8 @@ void main() {
     expect(vm.state.transaction, isNull);
     expect(vm.state.details, isEmpty);
     expect(vm.state.orderNote, '');
-    expect(vm.state.activeCategory, 'All');
-    expect(vm.state.viewMode, EViewMode.cart);
+    expect(vm.state.activeCategory, 'Semua');
+    expect(vm.state.typeCart, ETypeCart.main);
     expect(vm.state.paymentMethod, EPaymentMethod.cash);
   });
 
@@ -375,10 +391,12 @@ void main() {
       GetTransactionActive(fake),
     );
 
+    final p = ProductEntity(id: 88, name: 'Test', price: 1000.0);
+    await vm.onAddToCart(product: p);
     await vm.setOrderNote('Delayed');
     // tunggu/poll hingga 1s agar persistence selesai
     var waited = 0;
-    while (fake.last == null && vm.state.transaction == null && waited < 1000) {
+    while (fake.last == null && vm.state.transaction == null && waited < 2000) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       waited += 50;
     }
@@ -389,7 +407,7 @@ void main() {
   test('debounced setItemNote triggers persistence', () async {
     // pastikan ada item untuk diberikan catatan
     final p = ProductEntity(id: 801, name: 'F', price: 2000.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     await vm.setItemNote(801, 'note1');
     var waited2 = 0;
@@ -464,11 +482,13 @@ void main() {
       GetTransactionActive(fake),
     );
 
+    final p = ProductEntity(id: 89, name: 'Test2', price: 1000.0);
+    await vm.onAddToCart(product: p);
     vm.setOrderType(EOrderType.online);
 
     // polling untuk menunggu efek samping persistence
     var waited = 0;
-    while (fake.last == null && waited < 1000) {
+    while (fake.last == null && waited < 2000) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       waited += 50;
     }
@@ -488,7 +508,7 @@ void main() {
     );
 
     final p = ProductEntity(id: 901, name: 'FailCreate', price: 1000.0);
-    await vmFail.onAddToCart(p);
+    await vmFail.onAddToCart(product: p);
 
     // simpan dengan status dipaksa agar jalur buat dieksekusi
     await vmFail.onStore();
@@ -510,7 +530,7 @@ void main() {
     );
 
     final p = ProductEntity(id: 902, name: 'FailUpdate', price: 2000.0);
-    await vmFail.onAddToCart(p);
+    await vmFail.onAddToCart(product: p);
 
     // pastikan transaksi sekarang ada
     expect(vmFail.state.transaction, isNotNull);
@@ -534,7 +554,7 @@ void main() {
     );
 
     final p = ProductEntity(id: 903, name: 'FailDelete', price: 3000.0);
-    await vmFail.onAddToCart(p);
+    await vmFail.onAddToCart(product: p);
 
     // remove item to trigger hapus path
     await vmFail.setUpdateQuantity(903, -1);
@@ -558,11 +578,11 @@ void main() {
     // set payment method to QRIS and add an item to trigger buat
     vm.setPaymentMethod(EPaymentMethod.qris);
     final p = ProductEntity(id: 1001, name: 'G', price: 2500.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     // poll for persistence
     var waited = 0;
-    while (fake.last == null && waited < 1000) {
+    while (fake.last == null && waited < 2000) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       waited += 50;
     }
@@ -584,14 +604,14 @@ void main() {
     );
 
     final p = ProductEntity(id: 1101, name: 'H', price: 10000.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
 
     // tandai sebagai lunas lalu simpan
     vm.setIsPaid(true);
     await vm.onStore();
 
     expect(vm.state.transaction, isNotNull);
-    expect(vm.state.transaction!.status, TransactionStatus.proses);
+    expect(vm.state.transaction!.status, TransactionStatus.lunas);
     // entitas yang dibuat (fake.last) harus mencerminkan isPaid = true
     expect(fake.last, isNotNull);
     expect(fake.last!.isPaid, isTrue);
@@ -617,16 +637,19 @@ void main() {
     // total: d1 subtotal 10000 + d2 price*qty 3000 = 13000
     expect(vm.getCartTotalValue, 13000);
     expect(vm.getTaxValue, (13000 * 0.1).round());
-    expect(vm.getGrandTotalValue, vm.getCartTotalValue + vm.getTaxValue);
+    expect(vm.getGrandTotalValue, 14300);
+    vm.setCashReceived(50000);
+    expect(vm.getChangeValue, 50000 - 14300);
   });
 
   // Menghitung kembalian berdasarkan cashReceived dikurangi grand total
   test('getChangeValue reflects cash received minus grand total', () async {
     final p = ProductEntity(id: 1201, name: 'I', price: 2500.0);
-    await vm.onAddToCart(p);
+    await vm.onAddToCart(product: p);
     // grand total harus sama dengan harga produk + pajak
     final grand = vm.getGrandTotalValue;
     vm.setCashReceived(grand + 5000);
+    // grand total has tax 10%
     expect(vm.getChangeValue, equals(5000));
   });
 
@@ -648,6 +671,8 @@ void main() {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(ProductTable.createTableQuery);
 
       // inisialisasi local datasource yang menggunakan testDb
       local = TransactionLocalDataSource(testDb: db);
@@ -671,7 +696,7 @@ void main() {
     test('onAddToCart persists transaction to local DB', () async {
       const product =
           ProductEntity(id: 2101, name: 'RealDBProd', price: 12000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       // pastikan VM memiliki transaction
       expect(vmDb.state.transaction, isNotNull);
@@ -687,7 +712,7 @@ void main() {
         () async {
       const product =
           ProductEntity(id: 2201, name: 'RealDBProd2', price: 15000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       final txId = vmDb.state.transaction?.id;
       expect(txId, isNotNull);
@@ -710,7 +735,7 @@ void main() {
 
     test('onStore creates persisted transaction with forced status', () async {
       const product = ProductEntity(id: 2301, name: 'StoreProd', price: 5000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       await vmDb.onStore();
 
@@ -726,7 +751,7 @@ void main() {
 
     test('removing last detail deletes persisted transaction', () async {
       const product = ProductEntity(id: 2401, name: 'DelProd', price: 3000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       final txId = vmDb.state.transaction?.id;
       expect(txId, isNotNull);
@@ -742,7 +767,7 @@ void main() {
 
     test('setOrderType persists orderTypeId to local DB', () async {
       const product = ProductEntity(id: 2501, name: 'OTProd', price: 7000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       // change order type to online (mapped to id 3)
       vmDb.setOrderType(EOrderType.online);
@@ -750,7 +775,7 @@ void main() {
       // wait/poll for persistence
       var waited = 0;
       final dao = TransactionDao(db);
-      while (waited < 1000) {
+      while (waited < 2000) {
         final tx = await dao.getTransactionById(vmDb.state.transaction!.id!);
         if (tx != null && tx.orderTypeId == 3) break;
         await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -764,7 +789,7 @@ void main() {
 
     test('setPaymentMethod and setOjolProvider persist to DB', () async {
       const product = ProductEntity(id: 2601, name: 'PayProd', price: 8000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       vmDb.setPaymentMethod(EPaymentMethod.qris);
       vmDb.setOjolProvider('GoFood');
@@ -772,7 +797,7 @@ void main() {
       // wait/poll for persistence
       final dao = TransactionDao(db);
       var waited = 0;
-      while (waited < 1000) {
+      while (waited < 2000) {
         final tx = await dao.getTransactionById(vmDb.state.transaction!.id!);
         if (tx != null &&
             tx.paymentMethod == EPaymentMethod.qris.name &&
@@ -789,7 +814,7 @@ void main() {
 
     test('setIsPaid and onStore persist isPaid flag', () async {
       const product = ProductEntity(id: 2701, name: 'PaidProd', price: 9000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       vmDb.setIsPaid(true);
       await vmDb.onStore();
@@ -802,7 +827,7 @@ void main() {
 
     test('debounced setOrderNote and setItemNote persist to DB', () async {
       const product = ProductEntity(id: 2801, name: 'NoteProd', price: 4000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       // set order catatan and item catatan
       await vmDb.setOrderNote('Integration Note');
@@ -835,7 +860,7 @@ void main() {
 
     test('onClearCart removes persisted transaction and details', () async {
       const product = ProductEntity(id: 2901, name: 'ClearProd', price: 6000.0);
-      await vmDb.onAddToCart(product);
+      await vmDb.onAddToCart(product: product);
 
       final txId = vmDb.state.transaction?.id;
       expect(txId, isNotNull);

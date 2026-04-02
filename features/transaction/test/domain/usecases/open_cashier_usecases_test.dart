@@ -4,11 +4,13 @@ import 'package:transaction/domain/entitties/close_cashier_status.entity.dart';
 import 'package:transaction/domain/entitties/shift.entity.dart';
 import 'package:transaction/domain/entitties/shift_status.entity.dart';
 import 'package:transaction/domain/repositories/shift.repository.dart';
+import 'package:transaction/domain/usecases/get_latest_shift.usecase.dart';
 import 'package:transaction/domain/usecases/get_shift_status.usecase.dart';
 import 'package:transaction/domain/usecases/open_cashier.usecase.dart';
 
 class _FakeShiftRepository implements ShiftRepository {
   Future<Either<Failure, ShiftStatusEntity>> Function()? onGetShiftStatus;
+  Future<Either<Failure, ShiftEntity?>> Function()? onGetLatestShift;
   Future<Either<Failure, ShiftStatusEntity>> Function(int balance)?
       onOpenCashier;
   Future<Either<Failure, CloseCashierStatusEntity>> Function()?
@@ -25,6 +27,22 @@ class _FakeShiftRepository implements ShiftRepository {
           ShiftStatusEntity(
             isOpen: false,
             message: 'Shift belum dibuka',
+          ),
+        ),
+      );
+    }
+    return handler();
+  }
+
+  @override
+  Future<Either<Failure, ShiftEntity?>> getLatestShift() {
+    final handler = onGetLatestShift;
+    if (handler == null) {
+      return Future.value(
+        Right(
+          ShiftEntity(
+            openingBalance: 120000,
+            shiftNumber: 2,
           ),
         ),
       );
@@ -159,6 +177,27 @@ void main() {
 
     result.fold(
       (value) => expect(value, isA<UnknownFailure>()),
+      (_) => fail('Expected Left result'),
+    );
+  });
+
+  test('GetLatestShift mengembalikan shift terakhir saat sukses', () async {
+    final result = await GetLatestShift(repository)();
+
+    result.fold(
+      (_) => fail('Expected Right result'),
+      (shift) => expect(shift?.openingBalance, equals(120000)),
+    );
+  });
+
+  test('GetLatestShift memetakan thrown Failure ke Left', () async {
+    const failure = NetworkFailure();
+    repository.onGetLatestShift = () => Future.error(failure);
+
+    final result = await GetLatestShift(repository)();
+
+    result.fold(
+      (value) => expect(value, same(failure)),
       (_) => fail('Expected Left result'),
     );
   });

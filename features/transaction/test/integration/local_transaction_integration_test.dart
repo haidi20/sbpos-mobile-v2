@@ -6,6 +6,8 @@ import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/models/transaction_detail.model.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 
 void main() {
   sqfliteFfiInit();
@@ -19,6 +21,8 @@ void main() {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(ProductTable.createTableQuery);
       local = TransactionLocalDataSource(testDb: db);
     });
 

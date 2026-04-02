@@ -10,6 +10,8 @@ import 'package:transaction/data/models/transaction.model.dart';
 import 'package:transaction/data/responses/transaction.response.dart';
 import 'package:transaction/data/datasources/db/transaction.dao.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 
 class FakeRemote extends TransactionRemoteDataSource {
   FakeRemote() : super(host: 'http://localhost', api: 'test');
@@ -35,6 +37,8 @@ void main() {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(ProductTable.createTableQuery);
       local = TransactionLocalDataSource(testDb: db);
       repo = TransactionRepositoryImpl(remote: FakeRemote(), local: local);
     });

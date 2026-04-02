@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:logging/logging.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.persistence.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.persistence.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/usecases/create_transaction.usecase.dart';
@@ -9,7 +9,7 @@ import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.state.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
 import 'package:core/core.dart';
 
 class _FakeRepo implements TransactionRepository {
@@ -60,6 +60,15 @@ class _FakeRepo implements TransactionRepository {
           TransactionEntity transaction,
           {bool? isOffline}) async =>
       Right(transaction);
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      Left(UnknownFailure());
 }
 
 void main() {

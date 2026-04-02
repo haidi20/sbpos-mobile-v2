@@ -11,6 +11,7 @@ import 'package:transaction/presentation/view_models/close_cashier.vm.dart';
 
 class _FakeShiftRepository implements ShiftRepository {
   Future<Either<Failure, ShiftStatusEntity>> Function()? onGetShiftStatus;
+  Future<Either<Failure, ShiftEntity?>> Function()? onGetLatestShift;
   Future<Either<Failure, ShiftStatusEntity>> Function(int balance)?
       onOpenCashier;
   Future<Either<Failure, CloseCashierStatusEntity>> Function()?
@@ -30,6 +31,15 @@ class _FakeShiftRepository implements ShiftRepository {
           ),
         ),
       );
+    }
+    return handler();
+  }
+
+  @override
+  Future<Either<Failure, ShiftEntity?>> getLatestShift() {
+    final handler = onGetLatestShift;
+    if (handler == null) {
+      return Future.value(const Right(null));
     }
     return handler();
   }

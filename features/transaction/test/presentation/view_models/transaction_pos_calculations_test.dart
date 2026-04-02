@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.calculations.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.calculations.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
 import 'package:product/domain/entities/category.entity.dart';

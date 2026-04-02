@@ -12,7 +12,9 @@ import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/get_transaction_active.usecase.dart';
 import 'package:transaction/data/datasources/transaction_remote.data_source.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 
 class FakeRemote extends TransactionRemoteDataSource {
   FakeRemote() : super(host: 'http://localhost', api: 'test');
@@ -32,6 +34,8 @@ void main() {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(ProductTable.createTableQuery);
       local = TransactionLocalDataSource(testDb: db);
       repo = TransactionRepositoryImpl(remote: FakeRemote(), local: local);
       vm = TransactionPosViewModel(
@@ -48,8 +52,8 @@ void main() {
 
     test('onAddToCart + onStoreLocal persists to local DB', () async {
       const product = ProductEntity(id: 21, name: 'VMProd', price: 12000.0);
-      // add to cart (await becagunakan onAddToCart persists to DB first)
-      await vm.onAddToCart(product);
+      // add to cart (await because onAddToCart persists to DB first)
+      await vm.onAddToCart(product: product);
 
       // verify VM state
       expect(vm.state.transaction, isNotNull);
@@ -66,7 +70,7 @@ void main() {
         () async {
       const product = ProductEntity(id: 22, name: 'VMProd2', price: 15000.0);
       // add and persist
-      await vm.onAddToCart(product);
+      await vm.onAddToCart(product: product);
 
       final txId = vm.state.transaction?.id;
       expect(txId, isNotNull);

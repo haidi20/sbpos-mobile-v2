@@ -16,6 +16,7 @@ class _FakeShiftRemoteDataSource extends ShiftRemoteDataSource {
         );
 
   Future<ShiftStatusResponseModel> Function()? onGetShiftStatus;
+  Future<ShiftModel?> Function()? onGetLatestShift;
   Future<OpenCashierResponseModel> Function(OpenCashierRequestModel request)?
       onOpenCashier;
 
@@ -27,6 +28,19 @@ class _FakeShiftRemoteDataSource extends ShiftRemoteDataSource {
         success: true,
         message: 'Shift belum dibuka',
         isOpen: false,
+      );
+    }
+    return handler();
+  }
+
+  @override
+  Future<ShiftModel?> getLatestShift() async {
+    final handler = onGetLatestShift;
+    if (handler == null) {
+      return ShiftModel(
+        idServer: 5,
+        shiftNumber: 3,
+        openingBalance: 150000,
       );
     }
     return handler();
@@ -98,6 +112,18 @@ void main() {
     );
   });
 
+  test('getLatestShift mengembalikan shift entity saat remote sukses', () async {
+    final result = await repository.getLatestShift();
+
+    result.fold(
+      (_) => fail('Expected Right result'),
+      (entity) {
+        expect(entity?.shiftNumber, equals(3));
+        expect(entity?.openingBalance, equals(150000));
+      },
+    );
+  });
+
   test('openCashier memetakan NetworkException ke NetworkFailure', () async {
     remote.onOpenCashier = (request) =>
         Future.error(NetworkException('offline'));
@@ -114,6 +140,18 @@ void main() {
     remote.onOpenCashier = (request) => Future.error(Exception('boom'));
 
     final result = await repository.openCashier(250000);
+
+    result.fold(
+      (failure) => expect(failure, isA<UnknownFailure>()),
+      (_) => fail('Expected Left result'),
+    );
+  });
+
+  test('getLatestShift memetakan error tak terduga ke UnknownFailure',
+      () async {
+    remote.onGetLatestShift = () => Future.error(Exception('boom'));
+
+    final result = await repository.getLatestShift();
 
     result.fold(
       (failure) => expect(failure, isA<UnknownFailure>()),

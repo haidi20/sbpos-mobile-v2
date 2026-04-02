@@ -7,7 +7,7 @@ import 'package:transaction/presentation/screens/transaction_history.screen.dart
 import 'package:transaction/presentation/sheets/cart_bottom.sheet.dart';
 import 'package:transaction/presentation/components/transaction.card.dart';
 import 'package:transaction/presentation/view_models/transaction_history.vm.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/domain/usecases/delete_transaction.usecase.dart';
 import 'package:transaction/domain/usecases/update_transaction.usecase.dart';
@@ -84,6 +84,15 @@ class FakeTransactionRepository implements TransactionRepository {
   Future<Either<Failure, bool>> deleteTransaction(int id,
           {bool? isOffline}) async =>
       const Right(true);
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      Left(UnknownFailure());
 }
 
 // (No fakes required for current OrderCard constructor)
@@ -127,6 +136,7 @@ void main() {
               onUpdateQuantity: (id, delta) {},
               onSetActiveNoteId: (id) {},
               onSetItemNote: (id, value) {},
+              onOpenItemNoteEditor: (id) {},
             ),
             const DetailInfoCard(
                 icon: Icons.info, label: 'Detail Item', value: 'Value'),

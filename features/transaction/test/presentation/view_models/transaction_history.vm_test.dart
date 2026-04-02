@@ -9,6 +9,8 @@ import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
 import 'package:transaction/data/datasources/transaction_local.data_source.dart';
+import 'package:customer/data/datasources/db/customer.table.dart';
+import 'package:product/data/datasources/db/product.table.dart';
 
 void main() {
   // init ffi and factory
@@ -26,6 +28,8 @@ void main() {
       // buat tables
       await db.execute(TransactionTable.createTableQuery);
       await db.execute(TransactionDetailTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(ProductTable.createTableQuery);
 
       local = TransactionLocalDataSource(testDb: db);
       // lightweight fake gunakancase that reads from local datasource directly

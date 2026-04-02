@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:transaction/data/datasources/shift_remote.data_source.dart';
 import 'package:transaction/data/models/open_cashier_request.model.dart';
+import 'package:transaction/data/models/shift.model.dart';
 
 class _FakeApiHelper implements ApiHelper {
   http.Response? nextGetResponse;
@@ -132,5 +133,29 @@ void main() {
     expect(result.success, isTrue);
     expect(result.message, equals('Buka kasir berhasil'));
     expect(result.shift?.openingBalance, equals(250000));
+  });
+
+  test('getLatestShift memanggil endpoint latest dan parse shift terakhir',
+      () async {
+    apiHelper.nextGetResponse = http.Response(
+      jsonEncode({
+        'success': true,
+        'message': 'Shift terakhir ditemukan',
+        'data': {
+          'id': 17,
+          'shift_number': 4,
+          'opening_balance': 180000,
+          'date': '2026-04-01T08:00:00.000',
+        },
+      }),
+      200,
+    );
+
+    final result = await dataSource.getLatestShift();
+
+    expect(apiHelper.lastGetUrl, equals('https://example.com/api/shift/latest'));
+    expect(result, isA<ShiftModel>());
+    expect(result?.idServer, equals(17));
+    expect(result?.openingBalance, equals(180000));
   });
 }

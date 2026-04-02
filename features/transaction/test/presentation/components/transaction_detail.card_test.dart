@@ -8,7 +8,7 @@ import 'package:transaction/presentation/components/transaction_detail.card.dart
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/domain/entitties/transaction_detail.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
-import 'package:transaction/presentation/view_models/transaction_pos.vm.dart';
+import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:transaction/domain/repositories/transaction_repository.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
@@ -60,6 +60,15 @@ class _FakeTxnRepo implements TransactionRepository {
   Future<Either<Failure, bool>> deleteTransaction(int id,
           {bool? isOffline}) async =>
       Left(const UnknownFailure());
+
+  @override
+  Future<Either<Failure, int>> getLastSequenceNumber({bool? isOffline}) async =>
+      const Right(0);
+
+  @override
+  Future<Either<Failure, TransactionEntity>> getPendingTransaction(
+          {bool? isOffline}) async =>
+      Left(const UnknownFailure());
 }
 
 class FakeTransactionPosViewModel extends TransactionPosViewModel {
@@ -103,7 +112,7 @@ void main() {
         overrides: [
           transactionPosViewModelProvider.overrideWith((ref) => fakeVm),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
             home: Scaffold(body: TransactionDetailCard(item: detail)))));
 
     await tester.pumpAndSettle();
