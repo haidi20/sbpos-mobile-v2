@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:core/core.dart';
-import 'dart:async';
 
 class MockWebhookRepository extends Mock implements WebhookRepository {}
 
@@ -19,8 +18,8 @@ void main() {
   });
 
   test('status awal harus terputus dan daftar event kosong', () {
-    expect(viewModel.debugState.isConnected, false);
-    expect(viewModel.debugState.events, isEmpty);
+    expect(viewModel.state.isConnected, false);
+    expect(viewModel.state.events, isEmpty);
   });
 
   test('error harus memperbarui state dan memicu logika reconnect otomatis', () async {
@@ -44,7 +43,7 @@ void main() {
 
     // Tunggu hingga error pertama diproses
     await Future.delayed(Duration.zero);
-    expect(viewModel.debugState.error, "Koneksi gagal");
+    expect(viewModel.state.error, "Koneksi gagal");
     expect(callCount, 1);
 
     // Tunggu proses auto-reconnect (Timer default 2 detik)
@@ -52,7 +51,7 @@ void main() {
     await reconnectCompleter.future.timeout(const Duration(seconds: 5));
     
     expect(callCount, 2);
-    expect(viewModel.debugState.isReconnecting, true);
+    expect(viewModel.state.isReconnecting, true);
   });
 
   test('koneksi normal harus memperbarui state dan menerima event', () async {
@@ -73,7 +72,7 @@ void main() {
     // Tunggu hingga stream memancarkan data
     await Future.delayed(Duration.zero);
 
-    expect(viewModel.debugState.isConnected, true);
+    expect(viewModel.state.isConnected, true);
     controller.close();
   });
 }

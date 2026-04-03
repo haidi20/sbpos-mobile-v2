@@ -9,6 +9,7 @@ class AuthUserTable {
   static const String colEmail = 'email';
   static const String colRoleId = 'role_id';
   static const String colWarehouseId = 'warehouse_id';
+  static const String colOutletId = 'outlet_id';
   static const String colIsActive = 'is_active';
   static const String colLastLogin = 'last_login';
 
@@ -22,6 +23,7 @@ class AuthUserTable {
       $colEmail TEXT UNIQUE,
       $colRoleId INTEGER,
       $colWarehouseId INTEGER,
+      $colOutletId INTEGER,
       $colIsActive INTEGER,
       $colLastLogin INTEGER
     )

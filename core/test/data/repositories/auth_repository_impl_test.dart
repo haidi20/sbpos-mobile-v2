@@ -58,7 +58,7 @@ class _FakeCoreRemoteDataSource extends CoreRemoteDataSource {
       token: 'access-1',
       refreshToken: 'refresh-1',
       roleId: 2,
-      warehouseId: 8,
+      outletId: 8,
       isActive: true,
     ),
     token: 'access-1',
@@ -72,7 +72,7 @@ class _FakeCoreRemoteDataSource extends CoreRemoteDataSource {
       token: 'access-2',
       refreshToken: 'refresh-2',
       roleId: 2,
-      warehouseId: 8,
+      outletId: 8,
       isActive: true,
     ),
     token: 'access-2',
@@ -124,7 +124,7 @@ void main() {
       expect(local.storedUser?.token, 'access-1');
       expect(local.storedUser?.refreshToken, 'refresh-1');
       expect(local.storedUser?.roleId, 2);
-      expect(local.storedUser?.warehouseId, 8);
+      expect(local.storedUser?.outletId, 8);
       expect(local.storedUser?.password, 'kasirdemo');
       result.fold(
         (_) => fail('Expected login success'),
@@ -146,7 +146,7 @@ void main() {
           token: 'access-1',
           refreshToken: 'refresh-1',
           roleId: 2,
-          warehouseId: 8,
+          outletId: 8,
           isActive: true,
         );
       final remote = _FakeCoreRemoteDataSource();

@@ -1,0 +1,152 @@
+package:core has `uses-material-design: true` set but the primary pubspec contains `uses-material-design: false`. If the application needs material icons, then `uses-material-design`  must be set to true.
+00:00 +0: loading D:/projects/sbpos_mobile_v2/features/outlet/test/data/repositories/outlet_repository_impl_test.dart
+../../core/lib/data/datasources/core_local_data_source.dart:3:8: Error: Error when reading '../../core/lib/data/datasources/db/auth_user.query.dart': The system cannot find the file specified.
+
+import 'package:core/data/datasources/db/auth_user.query.dart';
+       ^
+../../core/lib/data/datasources/core_local_data_source.dart:12:23: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+    final authQuery = AuthUserQuery(db);
+                      ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:27:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:42:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:56:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:89:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:100:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+00:00 +0 -1: loading D:/projects/sbpos_mobile_v2/features/outlet/test/data/repositories/outlet_repository_impl_test.dart [E]
+  Failed to load "D:/projects/sbpos_mobile_v2/features/outlet/test/data/repositories/outlet_repository_impl_test.dart": Compilation failed for testPath=D:/projects/sbpos_mobile_v2/features/outlet/test/data/repositories/outlet_repository_impl_test.dart
+  Error: the Dart compiler exited unexpectedly.
+  package:flutter_tools/src/base/common.dart 10:3  throwToolExit
+  package:flutter_tools/src/compile.dart 898:9     DefaultResidentCompiler._compile.<fn>
+  dart:async/zone.dart 1407:47                     _rootRunUnary
+  dart:async/zone.dart 1308:19                     _CustomZone.runUnary
+  dart:async/future_impl.dart 847:45               Future._propagateToListeners.handleValueCallback
+  dart:async/future_impl.dart 876:13               Future._propagateToListeners
+  dart:async/future_impl.dart 772:9                Future._propagateToListeners
+  dart:async/future_impl.dart 652:5                Future._completeWithValue
+  dart:async/future_impl.dart 722:7                Future._asyncCompleteWithValue.<fn>
+  dart:async/zone.dart 1399:13                     _rootRun
+  dart:async/zone.dart 1301:19                     _CustomZone.run
+  dart:async/zone.dart 1209:7                      _CustomZone.runGuarded
+  dart:async/zone.dart 1249:23                     _CustomZone.bindCallbackGuarded.<fn>
+  dart:async/schedule_microtask.dart 40:21         _microtaskLoop
+  dart:async/schedule_microtask.dart 49:5          _startMicrotaskLoop
+  dart:isolate-patch/isolate_patch.dart 118:13     _runPendingImmediateCallback
+  dart:isolate-patch/isolate_patch.dart 185:5      _RawReceivePort._handleMessage
+  
+../../core/lib/data/datasources/core_local_data_source.dart:3:8: Error: Error when reading '../../core/lib/data/datasources/db/auth_user.query.dart': The system cannot find the file specified.
+
+import 'package:core/data/datasources/db/auth_user.query.dart';
+       ^
+00:00 +0 -1: D:/projects/sbpos_mobile_v2/features/outlet/test/domain/entities/outlet_entity_test.dart: OutletEntity fromModel mapping should be correct
+00:00 +1 -1: D:/projects/sbpos_mobile_v2/features/outlet/test/domain/entities/outlet_entity_test.dart: OutletEntity toModel mapping should be correct
+00:00 +2 -1: D:/projects/sbpos_mobile_v2/features/outlet/test/domain/entities/outlet_entity_test.dart: OutletEntity copyWith should copy with new values
+../../core/lib/data/datasources/core_local_data_source.dart:12:23: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+    final authQuery = AuthUserQuery(db);
+                      ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:27:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:42:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:56:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:89:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:100:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+00:03 +3 -2: loading D:/projects/sbpos_mobile_v2/features/outlet/test/domain/usecases/get_outlets.usecase_test.dart [E]
+  Failed to load "D:/projects/sbpos_mobile_v2/features/outlet/test/domain/usecases/get_outlets.usecase_test.dart": Compilation failed for testPath=D:/projects/sbpos_mobile_v2/features/outlet/test/domain/usecases/get_outlets.usecase_test.dart
+00:03 +3 -2: loading D:/projects/sbpos_mobile_v2/features/outlet/test/data/repositories/outlet_repository_impl_test.dart [E]
+  Error: the Dart compiler exited unexpectedly.
+  package:flutter_tools/src/base/common.dart 10:3  throwToolExit
+  package:flutter_tools/src/compile.dart 898:9     DefaultResidentCompiler._compile.<fn>
+  dart:async/zone.dart 1407:47                     _rootRunUnary
+  dart:async/future_impl.dart 847:45               Future._propagateToListeners.handleValueCallback
+  dart:async/future_impl.dart 876:13               Future._propagateToListeners
+  dart:async/future_impl.dart 772:9                Future._propagateToListeners
+  dart:async/future_impl.dart 652:5                Future._completeWithValue
+  dart:async/future_impl.dart 722:7                Future._asyncCompleteWithValue.<fn>
+  dart:async/zone.dart 1399:13                     _rootRun
+  dart:async/zone.dart 1301:19                     _CustomZone.run
+  dart:async/zone.dart 1209:7                      _CustomZone.runGuarded
+  dart:async/zone.dart 1249:23                     _CustomZone.bindCallbackGuarded.<fn>
+  dart:async/schedule_microtask.dart 40:21         _microtaskLoop
+  dart:async/schedule_microtask.dart 49:5          _startMicrotaskLoop
+  dart:isolate-patch/isolate_patch.dart 118:13     _runPendingImmediateCallback
+  dart:isolate-patch/isolate_patch.dart 185:5      _RawReceivePort._handleMessage
+  
+../../core/lib/data/datasources/core_local_data_source.dart:3:8: Error: Error when reading '../../core/lib/data/datasources/db/auth_user.query.dart': The system cannot find the file specified.
+
+import 'package:core/data/datasources/db/auth_user.query.dart';
+       ^
+../../core/lib/data/datasources/core_local_data_source.dart:12:23: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+    final authQuery = AuthUserQuery(db);
+                      ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:27:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:42:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:56:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:89:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+../../core/lib/data/datasources/core_local_data_source.dart:100:25: Error: The method 'AuthUserQuery' isn't defined for the class 'CoreLocalDataSource'.
+ - 'CoreLocalDataSource' is from 'package:core/data/datasources/core_local_data_source.dart' ('../../core/lib/data/datasources/core_local_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AuthUserQuery'.
+      final authQuery = AuthUserQuery(db);
+                        ^^^^^^^^^^^^^
+00:08 +3 -3: loading D:/projects/sbpos_mobile_v2/features/outlet/test/presentation/view_models/outlet_vm_test.dart [E]
+  Failed to load "D:/projects/sbpos_mobile_v2/features/outlet/test/presentation/view_models/outlet_vm_test.dart": Compilation failed for testPath=D:/projects/sbpos_mobile_v2/features/outlet/test/presentation/view_models/outlet_vm_test.dart
+00:08 +3 -3: Some tests failed.

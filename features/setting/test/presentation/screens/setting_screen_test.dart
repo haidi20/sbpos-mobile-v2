@@ -1,7 +1,6 @@
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:notification/presentation/screens/notification_screen.dart';
-import 'package:product/presentation/screens/inventory_screen.dart';
+
 import 'package:setting/presentation/providers/setting.provider.dart';
 import 'package:setting/presentation/screens/help_screen.dart';
 import 'package:setting/presentation/screens/notification_setting_screen.dart';
@@ -216,8 +215,8 @@ void main() {
       screen: const SettingsScreen(),
       extraRoutes: {
         AppRoutes.login: const Scaffold(body: Text('Login Screen')),
-        AppRoutes.notification: const NotificationScreen(),
-        AppRoutes.inventory: const InventoryScreen(),
+        AppRoutes.notification: const Scaffold(body: Text('Notification')),
+        AppRoutes.inventory: const Scaffold(body: Text('Inventory')),
         AppRoutes.profile: const ProfileScreen(),
         AppRoutes.notificationSetting: const NotificationSettingScreen(),
         AppRoutes.security: const SecurityScreen(),

@@ -94,6 +94,28 @@ void main() {
     expect(find.text('Email dan password harus diisi'), findsOneWidget);
   });
 
+  testWidgets('login screen shows validation when password is too short', (tester) async {
+    await _pumpLogin(
+      tester,
+      repository: _FakeAuthRepository(),
+    );
+
+    // Enter email but short password
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'kasir@demo.com',
+    );
+    await tester.enterText(
+      find.byType(TextFormField).last,
+      '123',
+    );
+
+    await tester.tap(find.text('Masuk Aplikasi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Password minimal 6 karakter'), findsOneWidget);
+  });
+
   testWidgets('forgot password button shows guidance snackbar', (tester) async {
     await _pumpLogin(
       tester,
@@ -140,6 +162,53 @@ void main() {
     await tester.tap(find.text('Masuk Aplikasi'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Dashboard Mock'), findsOneWidget);
+  });
+
+  testWidgets(
+      '[TDD] Alur User: Membuka aplikasi, melihat Login Halaman Awal, memasukkan Email & Password, dan tekan Login',
+      (tester) async {
+    await _pumpLogin(
+      tester,
+      repository: _FakeAuthRepository(
+        onStoreLogin: ({required email, required password}) async {
+          expect(email, 'kasir@demo.com');
+          expect(password, 'kasirdemo');
+          return const Right(
+            UserEntity(
+              id: 1,
+              username: 'Kasir',
+              email: 'kasir@demo.com',
+              token: 'jwt-token',
+            ),
+          );
+        },
+      ),
+    );
+
+    // Langkah 1: Pengguna membuka aplikasi dan disajikan dengan layar Login
+    // Memastikan logo SBPOS dan slogan tampil
+    expect(find.text('SBPOS', findRichText: true), findsOneWidget);
+    expect(find.text('Solusi Pintar Bisnis Anda'), findsOneWidget);
+    // Memastikan field input ada
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.text('Masuk Aplikasi'), findsOneWidget);
+
+    // Langkah 2: Pengguna memasukkan Email dan Password
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'kasir@demo.com',
+    );
+    await tester.enterText(
+      find.byType(TextFormField).last,
+      'kasirdemo',
+    );
+
+    // Langkah 3: Menekan tombol "Login" (Masuk Aplikasi)
+    await tester.tap(find.text('Masuk Aplikasi'));
+    await tester.pumpAndSettle();
+
+    // Memastikan sukses login memanggil API dan navigasi
     expect(find.text('Dashboard Mock'), findsOneWidget);
   });
 }

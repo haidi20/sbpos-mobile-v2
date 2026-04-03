@@ -9,7 +9,7 @@ class UserModel {
   final String? token;
   final String? refreshToken;
   final int? roleId;
-  final int? warehouseId;
+  final int? outletId;
   final bool? isActive;
   final DateTime? lastLogin;
 
@@ -21,7 +21,7 @@ class UserModel {
     this.token,
     this.refreshToken,
     this.roleId,
-    this.warehouseId,
+    this.outletId,
     this.isActive,
     this.lastLogin,
   });
@@ -34,7 +34,7 @@ class UserModel {
     String? token,
     String? refreshToken,
     int? roleId,
-    int? warehouseId,
+    int? outletId,
     bool? isActive,
     DateTime? lastLogin,
   }) {
@@ -46,7 +46,7 @@ class UserModel {
       token: token ?? this.token,
       refreshToken: refreshToken ?? this.refreshToken,
       roleId: roleId ?? this.roleId,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       isActive: isActive ?? this.isActive,
       lastLogin: lastLogin ?? this.lastLogin,
     );
@@ -59,7 +59,7 @@ class UserModel {
       token: userJson['token'] as String? ?? userJson['access_token'] as String?,
       refreshToken: userJson['refresh_token'] as String?,
       roleId: _asInt(userJson['role_id']),
-      warehouseId: _asInt(userJson['warehouse_id']),
+      outletId: _asInt(userJson['outlet_id']) ?? _asInt(userJson['warehouse_id']),
       isActive: _asBool(userJson['is_active']),
       email: userJson['email'] as String?,
     );
@@ -73,7 +73,7 @@ class UserModel {
       token: json['token'] as String?,
       refreshToken: json['refresh_token'] as String?,
       roleId: _asInt(json['role_id']),
-      warehouseId: _asInt(json['warehouse_id']),
+      outletId: _asInt(json['outlet_id']) ?? _asInt(json['warehouse_id']),
       isActive: _asBool(json['is_active']),
       email: json['email'] as String?,
       lastLogin: _asDate(json['last_login']),
@@ -102,7 +102,8 @@ class UserModel {
       'token': token,
       'refresh_token': refreshToken,
       'role_id': roleId,
-      'warehouse_id': warehouseId,
+      'warehouse_id': outletId,
+      'outlet_id': outletId,
       'is_active': isActive == null ? null : (isActive! ? 1 : 0),
       'last_login': (lastLogin ?? DateTime.now()).millisecondsSinceEpoch,
     };
@@ -117,7 +118,8 @@ class UserModel {
       'token': token,
       'refresh_token': refreshToken,
       'role_id': roleId,
-      'warehouse_id': warehouseId,
+      'warehouse_id': outletId,
+      'outlet_id': outletId,
       'is_active': isActive,
       'last_login': lastLogin?.toIso8601String(),
     };
@@ -132,7 +134,7 @@ class UserModel {
       token: entity.token,
       refreshToken: entity.refreshToken,
       roleId: entity.roleId,
-      warehouseId: entity.warehouseId,
+      outletId: entity.outletId,
       isActive: entity.isActive,
       lastLogin: entity.lastLogin,
     );
@@ -147,7 +149,7 @@ class UserModel {
       token: token,
       refreshToken: refreshToken,
       roleId: roleId,
-      warehouseId: warehouseId,
+      outletId: outletId,
       isActive: isActive,
       lastLogin: lastLogin,
     );

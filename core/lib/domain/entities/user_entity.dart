@@ -8,7 +8,7 @@ class UserEntity {
   final String? token;
   final String? refreshToken;
   final int? roleId;
-  final int? warehouseId;
+  final int? outletId;
   final bool? isActive;
   final DateTime? lastLogin;
 
@@ -20,7 +20,7 @@ class UserEntity {
     this.token,
     this.refreshToken,
     this.roleId,
-    this.warehouseId,
+    this.outletId,
     this.isActive,
     this.lastLogin,
   });
@@ -33,7 +33,7 @@ class UserEntity {
     String? token,
     String? refreshToken,
     int? roleId,
-    int? warehouseId,
+    int? outletId,
     bool? isActive,
     DateTime? lastLogin,
   }) {
@@ -45,7 +45,7 @@ class UserEntity {
       token: token ?? this.token,
       refreshToken: refreshToken ?? this.refreshToken,
       roleId: roleId ?? this.roleId,
-      warehouseId: warehouseId ?? this.warehouseId,
+      outletId: outletId ?? this.outletId,
       isActive: isActive ?? this.isActive,
       lastLogin: lastLogin ?? this.lastLogin,
     );
@@ -60,7 +60,7 @@ class UserEntity {
       token: model.token,
       refreshToken: model.refreshToken,
       roleId: model.roleId,
-      warehouseId: model.warehouseId,
+      outletId: model.outletId,
       isActive: model.isActive,
       lastLogin: model.lastLogin,
     );
@@ -75,7 +75,7 @@ class UserEntity {
       token: token,
       refreshToken: refreshToken,
       roleId: roleId,
-      warehouseId: warehouseId,
+      outletId: outletId,
       isActive: isActive,
       lastLogin: lastLogin,
     );
@@ -92,7 +92,7 @@ class UserEntity {
         other.token == token &&
         other.refreshToken == refreshToken &&
         other.roleId == roleId &&
-        other.warehouseId == warehouseId &&
+        other.outletId == outletId &&
         other.isActive == isActive;
   }
 
@@ -104,7 +104,7 @@ class UserEntity {
         token.hashCode ^
         refreshToken.hashCode ^
         roleId.hashCode ^
-        warehouseId.hashCode ^
+        outletId.hashCode ^
         isActive.hashCode;
   }
 
@@ -118,7 +118,7 @@ class UserEntity {
         token: $token,
         refreshToken: $refreshToken,
         roleId: $roleId,
-        warehouseId: $warehouseId,
+        outletId: $outletId,
         isActive: $isActive
       )''';
   }

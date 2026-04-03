@@ -1,7 +1,4 @@
-import 'dart:async';
 import 'package:core/core.dart';
-import 'package:core/domain/entities/webhook_event.entity.dart';
-import 'package:core/domain/repositories/webhook_repository.dart';
 
 class WebhookState {
   final bool isConnected;

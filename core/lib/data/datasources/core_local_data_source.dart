@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
 import 'package:core/data/datasources/core_database.dart';
-import 'package:core/data/datasources/db/auth_user.query.dart';
+import 'package:core/data/datasources/db/auth_user.dao.dart';
 import 'package:core/data/models/user_model.dart';
 
 class CoreLocalDataSource with BaseErrorHelper {
@@ -9,8 +9,8 @@ class CoreLocalDataSource with BaseErrorHelper {
 
   Future<UserModel?> getUser() async {
     final db = await databaseHelper.database;
-    final authQuery = AuthUserQuery(db);
-    final result = await authQuery.getUser();
+    final authDao = AuthUserDao(db);
+    final result = await authDao.getUser();
 
     if (result != null) {
       return UserModel.fromMap(result);
@@ -24,8 +24,8 @@ class CoreLocalDataSource with BaseErrorHelper {
   }) async {
     try {
       final db = await databaseHelper.database;
-      final authQuery = AuthUserQuery(db);
-      return await authQuery.authUser(
+      final authDao = AuthUserDao(db);
+      return await authDao.authUser(
         email: email,
         password: password,
       );
@@ -39,8 +39,8 @@ class CoreLocalDataSource with BaseErrorHelper {
   Future<int> countUser() async {
     try {
       final db = await databaseHelper.database;
-      final authQuery = AuthUserQuery(db);
-      return await authQuery.countUser();
+      final authDao = AuthUserDao(db);
+      return await authDao.countUser();
     } catch (e) {
       throw Exception(
         'Gagal mendapatkan data user di lokal db: ${e.toString()}',
@@ -53,8 +53,8 @@ class CoreLocalDataSource with BaseErrorHelper {
   }) async {
     try {
       final db = await databaseHelper.database;
-      final authQuery = AuthUserQuery(db);
-      await authQuery.storeUser(user);
+      final authDao = AuthUserDao(db);
+      await authDao.storeUser(user);
 
       return 'Berhasil memperbaharui data user di lokal db';
     } catch (e) {
@@ -86,8 +86,8 @@ class CoreLocalDataSource with BaseErrorHelper {
   Future<void> deleteUser() async {
     try {
       final db = await databaseHelper.database;
-      final authQuery = AuthUserQuery(db);
-      await authQuery.deleteUser();
+      final authDao = AuthUserDao(db);
+      await authDao.deleteUser();
       _logger.info('Berhasil delete user di lokal db');
     } catch (e) {
       throw Exception('Gagal delete user di lokal db: ${e.toString()}');
@@ -97,8 +97,8 @@ class CoreLocalDataSource with BaseErrorHelper {
   Future<void> deleteToken() async {
     try {
       final db = await databaseHelper.database;
-      final authQuery = AuthUserQuery(db);
-      await authQuery.deleteToken();
+      final authDao = AuthUserDao(db);
+      await authDao.deleteToken();
 
       _logger.info('Berhasil delete token user di lokal db');
     } catch (e) {

@@ -1,5 +1,4 @@
 import 'package:core/data/datasources/core_database_schema_registry.dart';
-import 'package:core/data/datasources/platforms/platform_db.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';

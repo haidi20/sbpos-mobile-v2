@@ -2,7 +2,6 @@ import 'package:core/core.dart';
 import 'package:core/data/datasources/core_local_data_source.dart';
 import 'package:core/data/datasources/core_remote_data_source.dart';
 import 'package:core/data/models/user_model.dart';
-import 'package:core/data/responses/auth_response.dart';
 import 'package:core/domain/entities/user_entity.dart';
 import 'package:core/domain/repositories/auth_repository.dart';
 
@@ -62,7 +61,7 @@ class AuthRepositoryImpl implements AuthRepository {
           remoteUser?.refreshToken ??
           fallbackUser?.refreshToken,
       roleId: remoteUser?.roleId ?? fallbackUser?.roleId,
-      warehouseId: remoteUser?.warehouseId ?? fallbackUser?.warehouseId,
+      outletId: remoteUser?.outletId ?? fallbackUser?.outletId,
       isActive: remoteUser?.isActive ?? fallbackUser?.isActive,
       lastLogin: DateTime.now(),
     );
