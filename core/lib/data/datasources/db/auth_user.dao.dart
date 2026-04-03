@@ -3,20 +3,21 @@ import 'package:core/data/datasources/db/auth_user.table.dart';
 import 'package:core/data/models/user_model.dart';
 import 'package:core/utils/password_hash.dart';
 
-class AuthUserQuery {
+class AuthUserDao {
   final Database? database;
   final String _tblUsers = AuthUserTable.tableName;
-  final _logger = Logger('AuthUserQuery');
+  final _logger = Logger('AuthUserDao');
 
   static const Map<String, String> _requiredColumns = {
     AuthUserTable.colRefreshToken: 'TEXT',
     AuthUserTable.colRoleId: 'INTEGER',
     AuthUserTable.colWarehouseId: 'INTEGER',
+    AuthUserTable.colOutletId: 'INTEGER',
     AuthUserTable.colIsActive: 'INTEGER',
     AuthUserTable.colLastLogin: 'INTEGER',
   };
 
-  AuthUserQuery(this.database);
+  AuthUserDao(this.database);
 
   Future<void> _ensureSqliteColumns() async {
     if (database == null) {
