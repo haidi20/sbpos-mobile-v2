@@ -1,0 +1,354 @@
+00:00 +0: loading D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart
+00:00 +0: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: getCustomCategories memanggil endpoint kategori kasir
+00:00 +1: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: getOrderTypes memanggil endpoint jenis pesanan
+00:00 +2: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: getOjolOptions memanggil endpoint ojol
+00:00 +3: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: checkTransactionQty mengirim product_id dan qty ke endpoint
+00:00 +4: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: checkTransactionQty melempar validasi saat stok tidak cukup
+00:00 +5: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: checkoutTransaction memilih endpoint normal
+00:00 +6: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: checkoutTransaction memilih endpoint online
+00:00 +7: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: getNotPaidTransactions memanggil endpoint order gantung
+00:00 +8: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: requestCancelTransaction mengirim alasan batal ke endpoint OTP
+00:00 +9: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: confirmCancelTransaction mengirim OTP ke endpoint batal final
+00:00 +10: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/cashier_remote.data_source_test.dart: checkEditOrder mengirim query transaction_id ke endpoint edit check
+00:00 +11: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/close_cashier_remote.data_source_test.dart: getCloseCashierStatus memanggil endpoint closable dan parse payload map
+00:00 +12: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/close_cashier_remote.data_source_test.dart: getCloseCashierStatus tetap bisa parse payload boolean sederhana
+00:00 +13: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/close_cashier_remote.data_source_test.dart: closeCashier mengirim cash_in_drawer ke endpoint close cashier
+00:00 +14: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/shift_remote.data_source_test.dart: getShiftStatus memanggil endpoint check dan parse payload map
+00:01 +15: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/shift_remote.data_source_test.dart: getShiftStatus tetap bisa parse payload boolean sederhana
+00:01 +16: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/shift_remote.data_source_test.dart: openCashier mengirim initial_balance ke endpoint shift open
+00:01 +17: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/shift_remote.data_source_test.dart: getLatestShift memanggil endpoint latest dan parse shift terakhir
+00:01 +18: D:/projects/sbpos_mobile_v2/features/transaction/test/data/datasources/transaction_seeder_test.dart: transaction seeder: insert transaction + details into local DB
+00:01 +19: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: getCustomCategories memetakan model menjadi entity
+00:02 +20: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: checkTransactionQty memetakan server validation ke Left
+00:02 +21: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: checkoutTransaction memetakan model transaksi remote menjadi entity
+00:02 +22: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: getNotPaidTransactions memetakan list model menjadi entity
+00:02 +23: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: confirmCancelTransaction memetakan response aksi
+00:02 +24: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: requestCancelTransaction memetakan response aksi OTP
+00:02 +25: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/cashier_remote.repository_impl_test.dart: checkEditOrder memetakan response edit order
+00:02 +26: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/close_cashier.repository.impl_test.dart: getCloseCashierStatus mengembalikan entity saat remote sukses
+00:02 +27: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/close_cashier.repository.impl_test.dart: getCloseCashierStatus memetakan ServerException ke ServerFailure
+00:02 +28: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/close_cashier.repository.impl_test.dart: closeCashier mengembalikan shift tertutup saat remote sukses
+00:02 +29: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/close_cashier.repository.impl_test.dart: closeCashier memetakan NetworkException ke NetworkFailure
+00:02 +30: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/close_cashier.repository.impl_test.dart: closeCashier memetakan error tak terduga ke UnknownFailure
+00:03 +31: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: getShiftStatus mengembalikan entity saat remote sukses
+00:03 +32: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: getShiftStatus memetakan ServerException ke ServerFailure
+00:03 +33: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: openCashier mengembalikan entity terbuka saat remote sukses
+00:03 +34: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: getLatestShift mengembalikan shift entity saat remote sukses
+00:03 +35: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: openCashier memetakan NetworkException ke NetworkFailure
+00:03 +36: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: openCashier memetakan error tak terduga ke UnknownFailure
+00:03 +37: D:/projects/sbpos_mobile_v2/features/transaction/test/data/repositories/shift.repository.impl_test.dart: getLatestShift memetakan error tak terduga ke UnknownFailure
+00:03 +38: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/close_cashier_usecases_test.dart: GetCloseCashierStatus mengembalikan entity saat sukses
+00:03 +39: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/close_cashier_usecases_test.dart: GetCloseCashierStatus memetakan thrown Failure ke Left
+00:03 +40: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/close_cashier_usecases_test.dart: GetCloseCashierStatus memetakan exception tak terduga ke UnknownFailure
+00:03 +41: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/close_cashier_usecases_test.dart: CloseCashier mengembalikan entity saat sukses
+00:03 +42: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/close_cashier_usecases_test.dart: CloseCashier memetakan thrown Failure ke Left
+00:03 +43: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/close_cashier_usecases_test.dart: CloseCashier memetakan exception tak terduga ke UnknownFailure
+00:04 +44: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: GetShiftStatus mengembalikan entity saat sukses
+00:04 +45: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: GetShiftStatus memetakan thrown Failure ke Left
+00:04 +46: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: GetShiftStatus memetakan exception tak terduga ke UnknownFailure
+00:04 +47: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: OpenCashier mengembalikan entity terbuka saat sukses
+00:04 +48: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: OpenCashier memetakan thrown Failure ke Left
+00:04 +49: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: OpenCashier memetakan exception tak terduga ke UnknownFailure
+00:04 +50: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: GetLatestShift mengembalikan shift terakhir saat sukses
+00:04 +51: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/open_cashier_usecases_test.dart: GetLatestShift memetakan thrown Failure ke Left
+00:04 +52: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases CreateTransaction returns entity with pending status on success
+00:04 +53: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransactionsUsecase sorts transactions by createdAt desc then sequence desc
+00:04 +54: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransaction returns entity on success
+00:04 +55: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransactionActive returns pending transaction on success
+00:04 +56: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases UpdateTransaction returns updated entity on success
+00:04 +57: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases DeleteTransaction returns true on success
+00:04 +58: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetLastSequenceNumberTransaction returns latest sequence on success
+00:04 +59: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetLastSequenceNumberTransaction returns 0 when repository returns Left
+00:04 +60: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetLastSequenceNumberTransaction returns 0 on unexpected exception
+00:04 +61: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases CreateTransaction maps thrown Failure into Left
+00:04 +62: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases CreateTransaction maps unexpected exception into UnknownFailure
+00:04 +63: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransaction maps thrown Failure into Left
+00:04 +64: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransaction maps unexpected exception into UnknownFailure
+00:04 +65: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransactionsUsecase maps thrown Failure into Left
+00:04 +66: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransactionsUsecase maps unexpected exception into UnknownFailure
+00:04 +67: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransactionActive maps thrown Failure into Left
+00:04 +68: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases GetTransactionActive maps unexpected exception into UnknownFailure
+00:04 +69: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases UpdateTransaction maps thrown Failure into Left
+00:04 +70: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases UpdateTransaction maps unexpected exception into UnknownFailure
+00:04 +71: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases DeleteTransaction maps thrown Failure into Left
+00:04 +72: D:/projects/sbpos_mobile_v2/features/transaction/test/domain/usecases/transaction_usecases_test.dart: Transaction usecases DeleteTransaction maps unexpected exception into UnknownFailure
+00:05 +73: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/concurrent_inserts_test.dart: concurrent inserts many parallel insertSyncTransaction calls succeed
+00:05 +74: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/dao_transaction_integration_test.dart: TransactionDao integration insertSyncTransaction and getTransactions
+00:05 +75: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/dao_transaction_integration_test.dart: TransactionDao integration updateTransaction and delete
+00:05 +76: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/dao_transaction_integration_test.dart: TransactionDao integration insertDetails upserts by transaction_id + product_id
+00:06 +77: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/dao_transaction_integration_test.dart: TransactionDao integration insertDetails sanitizes null values before DB write
+00:06 +78: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/failure_and_retry_test.dart: failure and retry insertSyncTransaction retries on transient failures
+00:06 +79: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/failure_and_retry_test.dart: failure and retry insertSyncTransaction ultimately fails if retries exhausted
+00:06 +80: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/local_transaction_integration_test.dart: TransactionLocalDataSource integration insertTransaction and insertDetails
+00:06 +81: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/local_transaction_integration_test.dart: TransactionLocalDataSource integration insertSyncTransaction stores transaction and details
+00:07 +82: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/migration_schema_test.dart: Transaction table has required columns
+00:07 +83: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/repository_transaction_integration_test.dart: TransactionRepositoryImpl integration (offline create) createTransaction with isOffline true stores locally
+00:07 +84: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/repository_transaction_integration_test.dart: TransactionRepositoryImpl integration (offline create) updateTransaction with isOffline true updates local row
+00:07 +85: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/repository_transaction_integration_test.dart: TransactionRepositoryImpl integration (offline create) deleteTransaction with isOffline true removes local row
+00:08 +86: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/vm_transaction_integration_test.dart: TransactionPosViewModel integration (end-to-end local DB) onAddToCart + onStoreLocal persists to local DB
+00:08 +87: D:/projects/sbpos_mobile_v2/features/transaction/test/integration/vm_transaction_integration_test.dart: TransactionPosViewModel integration (end-to-end local DB) setUpdateQuantity updates DB transaction totals and detail qty
+00:08 +88: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/components/transaction_card_test.dart: TransactionCard widget renders with TransactionEntity without throwing
+00:09 +89: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/components/transaction_detail.card_test.dart: TransactionDetailCard shows low-stock warning and packet badge
+00:09 +90: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/components/transaction_detail.card_test.dart: TransactionDetailCard shows low-stock warning and packet badge
+00:10 +91: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/components/transaction_presentation_screens_test.dart: Transaction presentation screens TransactionHistoryScreen builds with provider override
+00:10 +91: loading D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/controllers/transaction_history_tabtime_logic_test.dart
+PASS normalizeDate strips the time component
+PASS labelForDate returns today, yesterday, and formatted fallback
+PASS generateDateList uses selected date or now as end date
+PASS dateAtIndex validates null and out-of-range indexes
+PASS findIndexForDate compares by date only
+PASS resolveInitialSelected prioritizes state then provided then last date
+PASS prepareDates resolves the correct initial index and falls back to last
+PASS selectionForIndex validates index and tracks swipe direction
+PASS isSelected prefers selectedDate and falls back to provided date
+PASS generateDateList always returns normalized dates
+All 10 checks passed.
+00:11 +92: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/close_cashier.screen_test.dart: CloseCashierScreen menampilkan informasi utama screen
+00:12 +93: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/close_cashier.screen_test.dart: CloseCashierScreen menampilkan informasi utama screen
+00:12 +94: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/close_cashier.screen_test.dart: CloseCashierScreen menampilkan informasi utama screen
+00:12 +95: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/close_cashier.screen_test.dart: CloseCashierScreen menampilkan informasi utama screen
+00:13 +96: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/open_cashier.screen_test.dart: OpenCashierScreen menampilkan informasi utama screen
+00:13 +97: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/open_cashier.screen_test.dart: OpenCashierScreen menampilkan informasi utama screen
+00:13 +98: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +99: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +100: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +101: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +102: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +103: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +104: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +105: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +106: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +107: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +108: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +109: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +110: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +111: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +112: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +113: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +114: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionHistoryScreen builds with provider override
+00:14 +115: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_history_screen_test.dart: TransactionHistoryScreen builds without exceptions
+00:14 +116: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_history_screen_test.dart: TransactionHistoryScreen builds without exceptions
+00:15 +117: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_history_screen_test.dart: TransactionHistoryScreen builds without exceptions
+00:15 +118: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +118: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionPosScreen builds with provider override
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "POS Produk": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart:132:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:183:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1017:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart line 132
+The test description was:
+  TransactionPosScreen builds with provider override
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:15 +118 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +118 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/screens_test.dart: TransactionPosScreen builds with provider override [E]
+  Test failed. See exception logs above.
+  The test description was: TransactionPosScreen builds with provider override
+  
+00:15 +119 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +120 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +121 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +122 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +123 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +124 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +125 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +126 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +127 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +128 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +129 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +130 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +131 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+00:15 +131 ~1 -1: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TypeWidgetFinder:<Found 0 widgets with type "TextField": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart:139:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:183:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1017:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart line 139
+The test description was:
+  TransactionPosScreen renders and search updates VM
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:15 +131 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_history_screen_test.dart: Date tabs default to today and selecting Kemarin updates state
+00:15 +131 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_pos.screen_test.dart: TransactionPosScreen renders and search updates VM [E]
+  Test failed. See exception logs above.
+  The test description was: TransactionPosScreen renders and search updates VM
+  
+00:16 +132 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_history_screen_test.dart: Date tabs default to today and selecting Kemarin updates state
+00:16 +133 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_history.vm_test.dart: TransactionHistoryViewModel integration (local DB) refresh loads offline transactions from local DB
+00:16 +134 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/screens/transaction_history_screen_test.dart: switching to Pesanan Offline renders remote not paid orders
+00:16 +135 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_history.vm_test.dart: TransactionHistoryViewModel integration (local DB) setSelectedDate filters transactions by date
+00:16 +136 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_history.vm_test.dart: TransactionHistoryViewModel integration (local DB) setSearchQuery + refresh filters by notes or sequence number
+00:16 +137 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_history_remote_flow_test.dart: onRefresh loads history and not paid transactions together
+00:17 +138 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_history_remote_flow_test.dart: setMode to notPaid exposes remote pending transactions
+00:17 +139 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_history_remote_flow_test.dart: visibleTransactions applies search query on selected mode source
+00:17 +140 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: initial getters are zero/empty
+00:17 +141 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: onAddToCart creates transaction and adds detail
+00:17 +142 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setUpdateQuantity increments and removes item
+00:17 +143 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setItemNote updates local state immediately
+00:17 +144 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderNote updates state
+00:17 +145 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: selectOrderTypeById maps to proper enum
+00:17 +146 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOjolProvider, setPaymentMethod, setCashReceived
+00:17 +147 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: onToggleView toggles viewMode
+00:17 +148 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setViewMode sets viewMode explicitly
+00:17 +149 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: onShowMethodPayment cycles cart type
+00:17 +150 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: onClearCart deletes existing transaction and clears state
+00:17 +151 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: onStore forces status to proses
+00:17 +152 ~1 -2: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getFilteredProducts honors category and search
+00:17 +152 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getFilteredProducts honors category and search [E]
+  Expected: <1>
+    Actual: <0>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 291:5  main.<fn>
+  
+00:17 +152 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getOrderTypeItems returns selectable items
+00:17 +153 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getFilteredDetails filters by searchQuery and activeCategory
+00:17 +154 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getCartTotal returns formatted rupiah string
+00:17 +155 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setCustomer sets and clears selectedCustomer
+00:17 +156 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setActiveNoteId set and clear
+00:17 +157 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setTypeCart and setShowErrorSnackbar and onClearAll
+00:17 +158 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +159 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +160 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +161 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +162 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +163 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +164 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +165 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +166 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +167 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +168 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +169 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +170 ~1 -3: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence
+00:18 +170 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setOrderNote triggers persistence [E]
+  Expected: not null
+    Actual: <null>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 394:5  main.<fn>
+  
+00:18 +170 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: debounced setItemNote triggers persistence
+00:18 +171 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +172 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +173 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +174 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +175 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +176 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +177 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +178 ~1 -4: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx
+00:19 +178 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/widgets/open_cashier_guard_test.dart: guard menampilkan loading saat pengecekan awal
+00:19 +178 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: constructor _loadLocalTransaction populates state when repo has tx [E]
+  Expected: not null
+    Actual: <null>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 450:5  main.<fn>
+  
+00:19 +179 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/widgets/open_cashier_guard_test.dart: guard menampilkan loading saat pengecekan awal
+00:20 +180 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderType triggers persistence via create/update
+00:20 +181 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderType triggers persistence via create/update
+00:21 +182 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderType triggers persistence via create/update
+00:21 +183 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderType triggers persistence via create/update
+00:21 +184 ~1 -5: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderType triggers persistence via create/update
+00:21 +184 ~1 -6: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +184 ~1 -6: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setOrderType triggers persistence via create/update [E]
+  Expected: not null
+    Actual: <null>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 485:5  main.<fn>
+  
+00:21 +185 ~1 -6: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +186 ~1 -6: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +187 ~1 -6: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +188 ~1 -6: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +188 ~1 -7: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +188 ~1 -7: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: setIsPaid and onStore result in TransactionStatus.lunas when paid [E]
+  Expected: TransactionStatus:<TransactionStatus.proses>
+    Actual: TransactionStatus:<TransactionStatus.lunas>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 603:5  main.<fn>
+  
+00:21 +188 ~1 -8: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +188 ~1 -8: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getCartTotalValue and tax/grand total calculation are correct [E]
+  Expected: <14300>
+    Actual: <13000>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 629:5  main.<fn>
+  
+00:21 +188 ~1 -9: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +188 ~1 -9: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: getChangeValue reflects cash received minus grand total [E]
+  Expected: <5000>
+    Actual: <4750>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 639:5  main.<fn>
+  
+00:21 +189 ~1 -9: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +189 ~1 -10: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +189 ~1 -10: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: TransactionPosViewModel integration (local DB) onAddToCart persists transaction to local DB [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such table: customers, SQL logic error (code 1)
+    Causing statement: SELECT DISTINCT t.* FROM transactions t LEFT JOIN customers c ON c.id = t.customer_id LEFT JOIN transaction_details td ON td.transaction_id = t.id LEFT JOIN products p ON p.id = td.product_id  ORDER BY t.created_at DESC}) DatabaseException(SqliteException(1): while preparing statement, no such table: customers, SQL logic error (code 1)
+    Causing statement: SELECT DISTINCT t.* FROM transactions t LEFT JOIN customers c ON c.id = t.customer_id LEFT JOIN transaction_details td ON td.transaction_id = t.id LEFT JOIN products p ON p.id = td.product_id  ORDER BY t.created_at DESC) sql 'SELECT DISTINCT t.* FROM transactions t LEFT JOIN customers c ON c.id = t.customer_id LEFT JOIN transaction_details td ON td.transaction_id = t.id LEFT JOIN products p ON p.id = td.product_id  ORDER BY t.created_at DESC' args [] {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 125:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate.dart 33:12      SqfliteIsolate.handle
+  
+00:21 +190 ~1 -10: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +191 ~1 -10: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +191 ~1 -11: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +191 ~1 -11: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: TransactionPosViewModel integration (local DB) onStore creates persisted transaction with forced status [E]
+  Expected: TransactionStatus:<TransactionStatus.proses>
+    Actual: TransactionStatus:<TransactionStatus.pending>
+  
+  package:matcher                                                   expect
+  package:flutter_test/src/widget_tester.dart 474:18                expect
+  test\presentation\view_models\transaction_pos.vm_test.dart 728:7  main.<fn>.<fn>
+  
+00:21 +191 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +191 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: TransactionPosViewModel integration (local DB) removing last detail deletes persisted transaction [E]
+  SqfliteFfiException(sqlite_error: 1, , SqliteException(1): while preparing statement, no such table: customers, SQL logic error (code 1)
+    Causing statement: SELECT DISTINCT t.* FROM transactions t LEFT JOIN customers c ON c.id = t.customer_id LEFT JOIN transaction_details td ON td.transaction_id = t.id LEFT JOIN products p ON p.id = td.product_id  ORDER BY t.created_at DESC}) DatabaseException(SqliteException(1): while preparing statement, no such table: customers, SQL logic error (code 1)
+    Causing statement: SELECT DISTINCT t.* FROM transactions t LEFT JOIN customers c ON c.id = t.customer_id LEFT JOIN transaction_details td ON td.transaction_id = t.id LEFT JOIN products p ON p.id = td.product_id  ORDER BY t.created_at DESC) sql 'SELECT DISTINCT t.* FROM transactions t LEFT JOIN customers c ON c.id = t.customer_id LEFT JOIN transaction_details td ON td.transaction_id = t.id LEFT JOIN products p ON p.id = td.product_id  ORDER BY t.created_at DESC' args [] {details: {database: {path: :memory:, id: 4, readOnly: false, singleInstance: false}}}
+  package:sqflite_common_ffi/src/method_call.dart 125:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate.dart 33:12      SqfliteIsolate.handle
+  
+00:21 +192 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +193 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +194 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation_widgets_test.dart: Transaction presentation widgets (smoke tests) screens build with provider overrides
+00:21 +195 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: TransactionPosViewModel integration (local DB) debounced setOrderNote and setItemNote persist to DB
+00:21 +196 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: TransactionPosViewModel integration (local DB) debounced setOrderNote and setItemNote persist to DB
+00:22 +197 ~1 -12: D:/projects/sbpos_mobile_v2/features/transaction/test/presentation/view_models/transaction_pos.vm_test.dart: TransactionPosViewModel integration (local DB) onClearCart removes persisted transaction and details
+00:22 +198 ~1 -12: Some tests failed.

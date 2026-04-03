@@ -9,7 +9,9 @@ class DeleteTransaction {
   Future<Either<Failure, bool>> call(int id, {bool? isOffline}) async {
     try {
       return await repository.deleteTransaction(id, isOffline: isOffline);
-    } catch (e) {
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
       return const Left(UnknownFailure());
     }
   }

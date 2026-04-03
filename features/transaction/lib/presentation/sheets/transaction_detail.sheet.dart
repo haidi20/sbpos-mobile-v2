@@ -1,12 +1,13 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
+import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/widgets/dashed_line_painter.dart';
 import 'package:transaction/presentation/components/transaction_detail.card.dart';
 // Asumsi DashedLinePainter dan TransactionEntity/Status sudah benar di-import
 // --- END DUMMY IMPLEMENTASI ---
 
 // --- WIDGET UTAMA (BOTTOM SHEET) ---
-class TransactionDetailSheet extends StatelessWidget {
+class TransactionDetailSheet extends ConsumerWidget {
   final TransactionEntity tx;
 
   const TransactionDetailSheet({super.key, required this.tx});
@@ -41,7 +42,7 @@ class TransactionDetailSheet extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       top: false,
       child: Container(
@@ -79,9 +80,34 @@ class TransactionDetailSheet extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Logic Cetak Struk
-                          Navigator.of(context).pop();
+                        onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final viewModel =
+                              ref.read(transactionPosViewModelProvider.notifier);
+                          final job = viewModel.buildReceiptPrintJob(tx);
+                          final result = await ReceiptPreviewSheet.show(
+                            context,
+                            job: job,
+                            onConfirmPrint: () => viewModel.onPrintReceiptJob(job),
+                          );
+
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          if (result == null) {
+                            return;
+                          }
+
+                          if (result.isSuccess) {
+                            messenger.showSnackBar(
+                              SnackBar(content: Text(result.message)),
+                            );
+                          } else {
+                            messenger.showSnackBar(
+                              SnackBar(content: Text(result.message)),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           // Menggunakan AppColors.sbBlue untuk aksen CTA

@@ -34,6 +34,28 @@ List<ContentItemEntity> buildCombinedContent({
   return out;
 }
 
+double resolveProductPriceForState(
+  ProductEntity product,
+  TransactionPosState state,
+) {
+  if (state.orderType != EOrderType.online) {
+    return product.price ?? 0;
+  }
+
+  final provider = state.ojolProvider.toLowerCase();
+  if (provider.contains('go')) {
+    return product.gofoodPrice ?? product.price ?? 0;
+  }
+  if (provider.contains('grab')) {
+    return product.grabfoodPrice ?? product.price ?? 0;
+  }
+  if (provider.contains('shop')) {
+    return product.shopeefoodPrice ?? product.price ?? 0;
+  }
+
+  return product.price ?? 0;
+}
+
 mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
   TransactionPosViewModel get _vm => this as TransactionPosViewModel;
   // ------------------ Pengambil (Getters) ------------------
@@ -53,7 +75,13 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
 
   /// Kembalikan konfigurasi tipe order untuk UI selector.
   List<Map<String, Object?>> get getOrderTypes {
-    return orderTypeDummies.map((m) {
+    final source = state.orderTypes.isNotEmpty
+        ? state.orderTypes
+            .map((m) => m.toModel())
+            .toList()
+        : orderTypeDummies;
+
+    return source.map((m) {
       final id = (m.idServer ?? m.id)?.toString() ?? m.name;
       return {
         'id': id,
@@ -73,18 +101,13 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
   int get getCartCount => calculateCartCount(state.details);
 
   /// Total nilai keranjang (int, tanpa format).
-  int get getCartTotalValue {
-    return calculateCartTotalValue(state.details);
-  }
+  int get getCartTotalValue => calculateCartTotalValue(state.details);
 
   /// Hitung nilai pajak dari total keranjang.
-  int get getTaxValue {
-    return calculateTaxValue(state.details);
-  }
+  int get getTaxValue => calculateTaxValue(state.details);
 
   /// Hitung grand total (total + pajak).
-  // int get getGrandTotalValue => getCartTotalValue + getTaxValue;
-  int get getGrandTotalValue => getCartTotalValue;
+  int get getGrandTotalValue => calculateGrandTotalValue(state.details);
 
   /// Hitung kembalian berdasarkan cash yang diterima.
   int get getChangeValue =>
@@ -100,7 +123,6 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
 
       // Map raw id (could be numeric string like '1' or canonical names)
       EOrderType? mapIdToType(String rawId) {
-        // numeric ids from dummy data
         if (rawId == '1' ||
             rawId.toLowerCase() == 'dine_in' ||
             rawId.toLowerCase() == 'dinein' ||
@@ -134,7 +156,6 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
   }
 
   /// Sarankan nominal uang cepat (quick-cash) yang sesuai berdasarkan `total`.
-  /// Membulatkan ke atas ke kelipatan `step` (default 50 ribu) dan minimal `step`.
   int suggestQuickCash(int total, {int step = 50000}) {
     if (total <= step) return step;
     return ((total + step - 1) ~/ step) * step;
@@ -175,6 +196,11 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
   /// Daftar kategori yang tersedia (termasuk 'Paket').
   List<String> get availableCategories {
     final set = <String>{'Paket'};
+    for (final category in state.customCategories) {
+      if (category.title.isNotEmpty) {
+        set.add(category.title);
+      }
+    }
     for (final p in _vm._cachedProducts) {
       final n = p.category?.name;
       if (n != null && n.isNotEmpty) set.add(n);
@@ -192,6 +218,12 @@ mixin TransactionPosViewModelGetters on StateNotifier<TransactionPosState> {
   /// Ambil cache konten gabungan untuk UI (paket + produk).
   List<ContentItemEntity> getCombinedContent() {
     return _vm._combinedCache;
+  }
+
+  ProductEntity resolveDisplayProduct(ProductEntity product) {
+    return product.copyWith(
+      price: resolveProductPriceForState(product, state),
+    );
   }
 
   /// Bangun ulang cache konten gabungan berdasarkan filter saat ini.

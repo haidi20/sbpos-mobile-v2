@@ -14,7 +14,9 @@ class CreateTransaction {
     try {
       return await repository.createTransaction(txWithPending,
           isOffline: isOffline);
-    } catch (e) {
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
       return const Left(UnknownFailure());
     }
   }

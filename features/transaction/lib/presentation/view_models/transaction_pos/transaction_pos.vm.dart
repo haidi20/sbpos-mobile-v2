@@ -1,5 +1,6 @@
 library transaction_pos_vm;
 
+import 'dart:async';
 import 'package:core/core.dart';
 import 'package:product/domain/entities/packet.entity.dart';
 import 'package:product/domain/entities/product.entity.dart';
@@ -11,6 +12,11 @@ import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/content_item.entity.dart';
 import 'package:product/domain/entities/packet_selected_item.entity.dart';
 import 'package:transaction/domain/entitties/combined_content.entity.dart';
+import 'package:transaction/domain/usecases/check_transaction_qty.usecase.dart';
+import 'package:transaction/domain/usecases/checkout_transaction.usecase.dart';
+import 'package:transaction/domain/usecases/get_cashier_categories.usecase.dart';
+import 'package:transaction/domain/usecases/get_cashier_ojol_options.usecase.dart';
+import 'package:transaction/domain/usecases/get_cashier_order_types.usecase.dart';
 import 'package:transaction/presentation/ui_models/order_type_item.um.dart';
 import 'package:transaction/presentation/ui_models/payment_method.um.dart';
 import 'package:transaction/presentation/ui_models/ojol_provider.um.dart';
@@ -44,6 +50,12 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
   final GetLastSequenceNumberTransaction? _getLastSequenceNumber;
   late final GetPackets? _getPacketsUsecase;
   late final GetProducts? _getProductsUsecase;
+  final PrinterFacade? _printerFacade;
+  final CheckTransactionQty? _checkTransactionQty;
+  final CheckoutTransaction? _checkoutTransaction;
+  final GetCashierCategories? _getCashierCategories;
+  final GetCashierOrderTypes? _getCashierOrderTypes;
+  final GetCashierOjolOptions? _getCashierOjolOptions;
   List<ProductEntity> _cachedProducts = [];
   List<ProductEntity> get cachedProducts => _cachedProducts;
   // Cache konten gabungan (paket + produk) agar UI tidak menghitung ulang berulang kali
@@ -73,7 +85,19 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
     this._getLastSequenceNumber,
     GetPackets? getPackets,
     GetProducts? getProducts,
-  ]) : super(TransactionPosState()) {
+    PrinterFacade? printerFacade,
+    CheckTransactionQty? checkTransactionQty,
+    CheckoutTransaction? checkoutTransaction,
+    GetCashierCategories? getCashierCategories,
+    GetCashierOrderTypes? getCashierOrderTypes,
+    GetCashierOjolOptions? getCashierOjolOptions,
+  ])  : _printerFacade = printerFacade,
+        _checkTransactionQty = checkTransactionQty,
+        _checkoutTransaction = checkoutTransaction,
+        _getCashierCategories = getCashierCategories,
+        _getCashierOrderTypes = getCashierOrderTypes,
+        _getCashierOjolOptions = getCashierOjolOptions,
+        super(TransactionPosState()) {
     // Inisialisasi layanan persistensi dan muat transaksi lokal dari database
     _persistence = TransactionPersistence(
       _createTransaction,
@@ -85,11 +109,11 @@ class TransactionPosViewModel extends StateNotifier<TransactionPosState>
     _getPacketsUsecase = getPackets;
     _getProductsUsecase = getProducts;
     (() async {
-      // await _persistence.muatLocalTransaction(
-      //   _getTransactionActive,
-      //   () => state,
-      //   (s) => state = s,
-      // );
+      await _persistence.loadLocalTransaction(
+        _getTransactionActive,
+        () => state,
+        (s) => state = s,
+      );
     })();
   }
 

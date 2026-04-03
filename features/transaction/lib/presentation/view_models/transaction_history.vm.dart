@@ -1,25 +1,34 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/domain/entitties/get_transactions.entity.dart';
+import 'package:transaction/domain/usecases/get_not_paid_transactions.usecase.dart';
 import 'package:transaction/domain/usecases/get_transactions.usecase.dart';
 import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
 class TransactionHistoryViewModel
     extends StateNotifier<TransactionHistoryState> {
   TransactionHistoryViewModel(
-    this._getTransactions,
-  ) : super(TransactionHistoryState()) {
+    GetTransactionsUsecase getTransactions, [
+    GetNotPaidTransactions? getNotPaidTransactions,
+  ]
+  )  : _getNotPaidTransactions = getNotPaidTransactions,
+        _getTransactions = getTransactions,
+        super(TransactionHistoryState()) {
     // muat offline data on init
     Future.microtask(() => onRefresh());
   }
 
   final GetTransactionsUsecase _getTransactions;
+  final GetNotPaidTransactions? _getNotPaidTransactions;
   final _logger = Logger('TransactionHistoryViewModel');
   Timer? _searchDebounce;
 
   /// Getter yang mengembalikan daftar transaksi yang tersimpan secara offline
   /// (diambil dari state).
   List<TransactionEntity> get getTransactions => state.transactions;
+  List<TransactionEntity> get getNotPaid => state.notPaidTransactions;
+
+  bool get isShowingNotPaid => state.mode == TransactionHistoryMode.notPaid;
 
   /// Daftar transaksi untuk tab "Main" (status pending)
   List<TransactionEntity> get mainTransactions => state.transactions.toList();
@@ -33,6 +42,28 @@ class TransactionHistoryViewModel
   List<TransactionEntity> get selesaiTransactions => state.transactions
       .where((t) => t.status == TransactionStatus.lunas)
       .toList();
+
+  List<TransactionEntity> get visibleTransactions {
+    final source = isShowingNotPaid ? state.notPaidTransactions : state.transactions;
+    final query = (state.searchQuery ?? '').toLowerCase();
+    final selectedDate = state.selectedDate;
+
+    return source.where((transaction) {
+      final matchesQuery = query.isEmpty ||
+          (transaction.notes ?? '').toLowerCase().contains(query) ||
+          transaction.sequenceNumber.toString().contains(query) ||
+          (transaction.customerSelected?.name ?? '')
+              .toLowerCase()
+              .contains(query);
+      if (!matchesQuery) return false;
+
+      if (selectedDate == null) return true;
+      final date = transaction.date;
+      return date.year == selectedDate.year &&
+          date.month == selectedDate.month &&
+          date.day == selectedDate.day;
+    }).toList();
+  }
 
   /// Pencarian berbasis event dengan debounce; memicu kueri ke DB lokal.
   void onSearchChanged(
@@ -91,12 +122,56 @@ class TransactionHistoryViewModel
         _logger.info('Load transactions (offline) failed: $f');
         state = state.copyWith(isLoading: false, error: f.toString());
       }, (list) {
-        // _logger.info('jumlah data: ${list.length}');
         state = state.copyWith(isLoading: false, transactions: list);
       });
+
+      if (_getNotPaidTransactions != null) {
+        await refreshNotPaidTransactions();
+      }
     } catch (e, st) {
       _logger.severe('Failed to load transactions (offline)', e, st);
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> refreshNotPaidTransactions() async {
+    final usecase = _getNotPaidTransactions;
+    if (usecase == null) {
+      return;
+    }
+
+    try {
+      state = state.copyWith(isLoadingNotPaid: true);
+      final result = await usecase();
+      result.fold(
+        (failure) {
+          state = state.copyWith(
+            isLoadingNotPaid: false,
+            error: failure.message,
+          );
+        },
+        (transactions) {
+          state = state.copyWith(
+            isLoadingNotPaid: false,
+            notPaidTransactions: transactions,
+          );
+        },
+      );
+    } catch (e, st) {
+      _logger.severe('Failed to load not paid transactions', e, st);
+      state = state.copyWith(
+        isLoadingNotPaid: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<void> setMode(TransactionHistoryMode mode) async {
+    state = state.copyWith(mode: mode);
+    if (mode == TransactionHistoryMode.notPaid &&
+        state.notPaidTransactions.isEmpty &&
+        _getNotPaidTransactions != null) {
+      await refreshNotPaidTransactions();
     }
   }
 

@@ -388,7 +388,7 @@ class _ContentData extends ConsumerWidget {
             ),
           );
         } else {
-          final product = item.product!;
+          final product = viewModel.resolveDisplayProduct(item.product!);
           return ProductCard(
             product: product,
             onTap: () => unawaited(

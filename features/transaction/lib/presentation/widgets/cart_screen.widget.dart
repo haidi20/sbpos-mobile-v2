@@ -84,7 +84,10 @@ class CustomerCard extends StatelessWidget {
         onTap: () async {
           // Collapse any active catatan input before opening picker (persist in latar belakang)
           unawaited(viewModel.setActiveNoteId(null, background: true));
-          CustomerSheet.openCustomerPicker(context);
+          CustomerSheet.openCustomerPicker(
+            context,
+            onCustomerSelected: viewModel.setCustomer,
+          );
         },
         borderRadius: BorderRadius.circular(16.0),
         child: DottedBorder(

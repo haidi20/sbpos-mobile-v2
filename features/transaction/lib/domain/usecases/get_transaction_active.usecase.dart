@@ -11,7 +11,9 @@ class GetTransactionActive {
   Future<Either<Failure, TransactionEntity>> call({bool? isOffline}) async {
     try {
       return await repository.getPendingTransaction(isOffline: isOffline);
-    } catch (e) {
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
       return const Left(UnknownFailure());
     }
   }

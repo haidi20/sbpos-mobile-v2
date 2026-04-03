@@ -2,8 +2,6 @@ import 'package:core/core.dart';
 import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.state.dart';
-import 'package:dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:dashboard/presentation/view_models/dashboard.state.dart';
 
 class CartPaymentController {
   final WidgetRef ref;
@@ -99,7 +97,6 @@ class CartPaymentController {
     // setelah widget mungkin telah di-dispose selama operasi await.
     final historyNotifier =
         ref.read(transactionHistoryViewModelProvider.notifier);
-    final dashboardNotifier = ref.read(dashboardViewModelProvider.notifier);
     final router = GoRouter.of(context);
 
     // Tutup `CartBottomSheet` jika terbuka sebelum proses, supaya UI kembali ke layar utama.
@@ -107,8 +104,22 @@ class CartPaymentController {
       Navigator.of(context).pop();
     } catch (_) {}
 
-    // Simpan transaksi di latar belakang tapi tunggu sampai selesai (status akan menjadi 'proses')
-    await _viewModel.onStore();
+    final checkoutResult = await _viewModel.checkoutCurrentTransaction();
+    if (!context.mounted) {
+      return;
+    }
+
+    final checkoutSuccess = checkoutResult.fold(
+      (failure) {
+        showErrorSnackBar(context, failure.message);
+        return false;
+      },
+      (_) => true,
+    );
+
+    if (!checkoutSuccess) {
+      return;
+    }
 
     // Setelah berhasil disimpan, reset seluruh state POS ke kondisi awal
     _viewModel.onClearAll();
@@ -119,8 +130,7 @@ class CartPaymentController {
       await historyNotifier.onRefresh();
     } catch (_) {}
 
-    dashboardNotifier.onTabChange(AppTab.orders);
-    router.go(AppRoutes.dashboard);
+    router.go('${AppRoutes.dashboard}?tab=orders');
   }
 
   /// Mulai mendengarkan perubahan state untuk menyinkronkan `cashController`.

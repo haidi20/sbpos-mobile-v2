@@ -11,7 +11,9 @@ class UpdateTransaction {
       {bool? isOffline}) async {
     try {
       return await repository.updateTransaction(tx, isOffline: isOffline);
-    } catch (e) {
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
       return const Left(UnknownFailure());
     }
   }

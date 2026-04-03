@@ -182,8 +182,15 @@ class TransactionPosController {
   }
 
   // Ketuk produk: delegasikan aksi ke ViewModel
-  Future<void> onProductTap({required ProductEntity product}) async =>
-      await _vm.onAddToCart(product: product);
+  Future<void> onProductTap({required ProductEntity product}) async {
+    final result = await _vm.validateAndAddProductToCart(product: product);
+    result.fold(
+      (failure) {
+        showErrorSnackBar(context, failure.message);
+      },
+      (_) {},
+    );
+  }
 
   /// Ketuk produk dengan perilaku pintar: jika produk sudah ada di
   /// `transaction details`, buka Cart Bottom Sheet. Jika belum ada,

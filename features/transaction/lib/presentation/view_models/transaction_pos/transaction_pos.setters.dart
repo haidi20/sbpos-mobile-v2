@@ -21,9 +21,12 @@ mixin TransactionPosViewModelSetters on StateNotifier<TransactionPosState> {
     // Resolve product data from cache when available (web/list views may
     // supply only minimal product objects). Use cached product fields to
     // ensure detail records contain name/price.
-    final resolved = _vm._cachedProducts.firstWhere(
+    final cachedProduct = _vm._cachedProducts.firstWhere(
       (p) => p.id == product.id,
       orElse: () => product,
+    );
+    final resolved = cachedProduct.copyWith(
+      price: product.price ?? cachedProduct.price,
     );
 
     final updated = addOrUpdateProductInDetails(

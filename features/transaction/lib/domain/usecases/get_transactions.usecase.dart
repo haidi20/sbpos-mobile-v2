@@ -28,7 +28,9 @@ class GetTransactionsUsecase {
         });
         return list;
       });
-    } catch (e) {
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
       return const Left(UnknownFailure());
     }
   }

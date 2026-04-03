@@ -11,7 +11,9 @@ class GetTransaction {
       {bool? isOffline}) async {
     try {
       return await repository.getTransaction(id, isOffline: isOffline);
-    } catch (e) {
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
       return const Left(UnknownFailure());
     }
   }

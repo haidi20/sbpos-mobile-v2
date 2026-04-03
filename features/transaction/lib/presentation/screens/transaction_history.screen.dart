@@ -53,10 +53,13 @@ class _TransactionHistoryScreenState
             // extracted header widget
             TransactionHistoryHeader(
               onSearch: _viewModel.onSearchChanged,
+              mode: state.mode,
+              onModeChanged: (mode) => unawaited(_viewModel.setMode(mode)),
               onDateSelected: (_) =>
                   _controller.showDatePickerAndSelect(context, ref),
               onRefresh: () => _viewModel.onRefresh(),
-              isLoading: state.isLoading,
+              isLoading:
+                  state.isLoading || (state.mode == TransactionHistoryMode.notPaid && state.isLoadingNotPaid),
             ),
 
             // date tabs + body
@@ -71,13 +74,17 @@ class _TransactionHistoryScreenState
                   required BuildContext context,
                 }) {
                   final st = ref.watch(transactionHistoryViewModelProvider);
+                  final visibleTransactions =
+                      ref.read(transactionHistoryViewModelProvider.notifier).visibleTransactions;
                   return RefreshIndicator(
                     onRefresh: () => _viewModel.onRefresh(),
                     color: AppColors.sbBlue,
                     displacement: 32,
                     child: TransactionHistoryList(
-                      transactions: st.transactions,
-                      isLoading: st.isLoading,
+                      transactions: visibleTransactions,
+                      isLoading: st.isLoading ||
+                          (st.mode == TransactionHistoryMode.notPaid &&
+                              st.isLoadingNotPaid),
                       onTap: (tx) async {
                         await _controller.showTransactionActions(
                           context,

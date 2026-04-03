@@ -3,9 +3,12 @@
 import 'package:core/core.dart';
 import 'package:transaction/domain/entitties/transaction.entity.dart';
 import 'package:transaction/presentation/components/transaction_history.card.dart';
+import 'package:transaction/presentation/view_models/transaction_history.state.dart';
 
 class TransactionHistoryHeader extends StatelessWidget {
   final ValueChanged<String> onSearch;
+  final TransactionHistoryMode mode;
+  final ValueChanged<TransactionHistoryMode> onModeChanged;
   final ValueChanged<DateTime?>? onDateSelected;
   final Future<void> Function()? onRefresh;
   final bool isLoading;
@@ -13,6 +16,8 @@ class TransactionHistoryHeader extends StatelessWidget {
   const TransactionHistoryHeader({
     super.key,
     required this.onSearch,
+    required this.mode,
+    required this.onModeChanged,
     this.onDateSelected,
     this.onRefresh,
     this.isLoading = false,
@@ -39,6 +44,28 @@ class TransactionHistoryHeader extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ChoiceChip(
+                  label: const Text('Riwayat'),
+                  selected: mode == TransactionHistoryMode.history,
+                  onSelected: (_) =>
+                      onModeChanged(TransactionHistoryMode.history),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ChoiceChip(
+                  label: const Text('Pesanan Offline'),
+                  selected: mode == TransactionHistoryMode.notPaid,
+                  onSelected: (_) =>
+                      onModeChanged(TransactionHistoryMode.notPaid),
                 ),
               ),
             ],
