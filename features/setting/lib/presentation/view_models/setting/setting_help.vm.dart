@@ -1,7 +1,17 @@
-part of 'package:setting/presentation/view_models/setting.vm.dart';
+import 'package:setting/presentation/view_models/setting.state.dart';
 
-mixin _SettingHelpViewModelMixin on _SettingViewModelScope {
+class SettingHelpViewModelActions {
+  SettingHelpViewModelActions({
+    required SettingState Function() getState,
+    required void Function(SettingState) setState,
+  })  : _getState = getState,
+        _setState = setState;
+
+  final SettingState Function() _getState;
+  final void Function(SettingState) _setState;
+
   void setFaqExpanded(int index, bool isExpanded) {
+    final state = _getState();
     final updatedFaqs = state.help.faqs.asMap().entries.map((entry) {
       if (entry.key == index) {
         return entry.value.copyWith(isExpanded: isExpanded);
@@ -10,8 +20,10 @@ mixin _SettingHelpViewModelMixin on _SettingViewModelScope {
       return entry.value.copyWith(isExpanded: false);
     }).toList();
 
-    state = state.copyWith(
-      help: state.help.copyWith(faqs: updatedFaqs),
+    _setState(
+      state.copyWith(
+        help: state.help.copyWith(faqs: updatedFaqs),
+      ),
     );
   }
 }

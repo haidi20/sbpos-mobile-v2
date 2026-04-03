@@ -68,7 +68,7 @@ final settingViewModelProvider =
       updateNotificationPreferences:
           ref.watch(updateNotificationPreferencesProvider),
       updateSecuritySettings: ref.watch(updateSecuritySettingsProvider),
-      receiptPrinterService: ref.watch(receiptPrinterServiceProvider),
+      printerFacade: ref.watch(printerFacadeProvider),
     );
     unawaited(viewModel.getSettingConfig());
     return viewModel;

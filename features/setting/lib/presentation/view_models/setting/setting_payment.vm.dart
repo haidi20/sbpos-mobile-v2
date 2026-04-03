@@ -1,7 +1,23 @@
-part of 'package:setting/presentation/view_models/setting.vm.dart';
+import 'package:core/core.dart';
+import 'package:setting/domain/entities/setting_config.entity.dart';
+import 'package:setting/domain/usecases/update_payment_methods.usecase.dart';
+import 'package:setting/presentation/view_models/setting.state.dart';
 
-mixin _SettingPaymentViewModelMixin on _SettingViewModelScope {
+class SettingPaymentViewModelActions {
+  SettingPaymentViewModelActions({
+    required UpdatePaymentMethods updatePaymentMethods,
+    required SettingState Function() getState,
+    required void Function(SettingState) setState,
+  })  : _updatePaymentMethods = updatePaymentMethods,
+        _getState = getState,
+        _setState = setState;
+
+  final UpdatePaymentMethods _updatePaymentMethods;
+  final SettingState Function() _getState;
+  final void Function(SettingState) _setState;
+
   void setPaymentMethodActive(int id, bool isActive) {
+    final state = _getState();
     final updatedMethods = state.payment.methods.map((method) {
       if (method.id != id) {
         return method;
@@ -10,13 +26,16 @@ mixin _SettingPaymentViewModelMixin on _SettingViewModelScope {
       return method.copyWith(isActive: isActive);
     }).toList();
 
-    state = state.copyWith(
-      payment: state.payment.copyWith(methods: updatedMethods),
+    _setState(
+      state.copyWith(
+        payment: state.payment.copyWith(methods: updatedMethods),
+      ),
     );
     unawaited(onSavePaymentMethods());
   }
 
   Future<bool> onSavePaymentMethods() async {
+    final state = _getState();
     final result = await _updatePaymentMethods(
       state.payment.methods
           .map(
@@ -32,17 +51,20 @@ mixin _SettingPaymentViewModelMixin on _SettingViewModelScope {
     return result.fold(
       (_) => false,
       (methods) {
-        state = state.copyWith(
-          payment: state.payment.copyWith(
-            methods: methods
-                .map(
-                  (method) => PaymentMethodState(
-                    id: method.id,
-                    name: method.name,
-                    isActive: method.isActive,
-                  ),
-                )
-                .toList(),
+        final nextState = _getState();
+        _setState(
+          nextState.copyWith(
+            payment: nextState.payment.copyWith(
+              methods: methods
+                  .map(
+                    (method) => PaymentMethodState(
+                      id: method.id,
+                      name: method.name,
+                      isActive: method.isActive,
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         );
         return true;

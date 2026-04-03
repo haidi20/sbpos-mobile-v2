@@ -3,52 +3,7 @@ import 'package:setting/data/datasources/db/setting_database_schema.dart';
 import 'package:setting/data/datasources/setting_remote.data_source.dart';
 import 'package:setting/data/models/setting_config.model.dart';
 import 'package:setting/presentation/providers/setting.provider.dart';
-import 'package:setting/presentation/screens/help_screen.dart';
-import 'package:setting/presentation/screens/notification_setting_screen.dart';
-import 'package:setting/presentation/screens/payment_screen.dart';
-import 'package:setting/presentation/screens/printer_screen.dart';
-import 'package:setting/presentation/screens/profile_screen.dart';
-import 'package:setting/presentation/screens/security_screen.dart';
-import 'package:setting/presentation/screens/setting_screen.dart';
-import 'package:setting/presentation/screens/store_screen.dart';
-
-final GoRouter _router = GoRouter(
-  initialLocation: AppRoutes.settings,
-  routes: [
-    GoRoute(
-      path: AppRoutes.settings,
-      builder: (context, state) => const SettingsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.store,
-      builder: (context, state) => const StoreScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.printer,
-      builder: (context, state) => const PrinterScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.payment,
-      builder: (context, state) => const PaymentScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.profile,
-      builder: (context, state) => const ProfileScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.notificationSetting,
-      builder: (context, state) => const NotificationSettingScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.security,
-      builder: (context, state) => const SecurityScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.help,
-      builder: (context, state) => const HelpScreen(),
-    ),
-  ],
-);
+import 'package:setting/presentation/routes/setting_preview_router.dart';
 
 void main() {
   configureSettingDatabaseSchema();
@@ -58,8 +13,8 @@ void main() {
         settingRemoteDataSourceProvider.overrideWithValue(
           _PreviewSettingRemoteDataSource(),
         ),
-        receiptPrinterServiceProvider.overrideWithValue(
-          _PreviewReceiptPrinterService(),
+        printerFacadeProvider.overrideWithValue(
+          _PreviewPrinterFacade(),
         ),
       ],
       child: const SettingPreviewApp(),
@@ -80,7 +35,7 @@ class SettingPreviewApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),
-      routerConfig: _router,
+      routerConfig: settingPreviewRouter,
     );
   }
 }
@@ -220,7 +175,7 @@ class _PreviewSettingRemoteDataSource implements SettingRemoteDataSource {
   }
 }
 
-class _PreviewReceiptPrinterService implements ReceiptPrinterService {
+class _PreviewPrinterFacade implements PrinterFacade {
   ReceiptPrinterConfig? _config;
 
   @override

@@ -10,20 +10,6 @@ dependencies:
     path: ../../core
   flutter:
     sdk: flutter
-  landing_page_menu:
-    path: ../landing_page_menu
-  mode:
-    path: ../mode
-  outlet:
-    path: ../outlet
-  transaction:
-    path: ../transaction
-  product:
-    path: ../product
-  dashboard:
-    path: ../dashboard
-  notification:
-    path: ../notification
   web_socket_channel: ^3.0.1
 
 dev_dependencies:

@@ -1,47 +1,77 @@
-part of 'package:setting/presentation/view_models/setting.vm.dart';
+import 'package:setting/domain/entities/setting_config.entity.dart';
+import 'package:setting/domain/usecases/update_store_info.usecase.dart';
+import 'package:setting/presentation/view_models/setting.state.dart';
 
-mixin _SettingStoreViewModelMixin on _SettingViewModelScope {
+class SettingStoreViewModelActions {
+  SettingStoreViewModelActions({
+    required UpdateStoreInfo updateStoreInfo,
+    required SettingState Function() getState,
+    required void Function(SettingState) setState,
+    required StoreInfoState Function(StoreInfoEntity) mapStoreEntityToState,
+  })  : _updateStoreInfo = updateStoreInfo,
+        _getState = getState,
+        _setState = setState,
+        _mapStoreEntityToState = mapStoreEntityToState;
+
+  final UpdateStoreInfo _updateStoreInfo;
+  final SettingState Function() _getState;
+  final void Function(SettingState) _setState;
+  final StoreInfoState Function(StoreInfoEntity) _mapStoreEntityToState;
+
   void setStoreName(String value) {
-    state = state.copyWith(
-      store: state.store.copyWith(
-        storeName: value,
-        errorMessage: '',
-        successMessage: '',
+    final state = _getState();
+    _setState(
+      state.copyWith(
+        store: state.store.copyWith(
+          storeName: value,
+          errorMessage: '',
+          successMessage: '',
+        ),
       ),
     );
   }
 
   void setStoreBranch(String value) {
-    state = state.copyWith(
-      store: state.store.copyWith(
-        branch: value,
-        errorMessage: '',
-        successMessage: '',
+    final state = _getState();
+    _setState(
+      state.copyWith(
+        store: state.store.copyWith(
+          branch: value,
+          errorMessage: '',
+          successMessage: '',
+        ),
       ),
     );
   }
 
   void setStoreAddress(String value) {
-    state = state.copyWith(
-      store: state.store.copyWith(
-        address: value,
-        errorMessage: '',
-        successMessage: '',
+    final state = _getState();
+    _setState(
+      state.copyWith(
+        store: state.store.copyWith(
+          address: value,
+          errorMessage: '',
+          successMessage: '',
+        ),
       ),
     );
   }
 
   void setStorePhone(String value) {
-    state = state.copyWith(
-      store: state.store.copyWith(
-        phone: value,
-        errorMessage: '',
-        successMessage: '',
+    final state = _getState();
+    _setState(
+      state.copyWith(
+        store: state.store.copyWith(
+          phone: value,
+          errorMessage: '',
+          successMessage: '',
+        ),
       ),
     );
   }
 
   Future<bool> onSaveStoreInfo() async {
+    final state = _getState();
     final storeName = state.store.storeName.trim();
     final branch = state.store.branch.trim();
     final address = state.store.address.trim();
@@ -51,10 +81,12 @@ mixin _SettingStoreViewModelMixin on _SettingViewModelScope {
         branch.isEmpty ||
         address.isEmpty ||
         phone.isEmpty) {
-      state = state.copyWith(
-        store: state.store.copyWith(
-          errorMessage: 'Semua field informasi toko wajib diisi',
-          successMessage: '',
+      _setState(
+        state.copyWith(
+          store: state.store.copyWith(
+            errorMessage: 'Semua field informasi toko wajib diisi',
+            successMessage: '',
+          ),
         ),
       );
       return false;
@@ -71,19 +103,25 @@ mixin _SettingStoreViewModelMixin on _SettingViewModelScope {
 
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          store: state.store.copyWith(
-            errorMessage: failure.message,
-            successMessage: '',
+        final nextState = _getState();
+        _setState(
+          nextState.copyWith(
+            store: nextState.store.copyWith(
+              errorMessage: failure.message,
+              successMessage: '',
+            ),
           ),
         );
         return false;
       },
       (store) {
-        state = state.copyWith(
-          store: _mapStoreEntityToState(store).copyWith(
-            errorMessage: '',
-            successMessage: 'Informasi toko berhasil diperbarui',
+        final nextState = _getState();
+        _setState(
+          nextState.copyWith(
+            store: _mapStoreEntityToState(store).copyWith(
+              errorMessage: '',
+              successMessage: 'Informasi toko berhasil diperbarui',
+            ),
           ),
         );
         return true;

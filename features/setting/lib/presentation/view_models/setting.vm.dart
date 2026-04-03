@@ -8,52 +8,16 @@ import 'package:setting/domain/usecases/update_profile_settings.usecase.dart';
 import 'package:setting/domain/usecases/update_security_settings.usecase.dart';
 import 'package:setting/domain/usecases/update_store_info.usecase.dart';
 import 'package:setting/presentation/view_models/setting.state.dart';
+import 'package:setting/presentation/view_models/setting/setting_help.vm.dart';
+import 'package:setting/presentation/view_models/setting/setting_notification.vm.dart';
+import 'package:setting/presentation/view_models/setting/setting_payment.vm.dart';
+import 'package:setting/presentation/view_models/setting/setting_printer.vm.dart';
+import 'package:setting/presentation/view_models/setting/setting_profile.vm.dart';
+import 'package:setting/presentation/view_models/setting/setting_security.vm.dart';
+import 'package:setting/presentation/view_models/setting/setting_store.vm.dart';
 
-part 'setting/setting_store.vm.dart';
-part 'setting/setting_printer.vm.dart';
-part 'setting/setting_payment.vm.dart';
-part 'setting/setting_profile.vm.dart';
-part 'setting/setting_notification.vm.dart';
-part 'setting/setting_security.vm.dart';
-part 'setting/setting_help.vm.dart';
-
-abstract class _SettingViewModelScope {
-  SettingState get state;
-
-  set state(SettingState value);
-
-  UpdateStoreInfo get _updateStoreInfo;
-
-  UpdatePrinterSettings get _updatePrinterSettings;
-
-  UpdatePaymentMethods get _updatePaymentMethods;
-
-  UpdateProfileSettings get _updateProfileSettings;
-
-  UpdateNotificationPreferences get _updateNotificationPreferences;
-
-  UpdateSecuritySettings get _updateSecuritySettings;
-
-  ReceiptPrinterService get _receiptPrinterService;
-
-  StoreInfoState _mapStoreEntityToState(StoreInfoEntity store);
-
-  PrinterSettingsState _mapPrinterEntityToState(PrinterSettingsEntity printer);
-
-  ProfileFormState _mapProfileEntityToState(ProfileSettingsEntity profile);
-
-  NotificationPreferencesState _mapNotificationEntityToState(
-    NotificationPreferencesEntity notification,
-  );
-
-  PrinterSettingsEntity _buildPrinterEntity();
-
-  Future<void> _syncPrinterServiceFromState();
-}
-
-class _SettingViewModelBase extends StateNotifier<SettingState>
-    implements _SettingViewModelScope {
-  _SettingViewModelBase({
+class SettingViewModel extends StateNotifier<SettingState> {
+  SettingViewModel({
     required GetSettingConfig getSettingConfig,
     required UpdateStoreInfo updateStoreInfo,
     required UpdatePrinterSettings updatePrinterSettings,
@@ -61,7 +25,7 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     required UpdateProfileSettings updateProfileSettings,
     required UpdateNotificationPreferences updateNotificationPreferences,
     required UpdateSecuritySettings updateSecuritySettings,
-    required ReceiptPrinterService receiptPrinterService,
+    required PrinterFacade printerFacade,
   })  : _getSettingConfig = getSettingConfig,
         _updateStoreInfo = updateStoreInfo,
         _updatePrinterSettings = updatePrinterSettings,
@@ -69,31 +33,73 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
         _updateProfileSettings = updateProfileSettings,
         _updateNotificationPreferences = updateNotificationPreferences,
         _updateSecuritySettings = updateSecuritySettings,
-        _receiptPrinterService = receiptPrinterService,
-        super(const SettingState.initial());
+        _printerFacade = printerFacade,
+        super(const SettingState.initial()) {
+    _storeActions = SettingStoreViewModelActions(
+      updateStoreInfo: _updateStoreInfo,
+      getState: _getState,
+      setState: _setState,
+      mapStoreEntityToState: _mapStoreEntityToState,
+    );
+    _printerActions = SettingPrinterViewModelActions(
+      updatePrinterSettings: _updatePrinterSettings,
+      printerFacade: _printerFacade,
+      getState: _getState,
+      setState: _setState,
+      mapPrinterEntityToState: _mapPrinterEntityToState,
+      buildPrinterEntity: _buildPrinterEntity,
+      syncPrinterServiceFromState: _syncPrinterServiceFromState,
+    );
+    _paymentActions = SettingPaymentViewModelActions(
+      updatePaymentMethods: _updatePaymentMethods,
+      getState: _getState,
+      setState: _setState,
+    );
+    _profileActions = SettingProfileViewModelActions(
+      updateProfileSettings: _updateProfileSettings,
+      getState: _getState,
+      setState: _setState,
+      mapProfileEntityToState: _mapProfileEntityToState,
+    );
+    _notificationActions = SettingNotificationViewModelActions(
+      updateNotificationPreferences: _updateNotificationPreferences,
+      getState: _getState,
+      setState: _setState,
+      mapNotificationEntityToState: _mapNotificationEntityToState,
+    );
+    _securityActions = SettingSecurityViewModelActions(
+      updateSecuritySettings: _updateSecuritySettings,
+      getState: _getState,
+      setState: _setState,
+    );
+    _helpActions = SettingHelpViewModelActions(
+      getState: _getState,
+      setState: _setState,
+    );
+  }
 
   final GetSettingConfig _getSettingConfig;
-
-  @override
   final UpdateStoreInfo _updateStoreInfo;
-
-  @override
   final UpdatePrinterSettings _updatePrinterSettings;
-
-  @override
   final UpdatePaymentMethods _updatePaymentMethods;
-
-  @override
   final UpdateProfileSettings _updateProfileSettings;
-
-  @override
   final UpdateNotificationPreferences _updateNotificationPreferences;
-
-  @override
   final UpdateSecuritySettings _updateSecuritySettings;
+  final PrinterFacade _printerFacade;
 
-  @override
-  final ReceiptPrinterService _receiptPrinterService;
+  late final SettingStoreViewModelActions _storeActions;
+  late final SettingPrinterViewModelActions _printerActions;
+  late final SettingPaymentViewModelActions _paymentActions;
+  late final SettingProfileViewModelActions _profileActions;
+  late final SettingNotificationViewModelActions _notificationActions;
+  late final SettingSecurityViewModelActions _securityActions;
+  late final SettingHelpViewModelActions _helpActions;
+
+  SettingState _getState() => state;
+
+  void _setState(SettingState value) {
+    state = value;
+  }
 
   SettingProfileCardState get getProfileCard => state.profileCard;
 
@@ -187,7 +193,6 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     );
   }
 
-  @override
   StoreInfoState _mapStoreEntityToState(StoreInfoEntity store) {
     return state.store.copyWith(
       storeName: store.storeName,
@@ -197,7 +202,6 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     );
   }
 
-  @override
   PrinterSettingsState _mapPrinterEntityToState(PrinterSettingsEntity printer) {
     return state.printer.copyWith(
       autoPrint: printer.autoPrint,
@@ -215,7 +219,6 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     );
   }
 
-  @override
   ProfileFormState _mapProfileEntityToState(ProfileSettingsEntity profile) {
     return state.profile.copyWith(
       name: profile.name,
@@ -225,7 +228,6 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     );
   }
 
-  @override
   NotificationPreferencesState _mapNotificationEntityToState(
     NotificationPreferencesEntity notification,
   ) {
@@ -236,7 +238,6 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     );
   }
 
-  @override
   PrinterSettingsEntity _buildPrinterEntity() {
     return PrinterSettingsEntity(
       autoPrint: state.printer.autoPrint,
@@ -254,14 +255,13 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
     );
   }
 
-  @override
   Future<void> _syncPrinterServiceFromState() async {
     final connectedDevice = state.printer.devices.cast<PrinterDeviceState?>().firstWhere(
           (device) => device?.isConnected == true,
           orElse: () => null,
         );
 
-    await _receiptPrinterService.syncConfig(
+    await _printerFacade.syncConfig(
       ReceiptPrinterConfig(
         autoPrint: state.printer.autoPrint,
         printLogo: state.printer.printLogo,
@@ -271,25 +271,61 @@ class _SettingViewModelBase extends StateNotifier<SettingState>
       ),
     );
   }
-}
 
-class SettingViewModel extends _SettingViewModelBase
-    with
-        _SettingStoreViewModelMixin,
-        _SettingPrinterViewModelMixin,
-        _SettingPaymentViewModelMixin,
-        _SettingProfileViewModelMixin,
-        _SettingNotificationViewModelMixin,
-        _SettingSecurityViewModelMixin,
-        _SettingHelpViewModelMixin {
-  SettingViewModel({
-    required super.getSettingConfig,
-    required super.updateStoreInfo,
-    required super.updatePrinterSettings,
-    required super.updatePaymentMethods,
-    required super.updateProfileSettings,
-    required super.updateNotificationPreferences,
-    required super.updateSecuritySettings,
-    required super.receiptPrinterService,
-  });
+  void setStoreName(String value) => _storeActions.setStoreName(value);
+
+  void setStoreBranch(String value) => _storeActions.setStoreBranch(value);
+
+  void setStoreAddress(String value) => _storeActions.setStoreAddress(value);
+
+  void setStorePhone(String value) => _storeActions.setStorePhone(value);
+
+  Future<bool> onSaveStoreInfo() => _storeActions.onSaveStoreInfo();
+
+  void setPrinterAutoPrint(bool value) => _printerActions.setPrinterAutoPrint(value);
+
+  void setPrinterPrintLogo(bool value) => _printerActions.setPrinterPrintLogo(value);
+
+  void setPrinterPaperWidth(String value) => _printerActions.setPrinterPaperWidth(value);
+
+  void setPrinterConnected(String deviceName, bool isConnected) =>
+      _printerActions.setPrinterConnected(deviceName, isConnected);
+
+  Future<bool> onTestPrint() => _printerActions.onTestPrint();
+
+  void setPaymentMethodActive(int id, bool isActive) =>
+      _paymentActions.setPaymentMethodActive(id, isActive);
+
+  Future<bool> onSavePaymentMethods() => _paymentActions.onSavePaymentMethods();
+
+  void setProfileName(String value) => _profileActions.setProfileName(value);
+
+  void setProfileEmployeeId(String value) => _profileActions.setProfileEmployeeId(value);
+
+  void setProfileEmail(String value) => _profileActions.setProfileEmail(value);
+
+  void setProfilePhone(String value) => _profileActions.setProfilePhone(value);
+
+  Future<bool> onSaveProfile() => _profileActions.onSaveProfile();
+
+  void setPushNotification(bool value) => _notificationActions.setPushNotification(value);
+
+  void setTransactionSound(bool value) => _notificationActions.setTransactionSound(value);
+
+  void setStockAlert(bool value) => _notificationActions.setStockAlert(value);
+
+  Future<bool> onSaveNotificationPreferences() =>
+      _notificationActions.onSaveNotificationPreferences();
+
+  void setSecurityOldPin(String value) => _securityActions.setSecurityOldPin(value);
+
+  void setSecurityNewPin(String value) => _securityActions.setSecurityNewPin(value);
+
+  void setSecurityConfirmPin(String value) =>
+      _securityActions.setSecurityConfirmPin(value);
+
+  Future<bool> onUpdateSecurity() => _securityActions.onUpdateSecurity();
+
+  void setFaqExpanded(int index, bool isExpanded) =>
+      _helpActions.setFaqExpanded(index, isExpanded);
 }
