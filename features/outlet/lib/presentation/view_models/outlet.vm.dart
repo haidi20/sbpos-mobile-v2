@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import '../../domain/entities/outlet.entity.dart';
-import '../../domain/usecases/get_outlets.usecase.dart';
+import 'package:outlet/domain/entities/outlet.entity.dart';
+import 'package:outlet/domain/usecases/get_outlets.usecase.dart';
 
 class OutletState {
   final List<OutletEntity> outlets;

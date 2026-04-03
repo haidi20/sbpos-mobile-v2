@@ -7,15 +7,9 @@ environment:
 dependencies:
   core:
     path: ../../core
-  dashboard:
-    path: ../dashboard
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.6.1
-  landing_page_menu:
-    path: ../landing_page_menu
-  mode:
-    path: ../mode
 dev_dependencies:
   flutter_test:
     sdk: flutter

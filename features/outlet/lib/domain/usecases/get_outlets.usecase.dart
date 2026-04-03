@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import '../entities/outlet.entity.dart';
-import '../repositories/outlet.repository.dart';
+import 'package:outlet/domain/entities/outlet.entity.dart';
+import 'package:outlet/domain/repositories/outlet.repository.dart';
 
 class GetOutlets {
   final OutletRepository repository;
@@ -8,6 +8,12 @@ class GetOutlets {
   GetOutlets(this.repository);
 
   Future<Either<Failure, List<OutletEntity>>> call() async {
-    return await repository.getDataOutlets();
+    try {
+      return await repository.getDataOutlets();
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

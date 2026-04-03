@@ -1,4 +1,4 @@
-import '../../data/models/outlet.model.dart';
+import 'package:outlet/data/models/outlet.model.dart';
 
 class OutletEntity {
   final int? id;

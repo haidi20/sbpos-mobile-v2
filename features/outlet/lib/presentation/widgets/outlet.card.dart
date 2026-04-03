@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import '../../domain/entities/outlet.entity.dart';
+import 'package:outlet/domain/entities/outlet.entity.dart';
 
 class OutletCard extends StatelessWidget {
   final OutletEntity outlet;

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'outlet_repository.provider.dart';
-import '../view_models/outlet.vm.dart';
-import '../../domain/usecases/get_outlets.usecase.dart';
+import 'package:outlet/domain/usecases/get_outlets.usecase.dart';
+import 'package:outlet/presentation/view_models/outlet.vm.dart';
 
 final getOutletsProvider = Provider<GetOutlets>((ref) {
   final repo = ref.read(outletRepositoryProvider);
