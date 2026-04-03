@@ -8,12 +8,14 @@ import 'package:outlet/domain/repositories/outlet.repository.dart';
 class OutletRepositoryImpl implements OutletRepository {
   final OutletRemoteDataSource remote;
   final OutletLocalDataSource local;
+  final NetworkInfo networkInfo;
 
   static final Logger _logger = Logger('OutletRepositoryImpl');
 
   OutletRepositoryImpl({
     required this.remote,
     required this.local,
+    required this.networkInfo,
   });
 
   Future<List<OutletEntity>> _getLocalEntities() async {
@@ -46,7 +48,6 @@ class OutletRepositoryImpl implements OutletRepository {
 
   @override
   Future<Either<Failure, List<OutletEntity>>> getDataOutlets() async {
-    final networkInfo = NetworkInfoImpl(Connectivity());
     final bool isConnected = await networkInfo.isConnected;
 
     if (isConnected) {

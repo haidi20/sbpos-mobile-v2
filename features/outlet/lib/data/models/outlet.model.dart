@@ -170,4 +170,31 @@ class OutletModel {
       syncedAt: toDate(map['synced_at']),
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is OutletModel &&
+        other.id == id &&
+        other.idServer == idServer &&
+        other.name == name &&
+        other.logo == logo &&
+        other.address == address &&
+        other.distance == distance &&
+        other.businessId == businessId &&
+        other.isActive == isActive;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^
+        idServer.hashCode ^
+        name.hashCode ^
+        logo.hashCode ^
+        address.hashCode ^
+        distance.hashCode ^
+        businessId.hashCode ^
+        isActive.hashCode;
+  }
 }

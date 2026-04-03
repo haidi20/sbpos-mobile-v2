@@ -2,15 +2,20 @@ name: outlet
 description: A new Flutter module project.
 version: 1.0.0+1
 publish_to: none
+
 environment:
   sdk: '>=3.4.1 <4.0.0'
+
 dependencies:
   core:
     path: ../../core
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.6.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  mocktail: ^1.0.4
+  dartz: ^0.10.1
