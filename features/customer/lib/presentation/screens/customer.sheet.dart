@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/presentation/providers/customer.providers.dart';
 import 'package:customer/presentation/screens/customer_list.screen.dart';
 import 'package:customer/presentation/screens/customer_form.screen.dart';
@@ -6,6 +7,7 @@ import 'package:customer/presentation/screens/customer_form.screen.dart';
 class CustomerSheet {
   static void openCustomerPicker(
     BuildContext context,
+    {ValueChanged<CustomerEntity>? onCustomerSelected}
   ) {
     showModalBottomSheet(
       context: context,
@@ -78,6 +80,7 @@ class CustomerSheet {
                 // Default: show list
                 return CustomerListScreen(
                   scrollController: scrollController,
+                  onCustomerSelected: onCustomerSelected,
                 );
               },
             );

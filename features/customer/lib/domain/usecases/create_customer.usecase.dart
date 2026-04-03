@@ -8,6 +8,12 @@ class CreateCustomer {
 
   Future<Either<Failure, CustomerEntity>> call(CustomerEntity customer,
       {bool? isOffline}) async {
-    return await repository.createCustomer(customer, isOffline: isOffline);
+    try {
+      return await repository.createCustomer(customer, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

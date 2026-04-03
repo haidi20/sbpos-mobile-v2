@@ -10,20 +10,6 @@ dependencies:
     path: ../../core
   flutter:
     sdk: flutter
-  landing_page_menu:
-    path: ../landing_page_menu
-  mode:
-    path: ../mode
-  outlet:
-    path: ../outlet
-  dashboard:
-    path: ../dashboard
-  product:
-    path: ../product
-  setting:
-    path: ../setting
-  transaction:
-    path: ../transaction
 dev_dependencies:
   flutter_test:
     sdk: flutter

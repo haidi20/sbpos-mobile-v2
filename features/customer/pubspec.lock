@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  bcrypt:
+    dependency: transitive
+    description:
+      name: bcrypt
+      sha256: "9dc3f234d5935a76917a6056613e1a6d9b53f7fa56f98e24cd49b8969307764b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.3"
   boolean_selector:
     dependency: transitive
     description:
@@ -89,6 +97,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.4"
+  connectivity_plus_web:
+    dependency: transitive
+    description:
+      name: connectivity_plus_web
+      sha256: "81332be1b4baf8898fed17bb4fdef27abb7c6fd990bf98c54fd978478adf2f1a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.5"
   convert:
     dependency: transitive
     description:
@@ -128,13 +144,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.10.1"
-  dashboard:
-    dependency: "direct main"
-    description:
-      path: "../dashboard"
-      relative: true
-    source: path
-    version: "0.0.1"
   dbus:
     dependency: transitive
     description:
@@ -310,6 +319,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  idb_shim:
+    dependency: transitive
+    description:
+      name: idb_shim
+      sha256: "0ae356560abbd07d2bd38165c5f3d9bc4fe9d1e73cdb5ed22691052d63bfdd4b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.0+5"
   intl:
     dependency: "direct dev"
     description:
@@ -326,13 +343,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.7"
-  landing_page_menu:
-    dependency: "direct main"
-    description:
-      path: "../landing_page_menu"
-      relative: true
-    source: path
-    version: "0.0.1"
   leak_tracker:
     dependency: transitive
     description:
@@ -405,13 +415,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.0"
-  mode:
-    dependency: "direct main"
-    description:
-      path: "../mode"
-      relative: true
-    source: path
-    version: "0.0.1"
   nm:
     dependency: transitive
     description:
@@ -420,13 +423,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
-  notification:
-    dependency: transitive
-    description:
-      path: "../notification"
-      relative: true
-    source: path
-    version: "0.0.1"
   octo_image:
     dependency: transitive
     description:
@@ -435,13 +431,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  outlet:
-    dependency: "direct main"
-    description:
-      path: "../outlet"
-      relative: true
-    source: path
-    version: "1.0.0+1"
   path:
     dependency: transitive
     description:
@@ -538,13 +527,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  product:
-    dependency: "direct main"
-    description:
-      path: "../product"
-      relative: true
-    source: path
-    version: "0.0.1"
   riverpod:
     dependency: transitive
     description:
@@ -561,13 +543,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
-  setting:
-    dependency: "direct main"
+  sembast:
+    dependency: transitive
     description:
-      path: "../setting"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: sembast
+      sha256: a49ce14fb0d81bee9f8941061a38f4b790d19c0ab01abe35a529c1fcef0512a1
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.7.2"
+  sembast_web:
+    dependency: transitive
+    description:
+      name: sembast_web
+      sha256: "6b15b49b2a86214130c25c7bdfb3a76eb0f4dc5e43016087f03870bd0bf9ba07"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.0+2"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -669,13 +660,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.0"
-  transaction:
-    dependency: "direct main"
-    description:
-      path: "../transaction"
-      relative: true
-    source: path
-    version: "0.0.1"
   typed_data:
     dependency: transitive
     description:
@@ -716,6 +700,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  web_socket:
+    dependency: transitive
+    description:
+      name: web_socket
+      sha256: "34d64019aa8e36bf9842ac014bb5d2f5586ca73df5e4d9bf5c936975cae6982c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  web_socket_channel:
+    dependency: transitive
+    description:
+      name: web_socket_channel
+      sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.3"
   xdg_directories:
     dependency: transitive
     description:

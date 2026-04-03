@@ -1,26 +1,26 @@
 import 'package:core/core.dart';
+import 'package:customer/domain/entities/customer.entity.dart';
 import 'package:customer/presentation/screens/action.sheet.dart';
 import 'package:customer/presentation/view_models/customer.state.dart';
 import 'package:customer/presentation/view_models/customer.vm.dart';
 import 'package:customer/presentation/providers/customer.providers.dart';
 import 'package:customer/presentation/widgets/customer_list_tile.card.dart';
-import 'package:transaction/presentation/providers/transaction.provider.dart';
 import 'package:customer/presentation/controllers/customer_list.controller.dart';
-import 'package:transaction/presentation/view_models/transaction_pos/transaction_pos.vm.dart';
 
 class CustomerListScreen extends HookConsumerWidget {
   const CustomerListScreen({
     super.key,
     required this.scrollController,
+    this.onCustomerSelected,
   });
 
   final ScrollController scrollController;
+  final ValueChanged<CustomerEntity>? onCustomerSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerViewModelProvider);
     final vm = ref.read(customerViewModelProvider.notifier);
-    final transactionPosVm = ref.read(transactionPosViewModelProvider.notifier);
 
     // Controller manages search TextEditingController lifecycle and sync
     final listController = useMemoized(
@@ -61,7 +61,7 @@ class CustomerListScreen extends HookConsumerWidget {
             vm: vm,
             state: state,
             context: context,
-            transactionPosVm: transactionPosVm,
+            onCustomerSelected: onCustomerSelected,
             scrollController: scrollController,
             listController: listController,
           ),
@@ -134,7 +134,7 @@ class CustomerListScreen extends HookConsumerWidget {
     required BuildContext context,
     required ScrollController scrollController,
     required CustomerListController listController,
-    required TransactionPosViewModel transactionPosVm,
+    required ValueChanged<CustomerEntity>? onCustomerSelected,
   }) {
     final bool isEmptyState = !state.loading && state.customers.isEmpty;
     final items = vm.filteredCustomers;
@@ -185,8 +185,7 @@ class CustomerListScreen extends HookConsumerWidget {
           return CustomerListTileCard(
             customer: filteredCustomer,
             onTapCallback: (customer) {
-              // set selected customer in transaction VM then close the sheet
-              transactionPosVm.setCustomer(customer);
+              onCustomerSelected?.call(customer);
               try {
                 Navigator.of(context).pop();
               } catch (_) {}

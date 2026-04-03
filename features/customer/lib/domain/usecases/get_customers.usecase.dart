@@ -10,6 +10,12 @@ class GetCustomers {
     String? query,
     bool? isOffline,
   }) async {
-    return await repository.getCustomers(query: query, isOffline: isOffline);
+    try {
+      return await repository.getCustomers(query: query, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

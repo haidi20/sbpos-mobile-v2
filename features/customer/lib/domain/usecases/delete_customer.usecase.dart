@@ -6,6 +6,12 @@ class DeleteCustomer {
   DeleteCustomer(this.repository);
 
   Future<Either<Failure, bool>> call(int id, {bool? isOffline}) async {
-    return await repository.deleteCustomer(id, isOffline: isOffline);
+    try {
+      return await repository.deleteCustomer(id, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

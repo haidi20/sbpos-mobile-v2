@@ -8,6 +8,12 @@ class GetCustomer {
 
   Future<Either<Failure, CustomerEntity>> call(int id,
       {bool? isOffline}) async {
-    return await repository.getCustomer(id, isOffline: isOffline);
+    try {
+      return await repository.getCustomer(id, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }
