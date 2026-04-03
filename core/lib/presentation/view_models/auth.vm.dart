@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
-import 'package:core/domain/usecases/logout.dart';
 import 'package:core/domain/entities/user_entity.dart';
+import 'package:core/domain/usecases/logout.dart';
+import 'package:core/domain/usecases/refresh_session.dart';
 import 'package:core/domain/usecases/store_login.dart';
 
 class AuthState {
@@ -21,10 +22,11 @@ class AuthState {
     UserEntity? authUser,
     String? error,
     bool clearError = false,
+    bool clearUser = false,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
-      authUser: authUser ?? this.authUser,
+      authUser: clearUser ? null : (authUser ?? this.authUser),
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -33,54 +35,67 @@ class AuthState {
 class AuthViewModel extends StateNotifier<AuthState> {
   final StoreLogin _storeLogin;
   final Logout _logout;
+  final RefreshSession _refreshSession;
 
   AuthViewModel(
     this._storeLogin,
     this._logout,
-  ) : super(const AuthState()) {
-    // Future.microtask(checkAuth);
-  }
+    this._refreshSession,
+  ) : super(const AuthState());
 
-  Future<void> storeLogin({
+  Future<bool> storeLogin({
     required String email,
     required String password,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
 
-    final Either<Failure, UserEntity> result = await _storeLogin.call(
+    final result = await _storeLogin.call(
       email: email,
       password: password,
     );
 
-    result.fold(
+    return result.fold(
       (failure) {
         state = state.copyWith(
           isLoading: false,
           error: failure.message,
         );
+        return false;
+      },
+      (authUser) {
+        state = state.copyWith(
+          isLoading: false,
+          authUser: authUser,
+          clearError: true,
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> refreshSession() async {
+    final result = await _refreshSession.call();
+    return result.fold(
+      (failure) {
+        state = state.copyWith(
+          error: failure.message,
+        );
+        return false;
       },
       (authUser) {
         state = state.copyWith(
           authUser: authUser,
+          clearError: true,
         );
-
-        Future.delayed(
-          const Duration(seconds: 1),
-          () {
-            state = state.copyWith(
-              isLoading: false,
-              clearError: true,
-            );
-          },
-        );
+        return true;
       },
     );
   }
 
   Future<void> logout() async {
-    state = state.copyWith(isLoading: false, error: null);
+    state = state.copyWith(isLoading: false, clearError: true);
 
-    final Either<Failure, bool> result = await _logout.call();
+    final result = await _logout.call();
 
     result.fold(
       (failure) {
@@ -90,10 +105,12 @@ class AuthViewModel extends StateNotifier<AuthState> {
         );
       },
       (success) {
-        state = const AuthState();
+        state = state.copyWith(
+          isLoading: false,
+          clearError: true,
+          clearUser: true,
+        );
       },
     );
-
-    // Tambahkan logika logout jika diperlukan
   }
 }

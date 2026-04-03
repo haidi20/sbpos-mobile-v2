@@ -5,6 +5,8 @@ class AppRoutes {
   static const String report = '/report';
   static const String settings = '/settings';
   static const String dashboard = '/dashboard';
+  static const String openCashier = '/open-cashier';
+  static const String closeCashier = '/close-cashier';
   static const String inventory = '/inventory';
   static const String landingPageMenu = '/landing';
   static const String notification = '/notification';
@@ -24,4 +26,5 @@ class AppRoutes {
   static const String security = '/settings/security';
   static const String notificationSetting = '/settings/notification';
   static const String webhookTest = '/webhook-test';
+  static const String expense = '/expense';
 }

@@ -1,6 +1,6 @@
 import 'package:core/core.dart';
-import 'package:core/data/models/user_model.dart';
 import 'package:core/data/datasources/db/auth_user.table.dart';
+import 'package:core/data/models/user_model.dart';
 import 'package:core/utils/password_hash.dart';
 
 class AuthUserQuery {
@@ -8,24 +8,55 @@ class AuthUserQuery {
   final String _tblUsers = AuthUserTable.tableName;
   final _logger = Logger('AuthUserQuery');
 
+  static const Map<String, String> _requiredColumns = {
+    AuthUserTable.colRefreshToken: 'TEXT',
+    AuthUserTable.colRoleId: 'INTEGER',
+    AuthUserTable.colWarehouseId: 'INTEGER',
+    AuthUserTable.colIsActive: 'INTEGER',
+    AuthUserTable.colLastLogin: 'INTEGER',
+  };
+
   AuthUserQuery(this.database);
+
+  Future<void> _ensureSqliteColumns() async {
+    if (database == null) {
+      return;
+    }
+
+    final db = database!;
+    final tableInfo = await db.rawQuery('PRAGMA table_info($_tblUsers)');
+    final existingColumns = tableInfo
+        .map((row) => (row['name'] ?? '').toString())
+        .where((name) => name.isNotEmpty)
+        .toSet();
+
+    for (final entry in _requiredColumns.entries) {
+      if (existingColumns.contains(entry.key)) {
+        continue;
+      }
+
+      await db.execute(
+        'ALTER TABLE $_tblUsers ADD COLUMN ${entry.key} ${entry.value}',
+      );
+    }
+  }
 
   Future<Map<String, dynamic>?> getUser() async {
     try {
       if (database != null) {
+        await _ensureSqliteColumns();
         final db = database;
-        final List<Map<String, dynamic>> results = await db!.query(
+        final results = await db!.query(
           _tblUsers,
           limit: 1,
         );
         return results.isNotEmpty ? results.first : null;
       }
 
-      // fallback to LocalDatabase (web/sembast)
       final list = await LocalDatabase.instance.getAll(_tblUsers);
       return list.isNotEmpty ? list.first : null;
     } catch (e) {
-      _logger.severe("Error fetching user: $e");
+      _logger.severe('Error fetching user: $e');
       return null;
     }
   }
@@ -36,8 +67,9 @@ class AuthUserQuery {
   }) async {
     try {
       if (database != null) {
+        await _ensureSqliteColumns();
         final db = database;
-        final List<Map<String, dynamic>> results = await db!.query(
+        final results = await db!.query(
           _tblUsers,
           where: 'email = ?',
           whereArgs: [email],
@@ -45,11 +77,9 @@ class AuthUserQuery {
         if (results.isEmpty) return false;
         final storedHash = results.first['password'] as String?;
         if (storedHash == null) return false;
-        final isValid = await PasswordHash.verify(password, storedHash);
-        return isValid;
+        return await PasswordHash.verify(password, storedHash);
       }
 
-      // fallback to LocalDatabase
       final list = await LocalDatabase.instance.getAll(_tblUsers);
       final found = list.firstWhere(
         (m) => (m['email'] ?? '') == email,
@@ -60,13 +90,14 @@ class AuthUserQuery {
       if (storedHash == null) return false;
       return await PasswordHash.verify(password, storedHash);
     } catch (e) {
-      _logger.severe("Error authenticating user: $e");
+      _logger.severe('Error authenticating user: $e');
       return false;
     }
   }
 
   Future<int> countUser() async {
     if (database != null) {
+      await _ensureSqliteColumns();
       final db = database;
       final result =
           await db!.rawQuery('SELECT COUNT(*) as total FROM $_tblUsers');
@@ -80,6 +111,7 @@ class AuthUserQuery {
   Future<int> storeUser(UserModel user) async {
     final userMap = await user.toLocalDbJson();
     if (database != null) {
+      await _ensureSqliteColumns();
       final db = database;
       await db!.delete(_tblUsers);
       return await db.insert(_tblUsers, userMap);
@@ -91,6 +123,7 @@ class AuthUserQuery {
 
   Future<int> deleteUser() async {
     if (database != null) {
+      await _ensureSqliteColumns();
       final db = database;
       return await db!.delete(_tblUsers);
     }
@@ -100,26 +133,30 @@ class AuthUserQuery {
 
   Future<void> deleteToken() async {
     final getUserMap = await getUser();
-    UserModel getuser = UserModel();
+    var user = UserModel();
     if (getUserMap != null) {
-      getuser = UserModel.fromMap(getUserMap);
+      user = UserModel.fromMap(getUserMap);
     }
 
     if (database != null) {
+      await _ensureSqliteColumns();
       final db = database;
       await db!.update(
         _tblUsers,
-        {'token': null},
+        {
+          'token': null,
+          'refresh_token': null,
+        },
         where: 'id = ?',
-        whereArgs: [getuser.id],
+        whereArgs: [user.id],
       );
       return;
     }
 
-    // For LocalDatabase (sembast) do a simple replace: delete all and re-insert without token
     if (getUserMap != null) {
       final modified = Map<String, dynamic>.from(getUserMap);
       modified['token'] = null;
+      modified['refresh_token'] = null;
       await LocalDatabase.instance.deleteAll(_tblUsers);
       await LocalDatabase.instance.insert(_tblUsers, modified);
     }

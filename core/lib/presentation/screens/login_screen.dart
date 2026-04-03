@@ -1,6 +1,7 @@
 import 'package:core/core.dart';
-import 'package:core/presentation/widgets/footer_text.dart';
 import 'package:core/presentation/controllers/auth_controller.dart';
+import 'package:core/presentation/providers/auth_provider.dart';
+import 'package:core/presentation/widgets/footer_text.dart';
 
 // The file uses a temporary `isLoading` placeholder during refactor.
 // Suppress dead_code warnings until the auth provider is wired.
@@ -80,9 +81,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     // Listen to the provider to update UI when loading changes
-    // final authState = ref.watch(authViewModelProvider);
-    // final isLoading = authState.isLoading;
-    bool isLoading = false;
+    final authState = ref.watch(authViewModelProvider);
+    final isLoading = authState.isLoading;
 
     return Scaffold(
       backgroundColor: sbBg,
@@ -208,7 +208,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             // Call the controller's onLogin method
                             onPressed: isLoading
                                 ? null
-                                : () => _authController.onLogin(),
+                                : () => unawaited(_authController.onLogin()),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: sbBlue,
                               foregroundColor: Colors.white,
@@ -331,7 +331,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         //   ],
         // ),
         TextButton(
-          onPressed: () {},
+          onPressed: _authController.onForgotPassword,
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
             minimumSize: Size.zero,

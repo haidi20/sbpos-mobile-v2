@@ -6,6 +6,11 @@ class UserEntity {
   final String? email;
   final String? password;
   final String? token;
+  final String? refreshToken;
+  final int? roleId;
+  final int? warehouseId;
+  final bool? isActive;
+  final DateTime? lastLogin;
 
   const UserEntity({
     this.id,
@@ -13,6 +18,11 @@ class UserEntity {
     this.password,
     this.email,
     this.token,
+    this.refreshToken,
+    this.roleId,
+    this.warehouseId,
+    this.isActive,
+    this.lastLogin,
   });
 
   UserEntity copyWith({
@@ -21,6 +31,11 @@ class UserEntity {
     String? password,
     String? email,
     String? token,
+    String? refreshToken,
+    int? roleId,
+    int? warehouseId,
+    bool? isActive,
+    DateTime? lastLogin,
   }) {
     return UserEntity(
       id: id ?? this.id,
@@ -28,6 +43,11 @@ class UserEntity {
       password: password ?? this.password,
       email: email ?? this.email,
       token: token ?? this.token,
+      refreshToken: refreshToken ?? this.refreshToken,
+      roleId: roleId ?? this.roleId,
+      warehouseId: warehouseId ?? this.warehouseId,
+      isActive: isActive ?? this.isActive,
+      lastLogin: lastLogin ?? this.lastLogin,
     );
   }
 
@@ -38,6 +58,11 @@ class UserEntity {
       password: model.password,
       email: model.email,
       token: model.token,
+      refreshToken: model.refreshToken,
+      roleId: model.roleId,
+      warehouseId: model.warehouseId,
+      isActive: model.isActive,
+      lastLogin: model.lastLogin,
     );
   }
 
@@ -48,6 +73,11 @@ class UserEntity {
       password: password,
       email: email,
       token: token,
+      refreshToken: refreshToken,
+      roleId: roleId,
+      warehouseId: warehouseId,
+      isActive: isActive,
+      lastLogin: lastLogin,
     );
   }
 
@@ -59,12 +89,23 @@ class UserEntity {
         other.id == id &&
         other.username == username &&
         other.email == email &&
-        other.token == token;
+        other.token == token &&
+        other.refreshToken == refreshToken &&
+        other.roleId == roleId &&
+        other.warehouseId == warehouseId &&
+        other.isActive == isActive;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^ username.hashCode ^ email.hashCode ^ token.hashCode;
+    return id.hashCode ^
+        username.hashCode ^
+        email.hashCode ^
+        token.hashCode ^
+        refreshToken.hashCode ^
+        roleId.hashCode ^
+        warehouseId.hashCode ^
+        isActive.hashCode;
   }
 
   @override
@@ -74,7 +115,11 @@ class UserEntity {
         id: $id,
         username: $username,
         email: $email,
-        token: $token
+        token: $token,
+        refreshToken: $refreshToken,
+        roleId: $roleId,
+        warehouseId: $warehouseId,
+        isActive: $isActive
       )''';
   }
 }

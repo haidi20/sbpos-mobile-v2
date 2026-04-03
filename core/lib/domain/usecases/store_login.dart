@@ -11,9 +11,15 @@ class StoreLogin {
     required String email,
     required String password,
   }) async {
-    return await repository.storeLogin(
-      email: email,
-      password: password,
-    );
+    try {
+      return await repository.storeLogin(
+        email: email,
+        password: password,
+      );
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

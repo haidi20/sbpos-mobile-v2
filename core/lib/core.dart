@@ -16,6 +16,8 @@ export 'utils/helpers/base_error_helper.dart';
 
 //widgets
 export 'presentation/widgets/message_snackbar.dart';
+export 'presentation/widgets/operational_status_gate.dart';
+export 'presentation/widgets/receipt_preview.sheet.dart';
 export 'presentation/widgets/review_image_modal.dart';
 export 'presentation/widgets/full_screen_text.editor.dart';
 export 'presentation/widgets/sync_status.widget.dart';
@@ -45,7 +47,15 @@ export 'data/datasources/local_database.dart';
 
 // webhook
 export 'domain/entities/webhook_event.entity.dart';
+export 'domain/entities/operational_check.entity.dart';
+export 'domain/facades/printer.facade.dart';
+export 'domain/repositories/operational_repository.dart';
 export 'domain/repositories/webhook_repository.dart';
 export 'data/repositories/fake_webhook_repository.dart';
+export 'data/repositories/operational_repository_impl.dart';
 export 'presentation/view_models/webhook.vm.dart';
+export 'presentation/view_models/operational_status.state.dart';
+export 'presentation/view_models/operational_status.vm.dart';
 export 'presentation/providers/webhook.provider.dart';
+export 'presentation/providers/printer_facade.provider.dart';
+export 'presentation/providers/operational_status.provider.dart';

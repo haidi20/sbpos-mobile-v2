@@ -1,12 +1,17 @@
-import 'package:core/utils/password_hash.dart';
 import 'package:core/domain/entities/user_entity.dart';
+import 'package:core/utils/password_hash.dart';
 
 class UserModel {
   final int? id;
   final String? username;
-  final String? password; // biasanya hanya untuk request, tidak disimpan
+  final String? password;
   final String? email;
   final String? token;
+  final String? refreshToken;
+  final int? roleId;
+  final int? warehouseId;
+  final bool? isActive;
+  final DateTime? lastLogin;
 
   UserModel({
     this.id,
@@ -14,6 +19,11 @@ class UserModel {
     this.email,
     this.password,
     this.token,
+    this.refreshToken,
+    this.roleId,
+    this.warehouseId,
+    this.isActive,
+    this.lastLogin,
   });
 
   UserModel copyWith({
@@ -22,6 +32,11 @@ class UserModel {
     String? password,
     String? email,
     String? token,
+    String? refreshToken,
+    int? roleId,
+    int? warehouseId,
+    bool? isActive,
+    DateTime? lastLogin,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -29,28 +44,39 @@ class UserModel {
       password: password ?? this.password,
       email: email ?? this.email,
       token: token ?? this.token,
+      refreshToken: refreshToken ?? this.refreshToken,
+      roleId: roleId ?? this.roleId,
+      warehouseId: warehouseId ?? this.warehouseId,
+      isActive: isActive ?? this.isActive,
+      lastLogin: lastLogin ?? this.lastLogin,
     );
   }
 
-  /// Factory untuk parsing dari respons login
   factory UserModel.fromLoginResponse(Map<String, dynamic> userJson) {
     return UserModel(
-      id: _asInt(userJson['id_petugas']),
-      username: userJson['username'] as String?,
-      token: userJson['token'] as String?,
+      id: _asInt(userJson['id'] ?? userJson['id_petugas']),
+      username: (userJson['name'] ?? userJson['username']) as String?,
+      token: userJson['token'] as String? ?? userJson['access_token'] as String?,
+      refreshToken: userJson['refresh_token'] as String?,
+      roleId: _asInt(userJson['role_id']),
+      warehouseId: _asInt(userJson['warehouse_id']),
+      isActive: _asBool(userJson['is_active']),
       email: userJson['email'] as String?,
-      // password tidak ada di respons login → biarkan null
     );
   }
 
-  /// Untuk parsing dari database lokal atau cache
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: _asInt(json['id']),
-      username: json['username'] as String?,
+      username: (json['username'] ?? json['name']) as String?,
       password: json['password'] as String?,
       token: json['token'] as String?,
+      refreshToken: json['refresh_token'] as String?,
+      roleId: _asInt(json['role_id']),
+      warehouseId: _asInt(json['warehouse_id']),
+      isActive: _asBool(json['is_active']),
       email: json['email'] as String?,
+      lastLogin: _asDate(json['last_login']),
     );
   }
 
@@ -65,23 +91,23 @@ class UserModel {
       final alreadyHashed = p.startsWith(r'$2a$') ||
           p.startsWith(r'$2b$') ||
           p.startsWith(r'$2y$');
-      if (alreadyHashed) {
-        hashedPassword = p;
-      } else {
-        hashedPassword = await PasswordHash.hashPassword(p);
-      }
+      hashedPassword = alreadyHashed ? p : await PasswordHash.hashPassword(p);
     }
 
     return {
       'id': id,
       'username': username,
       'email': email,
-      'password': hashedPassword, // hashed, never plain text
+      'password': hashedPassword,
       'token': token,
+      'refresh_token': refreshToken,
+      'role_id': roleId,
+      'warehouse_id': warehouseId,
+      'is_active': isActive == null ? null : (isActive! ? 1 : 0),
+      'last_login': (lastLogin ?? DateTime.now()).millisecondsSinceEpoch,
     };
   }
 
-  /// Untuk keperluan request (misal: register, update profil)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -89,6 +115,11 @@ class UserModel {
       'password': password,
       'email': email,
       'token': token,
+      'refresh_token': refreshToken,
+      'role_id': roleId,
+      'warehouse_id': warehouseId,
+      'is_active': isActive,
+      'last_login': lastLogin?.toIso8601String(),
     };
   }
 
@@ -99,6 +130,11 @@ class UserModel {
       password: entity.password,
       email: entity.email,
       token: entity.token,
+      refreshToken: entity.refreshToken,
+      roleId: entity.roleId,
+      warehouseId: entity.warehouseId,
+      isActive: entity.isActive,
+      lastLogin: entity.lastLogin,
     );
   }
 
@@ -109,6 +145,11 @@ class UserModel {
       password: password,
       email: email,
       token: token,
+      refreshToken: refreshToken,
+      roleId: roleId,
+      warehouseId: warehouseId,
+      isActive: isActive,
+      lastLogin: lastLogin,
     );
   }
 
@@ -120,6 +161,34 @@ class UserModel {
     return null;
   }
 
+  static bool? _asBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    if (value is String) {
+      if (value == '1') return true;
+      if (value == '0') return false;
+      return value.toLowerCase() == 'true';
+    }
+    return null;
+  }
+
+  static DateTime? _asDate(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is int) {
+      return DateTime.fromMillisecondsSinceEpoch(value);
+    }
+    if (value is String) {
+      final epoch = int.tryParse(value);
+      if (epoch != null) {
+        return DateTime.fromMillisecondsSinceEpoch(epoch);
+      }
+      return DateTime.tryParse(value);
+    }
+    return null;
+  }
+
   Future<String?> getHashedPassword() async {
     if (password != null && password!.isNotEmpty) {
       final alreadyHashed = password!.startsWith(r'$2a$') ||
@@ -127,9 +196,8 @@ class UserModel {
           password!.startsWith(r'$2y$');
       if (alreadyHashed) {
         return password;
-      } else {
-        return await PasswordHash.hashPassword(password!);
       }
+      return await PasswordHash.hashPassword(password!);
     }
     return null;
   }

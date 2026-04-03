@@ -7,5 +7,7 @@ abstract class AuthRepository {
     required String password,
   });
 
+  Future<Either<Failure, UserEntity>> refreshSession();
+
   Future<Either<Failure, bool>> logout();
 }

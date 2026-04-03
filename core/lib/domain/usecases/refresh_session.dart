@@ -1,14 +1,15 @@
 import 'package:core/core.dart';
+import 'package:core/domain/entities/user_entity.dart';
 import 'package:core/domain/repositories/auth_repository.dart';
 
-class Logout {
+class RefreshSession {
   final AuthRepository repository;
 
-  Logout(this.repository);
+  RefreshSession(this.repository);
 
-  Future<Either<Failure, bool>> call() async {
+  Future<Either<Failure, UserEntity>> call() async {
     try {
-      return await repository.logout();
+      return await repository.refreshSession();
     } on Failure catch (failure) {
       return Left(failure);
     } catch (_) {
