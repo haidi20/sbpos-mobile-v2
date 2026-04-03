@@ -7,6 +7,12 @@ class GetProduct {
   GetProduct(this.repository);
 
   Future<Either<Failure, ProductEntity>> call(int id, {bool? isOffline}) async {
-    return await repository.getProduct(id, isOffline: isOffline);
+    try {
+      return await repository.getProduct(id, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

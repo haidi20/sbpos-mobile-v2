@@ -8,6 +8,12 @@ class GetPacket {
   GetPacket(this.repository);
 
   Future<Either<Failure, PacketEntity>> call(int id, {bool? isOffline}) async {
-    return await repository.getPacket(id, isOffline: isOffline);
+    try {
+      return await repository.getPacket(id, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

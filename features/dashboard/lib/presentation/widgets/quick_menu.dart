@@ -52,6 +52,20 @@ class QuickMenu extends StatelessWidget {
         },
       ),
       QuickMenuButton(
+        icon: Icons.output_rounded,
+        label: 'Pengeluaran',
+        iconColor: AppColors.sbRed,
+        bgColor: AppColors.sbBg,
+        onTap: () {
+          if (isComingSoon) {
+            context.pushNamed(AppRoutes.comingSoonScreen);
+            return;
+          } else {
+            context.pushNamed(AppRoutes.expense);
+          }
+        },
+      ),
+      QuickMenuButton(
         icon: Icons.settings_outlined,
         label: 'Pengaturan',
         iconColor: AppColors.sbGray,

@@ -10,23 +10,17 @@ dependencies:
     path: ../../core
   flutter:
     sdk: flutter
-  landing_page_menu:
-    path: ../landing_page_menu
-  mode:
-    path: ../mode
-  outlet:
-    path: ../outlet
-  transaction:
-    path: ../transaction
-  dashboard:
-    path: ../dashboard
   intl: ^0.20.2
   flutter_riverpod: ^2.6.1
+  dartz: ^0.10.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
   mocktail: ^1.0.4
+  sqflite_common_ffi: ^2.2.0
+  sqflite_common: ^2.3.0
 
 flutter:
   uses-material-design: true

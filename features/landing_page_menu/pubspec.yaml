@@ -10,18 +10,8 @@ dependencies:
     sdk: flutter
   core:
     path: ../../core
-  dashboard:
-    path: ../dashboard
-  mode:
-    path: ../mode
-  outlet:
-    path: ../outlet
   product:
     path: ../product
-  setting:
-    path: ../setting
-  notification:
-    path: ../notification
 dev_dependencies:
   flutter_test:
     sdk: flutter

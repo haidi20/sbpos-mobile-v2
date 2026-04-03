@@ -4,8 +4,11 @@ import 'package:outlet/data/datasources/db/outlet.table.dart';
 import 'package:product/data/datasources/db/packet.table.dart';
 import 'package:product/data/datasources/db/packet_item.table.dart';
 import 'package:product/data/datasources/db/product.table.dart';
+import 'package:setting/data/datasources/db/setting.table.dart';
 import 'package:transaction/data/datasources/db/transaction.table.dart';
 import 'package:transaction/data/datasources/db/transaction_detail.table.dart';
+import 'package:expense/data/datasources/db/expense.table.dart';
+
 
 void configureAppDatabaseSchema() {
   CoreDatabaseSchemaRegistry.instance.registerTables([
@@ -32,6 +35,10 @@ void configureAppDatabaseSchema() {
       createIndexQueries: [CustomerTable.createIndexName],
     ),
     const CoreDatabaseSchemaTable(
+      name: SettingTable.tableName,
+      createTableQuery: SettingTable.createTableQuery,
+    ),
+    const CoreDatabaseSchemaTable(
       name: TransactionTable.tableName,
       createTableQuery: TransactionTable.createTableQuery,
       createIndexQueries: [
@@ -50,5 +57,11 @@ void configureAppDatabaseSchema() {
         TransactionDetailTable.createIndexProductName,
       ],
     ),
+    const CoreDatabaseSchemaTable(
+      name: ExpenseTable.tableName,
+      createTableQuery: ExpenseTable.createTableQuery,
+      createIndexQueries: [ExpenseTable.createIndexDate],
+    ),
   ]);
 }
+

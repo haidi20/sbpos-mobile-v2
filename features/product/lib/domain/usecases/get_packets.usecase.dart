@@ -8,6 +8,12 @@ class GetPackets {
 
   Future<Either<Failure, List<PacketEntity>>> call(
       {String? query, bool? isOffline}) async {
-    return await repository.getPackets(query: query, isOffline: isOffline);
+    try {
+      return await repository.getPackets(query: query, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

@@ -8,6 +8,12 @@ class UpdateProduct {
 
   Future<Either<Failure, ProductEntity>> call(ProductEntity product,
       {bool? isOffline}) async {
-    return await repository.updateProduct(product, isOffline: isOffline);
+    try {
+      return await repository.updateProduct(product, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }

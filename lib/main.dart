@@ -16,10 +16,11 @@ void main() async {
   }
 
   configureAppDatabaseSchema();
+  final overrides = await buildAppRepositoryOverrides();
 
   runApp(
     ProviderScope(
-      overrides: buildAppRepositoryOverrides(),
+      overrides: overrides,
       child: const MyApp(),
     ),
   );
@@ -44,42 +45,44 @@ class MyApp extends StatelessWidget {
       ),
       routerConfig: router,
       builder: (context, child) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            const double maxWidth = 500;
+        return OperationalStatusGate(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const double maxWidth = 500;
 
-            if (constraints.maxWidth > 1200) {
-              return Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      color: Colors.grey[200],
+              if (constraints.maxWidth > 1200) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        color: Colors.grey[200],
+                      ),
                     ),
-                  ),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: maxWidth),
-                    child: Container(
-                      color: Colors.white,
-                      child: child,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: maxWidth),
+                      child: Container(
+                        color: Colors.white,
+                        child: child,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      color: Colors.grey[200],
+                    Expanded(
+                      child: Container(
+                        color: Colors.grey[200],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                );
+              }
+
+              return ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: maxWidth),
+                child: Container(
+                  color: Colors.white,
+                  child: child,
+                ),
               );
-            }
-
-            return ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: maxWidth),
-              child: Container(
-                color: Colors.white,
-                child: child,
-              ),
-            );
-          },
+            },
+          ),
         );
       },
     );

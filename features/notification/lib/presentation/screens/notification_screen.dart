@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../components/notification_tab.dart';
-import '../components/notification_item.dart';
 import 'package:notification/data/data/notification_data.dart';
 import 'package:notification/data/models/notification_model.dart';
+import 'package:notification/presentation/components/notification_item.dart';
+import 'package:notification/presentation/components/notification_tab.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});

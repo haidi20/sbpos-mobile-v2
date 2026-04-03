@@ -6,6 +6,12 @@ class DeletePacket {
   DeletePacket(this.repository);
 
   Future<Either<Failure, bool>> call(int id, {bool? isOffline}) async {
-    return await repository.deletePacket(id, isOffline: isOffline);
+    try {
+      return await repository.deletePacket(id, isOffline: isOffline);
+    } on Failure catch (failure) {
+      return Left(failure);
+    } catch (_) {
+      return const Left(UnknownFailure());
+    }
   }
 }
